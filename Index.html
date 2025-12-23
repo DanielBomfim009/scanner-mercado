@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Scanner de Compras</title>
+
+<script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body { font-family: Arial; background:#f2f2f2; padding:10px }
+.box { background:#fff; padding:12px; border-radius:6px; margin-bottom:10px }
+button,input,select { width:100%; padding:10px; margin-top:6px; font-size:16px }
+#camera { width:100%; height:260px; background:#000; display:none }
+.total { font-size:20px; font-weight:bold }
+</style>
+</head>
+
+<body>
+
+<h2>🛒 Compras do Mês</h2>
+
+<div class="box">
+  <button onclick="startScanner()">▶️ Abrir Câmera</button>
+  <button onclick="stopScanner()">⏹️ Parar</button>
+  <div id="camera"></div>
+</div>
+
+<div class="box" id="cadastro" style="display:none">
+  <h3>Novo Produto</h3>
+  <input id="nome" placeholder="Nome do produto">
+  <select id="tipo">
+    <option value="UN">Unidade (UN)</option>
+    <option value="KG">Peso (KG)</option>
+  </select>
+  <input id="preco" type="number" step="0.01" placeholder="Preço">
+  <button onclick="salvarProduto()">Salvar</button>
+</div>
+
+<div class="box">
+  <h3>🛒 Carrinho</h3>
+  <ul id="lista"></ul>
+  <p class="total">Total: R$ <span id="total">0.00</span></p>
+  <button onclick="limpar()">Limpar Carrinho</button>
+</div>
+
+<script>
+let produtos = JSON.parse(localStorage.getItem("produtos")) || {};
+let carrinho = [];
+let codigoAtual = null;
+let lendo = false;
+
+function startScanner() {
+  if (lendo) return;
+  lendo = true;
+  document.getElementById("camera").style.display = "block";
+
+  Quagga.init({
+    inputStream: {
+      type: "LiveStream",
+      target: document.querySelector('#camera'),
+      constraints: { facingMode: "environment" }
+    },
+    decoder: { readers: ["ean_reader","ean_8_reader","code_128_reader"] }
+  }, err => {
+    if (err) return alert("Erro na câmera");
+    Quagga.start();
+  });
+
+  Quagga.onDetected(data => {
+    codigoAtual = data.codeResult.code;
+    stopScanner();
+    processarCodigo(codigoAtual);
+  });
+}
+
+function stopScanner() {
+  lendo = false;
+  Quagga.stop();
+  document.getElementById("camera").style.display = "none";
+}
+
+function processarCodigo(cod) {
+  if (produtos[cod]) {
+    pedirQuantidade(produtos[cod]);
+  } else {
+    document.getElementById("cadastro").style.display = "block";
+  }
+}
+
+function salvarProduto() {
+  const nome = nomeEl.value;
+  const tipo = tipoEl.value;
+  const preco = parseFloat(precoEl.value);
+
+  if (!nome || isNaN(preco)) return alert("Preencha tudo");
+
+  produtos[codigoAtual] = { nome, tipo, preco };
+  localStorage.setItem("produtos", JSON.stringify(produtos));
+
+  document.getElementById("cadastro").style.display = "none";
+  nomeEl.value = precoEl.value = "";
+
+  pedirQuantidade(produtos[codigoAtual]);
+}
+
+function pedirQuantidade(prod) {
+  let q = prompt(prod.tipo === "UN" ? "Quantidade:" : "Peso (KG):");
+  q = parseFloat(q);
+  if (isNaN(q) || q <= 0) return;
+
+  const subtotal = prod.preco * q;
+  carrinho.push({ ...prod, q, subtotal });
+  atualizar();
+}
+
+function atualizar() {
+  let total = 0;
+  lista.innerHTML = "";
+  carrinho.forEach(p => {
+    total += p.subtotal;
+    const li = document.createElement("li");
+    li.textContent = `${p.nome} (${p.q} ${p.tipo}) - R$ ${p.subtotal.toFixed(2)}`;
+    lista.appendChild(li);
+  });
+  document.getElementById("total").textContent = total.toFixed(2);
+}
+
+function limpar() {
+  carrinho = [];
+  atualizar();
+}
+
+const nomeEl = document.getElementById("nome");
+const tipoEl = document.getElementById("tipo");
+const precoEl = document.getElementById("preco");
+const lista = document.getElementById("lista");
+</script>
+
+</body>
+</html>
