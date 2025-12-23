@@ -8,14 +8,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body { font-family: Arial; background:#f2f2f2; margin:0; padding:10px }
-h2,h3 { text-align:center }
-
-.box {
-  background:#fff;
+* { box-sizing:border-box }
+body {
+  margin:0;
+  font-family: Arial, sans-serif;
+  background:#f4f6f8;
   padding:12px;
-  border-radius:8px;
+}
+
+.logo {
+  display:flex;
+  justify-content:center;
   margin-bottom:10px;
+}
+.logo img {
+  width:110px;
+  height:110px;
+  border-radius:50%;
+  object-fit:cover;
+  box-shadow:0 4px 10px rgba(0,0,0,.2);
+}
+
+h2,h3 { text-align:center; margin:6px 0 }
+
+.card {
+  background:#fff;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
 }
 
 button,input,select {
@@ -23,16 +44,25 @@ button,input,select {
   padding:10px;
   margin-top:6px;
   font-size:16px;
+  border-radius:8px;
+  border:1px solid #ccc;
 }
+
+button {
+  background:#2d89ef;
+  color:#fff;
+  border:none;
+}
+button.secondary { background:#666 }
+button.danger { background:#c0392b }
 
 #camera {
   width:100%;
   height:260px;
   background:#000;
-  border-radius:8px;
+  border-radius:12px;
   overflow:hidden;
   display:none;
-  position:relative;
 }
 
 #camera video,
@@ -40,25 +70,15 @@ button,input,select {
   width:100% !important;
   height:100% !important;
   object-fit:cover;
-  position:absolute;
-  top:0; left:0;
 }
 
-ul { padding:0; list-style:none }
+ul { list-style:none; padding:0; margin:0 }
+li { padding:8px 0; border-bottom:1px solid #eee }
 
-li {
-  padding:6px 0;
-  border-bottom:1px solid #ddd;
-}
-
-.prod-btn {
-  margin-top:4px;
+.actions {
   display:flex;
-  gap:5px;
-}
-
-.prod-btn button {
-  width:50%;
+  gap:6px;
+  margin-top:6px;
 }
 
 .total {
@@ -71,15 +91,19 @@ li {
 
 <body>
 
+<div class="logo">
+  <img src="logo.jpg">
+</div>
+
 <h2>🛒 Compras do Mês</h2>
 
-<div class="box">
-  <button onclick="startScanner()">▶️ Abrir Câmera</button>
-  <button onclick="stopScanner()">⏹️ Parar</button>
+<div class="card">
+  <button onclick="startScanner()">📷 Abrir Câmera</button>
+  <button class="secondary" onclick="stopScanner()">⏹️ Parar</button>
   <div id="camera"></div>
 </div>
 
-<div class="box" id="cadastro" style="display:none">
+<div class="card" id="cadastro" style="display:none">
   <h3 id="tituloCadastro">Novo Produto</h3>
   <input id="nome" placeholder="Nome do produto">
   <select id="tipo">
@@ -90,16 +114,16 @@ li {
   <button onclick="salvarProduto()">Salvar</button>
 </div>
 
-<div class="box">
+<div class="card">
   <h3>📦 Produtos Cadastrados</h3>
   <ul id="listaProdutos"></ul>
 </div>
 
-<div class="box">
+<div class="card">
   <h3>🛒 Carrinho</h3>
   <ul id="listaCarrinho"></ul>
   <p class="total">Total: R$ <span id="total">0.00</span></p>
-  <button onclick="limparCarrinho()">Limpar Carrinho</button>
+  <button class="secondary" onclick="limparCarrinho()">Limpar Carrinho</button>
 </div>
 
 <script>
@@ -109,8 +133,7 @@ let codigoAtual = null;
 let editando = null;
 let lendo = false;
 
-/* ================= SCANNER ================= */
-
+/* ===== SCANNER ===== */
 function startScanner() {
   if (lendo) return;
   lendo = true;
@@ -122,17 +145,17 @@ function startScanner() {
       target: camera,
       constraints: { facingMode: "environment" }
     },
-    decoder: { readers: ["ean_reader","ean_8_reader","code_128_reader"] }
+    decoder: { readers:["ean_reader","ean_8_reader","code_128_reader"] }
   }, err => {
-    if (err) return alert("Erro ao abrir câmera");
+    if (err) return alert("Erro na câmera");
     Quagga.start();
   });
 
   Quagga.offDetected();
-  Quagga.onDetected(data => {
-    codigoAtual = data.codeResult.code;
+  Quagga.onDetected(d => {
+    const cod = d.codeResult.code;
     stopScanner();
-    processarCodigo(codigoAtual);
+    processarCodigo(cod);
   });
 }
 
@@ -142,9 +165,11 @@ function stopScanner() {
   camera.style.display = "none";
 }
 
-/* ================= PRODUTOS ================= */
-
+/* ===== LÓGICA ===== */
 function processarCodigo(cod) {
+  codigoAtual = cod;
+  editando = null;
+
   if (produtos[cod]) {
     pedirQuantidade(produtos[cod]);
   } else {
@@ -152,7 +177,8 @@ function processarCodigo(cod) {
   }
 }
 
-function abrirCadastro(prod = null) {
+/* ===== PRODUTOS ===== */
+function abrirCadastro(prod=null) {
   cadastro.style.display = "block";
   if (prod) {
     tituloCadastro.textContent = "Editar Produto";
@@ -196,9 +222,9 @@ function listarProdutos() {
     const li = document.createElement("li");
     li.innerHTML = `
       <b>${p.nome}</b> (${p.tipo}) - R$ ${p.preco.toFixed(2)}
-      <div class="prod-btn">
+      <div class="actions">
         <button onclick="editarProduto('${cod}')">Editar</button>
-        <button onclick="excluirProduto('${cod}')">Excluir</button>
+        <button class="danger" onclick="excluirProduto('${cod}')">Excluir</button>
       </div>
     `;
     listaProdutos.appendChild(li);
@@ -218,51 +244,42 @@ function excluirProduto(cod) {
   listarProdutos();
 }
 
-/* ================= CARRINHO ================= */
-
-function pedirQuantidade(prod) {
-  let q = prompt(prod.tipo === "UN" ? "Quantidade:" : "Peso (KG):");
+/* ===== CARRINHO ===== */
+function pedirQuantidade(p) {
+  let q = prompt(p.tipo === "UN" ? "Quantidade:" : "Peso (KG):");
   q = parseFloat(q);
-  if (isNaN(q) || q <= 0) return;
-
-  carrinho.push({
-    ...prod,
-    q,
-    subtotal: q * prod.preco
-  });
+  if (!q) return;
+  carrinho.push({ ...p, q, subtotal:q*p.preco });
   atualizarCarrinho();
 }
 
 function atualizarCarrinho() {
-  let total = 0;
-  listaCarrinho.innerHTML = "";
-  carrinho.forEach(p => {
-    total += p.subtotal;
-    const li = document.createElement("li");
-    li.textContent = `${p.nome} (${p.q} ${p.tipo}) - R$ ${p.subtotal.toFixed(2)}`;
+  let t=0;
+  listaCarrinho.innerHTML="";
+  carrinho.forEach(p=>{
+    t+=p.subtotal;
+    const li=document.createElement("li");
+    li.textContent=`${p.nome} (${p.q} ${p.tipo}) - R$ ${p.subtotal.toFixed(2)}`;
     listaCarrinho.appendChild(li);
   });
-  totalSpan.textContent = total.toFixed(2);
+  total.textContent=t.toFixed(2);
 }
 
 function limparCarrinho() {
-  carrinho = [];
+  carrinho=[];
   atualizarCarrinho();
 }
 
-/* ================= INIT ================= */
-
-const camera = document.getElementById("camera");
-const cadastro = document.getElementById("cadastro");
-const nome = document.getElementById("nome");
-const tipo = document.getElementById("tipo");
-const preco = document.getElementById("preco");
-const listaProdutos = document.getElementById("listaProdutos");
-const listaCarrinho = document.getElementById("listaCarrinho");
-const totalSpan = document.getElementById("total");
-const tituloCadastro = document.getElementById("tituloCadastro");
-
+/* INIT */
 listarProdutos();
+
+const camera=document.getElementById("camera");
+const cadastro=document.getElementById("cadastro");
+const nome=document.getElementById("nome");
+const tipo=document.getElementById("tipo");
+const preco=document.getElementById("preco");
+const listaProdutos=document.getElementById("listaProdutos");
+const listaCarrinho=document.getElementById("listaCarrinho");
 </script>
 
 </body>
