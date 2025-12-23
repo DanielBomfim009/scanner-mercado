@@ -9,27 +9,24 @@
 
 <style>
 body{
-  font-family: Arial, sans-serif;
-  background:#f4f6f8;
   margin:0;
-  padding:15px;
+  font-family:Arial, sans-serif;
+  background:#eef1f5;
 }
 .app{
   max-width:420px;
   margin:auto;
   background:#fff;
-  border-radius:12px;
+  min-height:100vh;
   padding:15px;
-  box-shadow:0 4px 12px rgba(0,0,0,.1);
 }
-h2{text-align:center;margin-top:0}
+h2{text-align:center;margin:5px 0 15px}
 #camera{
   width:100%;
-  height:240px;
+  height:260px;
   background:#000;
-  border-radius:10px;
+  border-radius:12px;
   overflow:hidden;
-  margin-bottom:10px;
 }
 video{
   width:100%;
@@ -45,17 +42,25 @@ button{
   border-radius:8px;
   cursor:pointer;
 }
-.start{background:#28a745;color:#fff}
-.stop{background:#dc3545;color:#fff}
-.total{
-  margin-top:15px;
-  font-size:18px;
-  font-weight:bold;
-  text-align:center;
-}
+.start{background:#2ecc71;color:#fff}
+.stop{background:#e74c3c;color:#fff}
+.clear{background:#f39c12;color:#fff}
+.reset{background:#7f8c8d;color:#fff}
 .lista{
   margin-top:10px;
   font-size:14px;
+}
+.total{
+  margin-top:15px;
+  font-size:20px;
+  font-weight:bold;
+  text-align:center;
+}
+.footer{
+  margin-top:15px;
+  font-size:12px;
+  text-align:center;
+  color:#777;
 }
 </style>
 </head>
@@ -67,67 +72,66 @@ button{
   <div id="camera"></div>
 
   <button class="start" onclick="iniciarScanner()">▶ Abrir Câmera</button>
-  <button class="stop" onclick="pararScanner()">⏹ Parar</button>
+  <button class="stop" onclick="pararScanner()">⏹ Parar Scanner</button>
+  <button class="clear" onclick="limparCarrinho()">🧹 Limpar Carrinho</button>
+  <button class="reset" onclick="limparBanco()">🗑 Apagar Produtos</button>
 
   <div class="lista" id="lista"></div>
   <div class="total" id="total">Total: R$ 0,00</div>
+
+  <div class="footer">Dados salvos no seu celular</div>
 </div>
 
 <script>
 let produtos = JSON.parse(localStorage.getItem("produtos")) || {};
 let carrinho = [];
 let total = 0;
-let lendo = false;
+let bloqueio = false;
 
 function iniciarScanner(){
   Quagga.init({
     inputStream:{
       type:"LiveStream",
       target:document.querySelector("#camera"),
-      constraints:{
-        facingMode:"environment"
-      }
+      constraints:{ facingMode:"environment" }
     },
-    decoder:{
-      readers:["ean_reader","ean_13_reader","code_128_reader"]
-    }
+    decoder:{ readers:["ean_reader","ean_13_reader","code_128_reader"] }
   },err=>{
-    if(err){alert("Erro ao abrir câmera");return;}
+    if(err){ alert("Erro ao acessar câmera"); return; }
     Quagga.start();
   });
 
-  Quagga.onDetected(data=>{
-    if(lendo) return;
-    lendo = true;
+  Quagga.onDetected(dado=>{
+    if(bloqueio) return;
+    bloqueio = true;
 
-    const codigo = data.codeResult.code;
+    const codigo = dado.codeResult.code;
     processarCodigo(codigo);
 
-    setTimeout(()=>lendo=false,1500);
+    setTimeout(()=>bloqueio=false,1800);
   });
 }
 
-function pararScanner(){
-  Quagga.stop();
-}
+function pararScanner(){ Quagga.stop(); }
 
 function processarCodigo(codigo){
   if(produtos[codigo]){
-    // Produto já cadastrado
     let qtd = prompt(`Quantidade (${produtos[codigo].unidade})`);
     if(!qtd) return;
 
     let subtotal = qtd * produtos[codigo].preco;
     total += subtotal;
 
-    carrinho.push(`${produtos[codigo].nome} (${qtd} ${produtos[codigo].unidade}) - R$ ${subtotal.toFixed(2)}`);
+    carrinho.push(
+      `${produtos[codigo].nome} - ${qtd} ${produtos[codigo].unidade} → R$ ${subtotal.toFixed(2)}`
+    );
+
     atualizarTela();
   }else{
-    // Novo cadastro
     let nome = prompt("Nome do produto:");
     if(!nome) return;
 
-    let preco = parseFloat(prompt("Preço (ex: 12.50)"));
+    let preco = parseFloat(prompt("Preço (ex: 10.50)"));
     if(!preco) return;
 
     let unidade = prompt("Unidade (UN ou KG)").toUpperCase();
@@ -139,13 +143,28 @@ function processarCodigo(codigo){
     produtos[codigo] = {nome,preco,unidade};
     localStorage.setItem("produtos",JSON.stringify(produtos));
 
-    alert("Produto cadastrado! Escaneie novamente para adicionar ao carrinho.");
+    alert("Produto cadastrado! Escaneie novamente para adicionar.");
   }
 }
 
 function atualizarTela(){
   document.getElementById("lista").innerHTML = carrinho.join("<br>");
-  document.getElementById("total").innerText = `Total: R$ ${total.toFixed(2)}`;
+  document.getElementById("total").innerText =
+    `Total: R$ ${total.toFixed(2)}`;
+}
+
+function limparCarrinho(){
+  carrinho = [];
+  total = 0;
+  atualizarTela();
+}
+
+function limparBanco(){
+  if(confirm("Apagar TODOS os produtos cadastrados?")){
+    localStorage.removeItem("produtos");
+    produtos = {};
+    alert("Banco apagado");
+  }
 }
 </script>
 </body>
