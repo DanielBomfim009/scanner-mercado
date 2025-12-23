@@ -12,7 +12,6 @@ body {
   font-family: Arial, sans-serif;
   background: #f2f4f8;
   margin: 0;
-  padding: 0;
 }
 
 .container {
@@ -59,8 +58,8 @@ button {
 }
 
 .primary { background: #2f80ed; color: white; }
-.danger { background: #eb5757; color: white; }
 .gray { background: #828282; color: white; }
+.danger { background: #eb5757; color: white; }
 
 #camera {
   width: 100%;
@@ -77,7 +76,6 @@ input, select {
   margin-top: 8px;
   border-radius: 8px;
   border: 1px solid #ccc;
-  font-size: 15px;
 }
 
 ul {
@@ -93,7 +91,6 @@ li {
 .actions button {
   width: auto;
   padding: 6px 10px;
-  margin-right: 5px;
   font-size: 13px;
 }
 </style>
@@ -116,12 +113,16 @@ li {
   </div>
 
   <div class="card" id="cadastro" style="display:none">
-    <h3>📦 Cadastro de Produto</h3>
+    <h3>📦 Cadastro / Edição</h3>
+
+    <input id="codigo" readonly placeholder="Código de barras">
     <input id="nome" placeholder="Nome do produto">
+
     <select id="tipo">
       <option value="UN">Unidade</option>
       <option value="KG">Kg</option>
     </select>
+
     <input id="preco" type="number" step="0.01" placeholder="Preço">
     <button class="primary" onclick="salvarProduto()">Salvar</button>
   </div>
@@ -143,6 +144,7 @@ li {
 <script>
 const camera = document.getElementById("camera");
 const cadastro = document.getElementById("cadastro");
+const codigoInput = document.getElementById("codigo");
 const nome = document.getElementById("nome");
 const tipo = document.getElementById("tipo");
 const preco = document.getElementById("preco");
@@ -153,8 +155,12 @@ const totalSpan = document.getElementById("total");
 let produtos = JSON.parse(localStorage.getItem("produtos")) || {};
 let carrinho = [];
 let codigoAtual = null;
-let editando = null;
 let lendo = false;
+
+/* 🔒 CONTROLE DE LEITURA */
+let ultimoCodigo = null;
+let contadorLeitura = 0;
+let bloqueado = false;
 
 function startScanner() {
   if (lendo) return;
@@ -170,7 +176,7 @@ function startScanner() {
     decoder: { readers: ["ean_reader","code_128_reader"] }
   }, err => {
     if (err) {
-      alert("Erro ao acessar câmera");
+      alert("Erro na câmera");
       lendo = false;
       return;
     }
@@ -179,8 +185,23 @@ function startScanner() {
 
   Quagga.offDetected();
   Quagga.onDetected(res => {
-    stopScanner();
-    processarCodigo(res.codeResult.code);
+    if (bloqueado) return;
+
+    const cod = res.codeResult.code;
+
+    if (cod === ultimoCodigo) {
+      contadorLeitura++;
+    } else {
+      ultimoCodigo = cod;
+      contadorLeitura = 1;
+    }
+
+    if (contadorLeitura >= 2) {
+      bloqueado = true;
+      setTimeout(() => bloqueado = false, 2000);
+      stopScanner();
+      processarCodigo(cod);
+    }
   });
 }
 
@@ -192,12 +213,12 @@ function stopScanner() {
 
 function processarCodigo(cod) {
   codigoAtual = cod;
-  editando = null;
 
   if (produtos[cod]) {
     pedirQuantidade(produtos[cod]);
   } else {
     cadastro.style.display = "block";
+    codigoInput.value = cod;
     nome.value = "";
     tipo.value = "UN";
     preco.value = "";
@@ -206,21 +227,20 @@ function processarCodigo(cod) {
 
 function salvarProduto() {
   if (!nome.value || !preco.value) {
-    alert("Preencha todos os campos");
+    alert("Preencha tudo");
     return;
   }
 
-  const p = {
+  produtos[codigoAtual] = {
     nome: nome.value,
     tipo: tipo.value,
     preco: parseFloat(preco.value)
   };
 
-  produtos[codigoAtual] = p;
   localStorage.setItem("produtos", JSON.stringify(produtos));
   cadastro.style.display = "none";
   listarProdutos();
-  pedirQuantidade(p);
+  pedirQuantidade(produtos[codigoAtual]);
 }
 
 function listarProdutos() {
@@ -229,7 +249,9 @@ function listarProdutos() {
     const p = produtos[cod];
     const li = document.createElement("li");
     li.innerHTML = `
-      <b>${p.nome}</b> (${p.tipo}) - R$ ${p.preco.toFixed(2)}
+      <b>${p.nome}</b><br>
+      Código: ${cod}<br>
+      ${p.tipo} - R$ ${p.preco.toFixed(2)}
       <div class="actions">
         <button onclick="editarProduto('${cod}')">Editar</button>
         <button class="danger" onclick="excluirProduto('${cod}')">Excluir</button>
@@ -239,9 +261,9 @@ function listarProdutos() {
 }
 
 function editarProduto(cod) {
-  editando = cod;
-  codigoAtual = cod;
   const p = produtos[cod];
+  codigoAtual = cod;
+  codigoInput.value = cod;
   nome.value = p.nome;
   tipo.value = p.tipo;
   preco.value = p.preco;
