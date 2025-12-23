@@ -5,20 +5,11 @@
 <title>Scanner de Compras</title>
 
 <script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body {
-  font-family: Arial;
-  background:#f2f2f2;
-  padding:10px;
-  margin:0;
-}
-
-h2 {
-  text-align:center;
-}
+body { font-family: Arial; background:#f2f2f2; margin:0; padding:10px }
+h2,h3 { text-align:center }
 
 .box {
   background:#fff;
@@ -40,24 +31,40 @@ button,input,select {
   background:#000;
   border-radius:8px;
   overflow:hidden;
-  position:relative;
   display:none;
+  position:relative;
 }
 
-/* ⚠️ ESSENCIAL PARA NÃO "CORRER" */
 #camera video,
 #camera canvas {
   width:100% !important;
   height:100% !important;
   object-fit:cover;
   position:absolute;
-  top:0;
-  left:0;
+  top:0; left:0;
+}
+
+ul { padding:0; list-style:none }
+
+li {
+  padding:6px 0;
+  border-bottom:1px solid #ddd;
+}
+
+.prod-btn {
+  margin-top:4px;
+  display:flex;
+  gap:5px;
+}
+
+.prod-btn button {
+  width:50%;
 }
 
 .total {
   font-size:20px;
   font-weight:bold;
+  text-align:center;
 }
 </style>
 </head>
@@ -73,7 +80,7 @@ button,input,select {
 </div>
 
 <div class="box" id="cadastro" style="display:none">
-  <h3>Novo Produto</h3>
+  <h3 id="tituloCadastro">Novo Produto</h3>
   <input id="nome" placeholder="Nome do produto">
   <select id="tipo">
     <option value="UN">Unidade (UN)</option>
@@ -84,32 +91,40 @@ button,input,select {
 </div>
 
 <div class="box">
+  <h3>📦 Produtos Cadastrados</h3>
+  <ul id="listaProdutos"></ul>
+</div>
+
+<div class="box">
   <h3>🛒 Carrinho</h3>
-  <ul id="lista"></ul>
+  <ul id="listaCarrinho"></ul>
   <p class="total">Total: R$ <span id="total">0.00</span></p>
-  <button onclick="limpar()">Limpar Carrinho</button>
+  <button onclick="limparCarrinho()">Limpar Carrinho</button>
 </div>
 
 <script>
 let produtos = JSON.parse(localStorage.getItem("produtos")) || {};
 let carrinho = [];
 let codigoAtual = null;
+let editando = null;
 let lendo = false;
+
+/* ================= SCANNER ================= */
 
 function startScanner() {
   if (lendo) return;
   lendo = true;
-  document.getElementById("camera").style.display = "block";
+  camera.style.display = "block";
 
   Quagga.init({
     inputStream: {
       type: "LiveStream",
-      target: document.querySelector('#camera'),
+      target: camera,
       constraints: { facingMode: "environment" }
     },
     decoder: { readers: ["ean_reader","ean_8_reader","code_128_reader"] }
   }, err => {
-    if (err) return alert("Erro na câmera");
+    if (err) return alert("Erro ao abrir câmera");
     Quagga.start();
   });
 
@@ -124,64 +139,130 @@ function startScanner() {
 function stopScanner() {
   lendo = false;
   Quagga.stop();
-  document.getElementById("camera").style.display = "none";
+  camera.style.display = "none";
 }
+
+/* ================= PRODUTOS ================= */
 
 function processarCodigo(cod) {
   if (produtos[cod]) {
     pedirQuantidade(produtos[cod]);
   } else {
-    document.getElementById("cadastro").style.display = "block";
+    abrirCadastro();
+  }
+}
+
+function abrirCadastro(prod = null) {
+  cadastro.style.display = "block";
+  if (prod) {
+    tituloCadastro.textContent = "Editar Produto";
+    nome.value = prod.nome;
+    tipo.value = prod.tipo;
+    preco.value = prod.preco;
+  } else {
+    tituloCadastro.textContent = "Novo Produto";
+    nome.value = preco.value = "";
+    tipo.value = "UN";
   }
 }
 
 function salvarProduto() {
-  const nome = nomeEl.value;
-  const tipo = tipoEl.value;
-  const preco = parseFloat(precoEl.value);
+  if (!nome.value || !preco.value) return alert("Preencha tudo");
 
-  if (!nome || isNaN(preco)) return alert("Preencha tudo");
+  const obj = {
+    nome: nome.value,
+    tipo: tipo.value,
+    preco: parseFloat(preco.value)
+  };
 
-  produtos[codigoAtual] = { nome, tipo, preco };
+  if (editando) {
+    produtos[editando] = obj;
+    editando = null;
+  } else {
+    produtos[codigoAtual] = obj;
+  }
+
   localStorage.setItem("produtos", JSON.stringify(produtos));
+  cadastro.style.display = "none";
+  listarProdutos();
 
-  document.getElementById("cadastro").style.display = "none";
-  nomeEl.value = precoEl.value = "";
-
-  pedirQuantidade(produtos[codigoAtual]);
+  if (codigoAtual) pedirQuantidade(obj);
 }
+
+function listarProdutos() {
+  listaProdutos.innerHTML = "";
+  Object.keys(produtos).forEach(cod => {
+    const p = produtos[cod];
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <b>${p.nome}</b> (${p.tipo}) - R$ ${p.preco.toFixed(2)}
+      <div class="prod-btn">
+        <button onclick="editarProduto('${cod}')">Editar</button>
+        <button onclick="excluirProduto('${cod}')">Excluir</button>
+      </div>
+    `;
+    listaProdutos.appendChild(li);
+  });
+}
+
+function editarProduto(cod) {
+  editando = cod;
+  codigoAtual = null;
+  abrirCadastro(produtos[cod]);
+}
+
+function excluirProduto(cod) {
+  if (!confirm("Excluir este produto?")) return;
+  delete produtos[cod];
+  localStorage.setItem("produtos", JSON.stringify(produtos));
+  listarProdutos();
+}
+
+/* ================= CARRINHO ================= */
 
 function pedirQuantidade(prod) {
   let q = prompt(prod.tipo === "UN" ? "Quantidade:" : "Peso (KG):");
   q = parseFloat(q);
   if (isNaN(q) || q <= 0) return;
 
-  const subtotal = prod.preco * q;
-  carrinho.push({ ...prod, q, subtotal });
-  atualizar();
+  carrinho.push({
+    ...prod,
+    q,
+    subtotal: q * prod.preco
+  });
+  atualizarCarrinho();
 }
 
-function atualizar() {
+function atualizarCarrinho() {
   let total = 0;
-  lista.innerHTML = "";
+  listaCarrinho.innerHTML = "";
   carrinho.forEach(p => {
     total += p.subtotal;
     const li = document.createElement("li");
     li.textContent = `${p.nome} (${p.q} ${p.tipo}) - R$ ${p.subtotal.toFixed(2)}`;
-    lista.appendChild(li);
+    listaCarrinho.appendChild(li);
   });
-  document.getElementById("total").textContent = total.toFixed(2);
+  totalSpan.textContent = total.toFixed(2);
 }
 
-function limpar() {
+function limparCarrinho() {
   carrinho = [];
-  atualizar();
+  atualizarCarrinho();
 }
 
-const nomeEl = document.getElementById("nome");
-const tipoEl = document.getElementById("tipo");
-const precoEl = document.getElementById("preco");
-const lista = document.getElementById("lista");
+/* ================= INIT ================= */
+
+const camera = document.getElementById("camera");
+const cadastro = document.getElementById("cadastro");
+const nome = document.getElementById("nome");
+const tipo = document.getElementById("tipo");
+const preco = document.getElementById("preco");
+const listaProdutos = document.getElementById("listaProdutos");
+const listaCarrinho = document.getElementById("listaCarrinho");
+const totalSpan = document.getElementById("total");
+const tituloCadastro = document.getElementById("tituloCadastro");
+
+listarProdutos();
 </script>
 
 </body>
