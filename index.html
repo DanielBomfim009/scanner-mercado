@@ -2,400 +2,75 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Compras do mês</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
-
-<style>
-
-body{
-    background:#eef3ff;
-    font-family: Arial;
-    margin:0;
-}
-
-.container{
-    max-width:900px;
-    margin:auto;
-    padding:12px;
-}
-
-/* LOGO */
-.logo{
-    text-align:center;
-    margin-top:10px;
-}
-.logo img{
-    width:160px;
-    height:160px;
-    object-fit:cover;
-    border-radius:50%;
-    border:5px solid #ffffff;
-    box-shadow:0 10px 30px rgba(0,0,0,.35);
-}
-
-/* CAIXAS */
-.box{
-    background:white;
-    border-radius:18px;
-    padding:16px;
-    margin-top:15px;
-    box-shadow:0 0 15px #00000010;
-}
-
-/* BOTÕES */
-button{
-    width:100%;
-    padding:14px;
-    border:none;
-    font-size:16px;
-    border-radius:12px;
-    margin-top:8px;
-}
-
-.btnStart{ background:#2e6bff; color:white; }
-.btnStop{ background:#6b6b6b; color:white; }
-
-/* CAMERA */
-#camera{
-    width:100%;
-    height:260px;
-    background:black;
-    border-radius:18px;
-    margin-top:10px;
-    overflow:hidden;
-}
-
-/* CAMPOS */
-input, select{
-    width:100%;
-    padding:12px;
-    border-radius:12px;
-    border:1px solid #ccc;
-    box-sizing:border-box;
-    margin-top:6px;
-}
-
-/* TABELA */
-table{
-    width:100%;
-    border-collapse:collapse;
-}
-td,th{
-    padding:10px;
-}
-tr:nth-child(even){
-    background:#f5f5f5;
-}
-
-/* BOTÃO FLUTUANTE CARRINHO */
-#carrinhoIcone{
-    position:fixed;
-    right:18px;
-    bottom:18px;
-    width:70px;
-    height:70px;
-    border-radius:50%;
-    background:#2e6bff;
-    color:white;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:28px;
-    box-shadow:0 8px 20px rgba(0,0,0,.35);
-}
-
-/* MODAL */
-.modal{
-    position:fixed;
-    left:0;
-    top:0;
-    width:100%;
-    height:100%;
-    background:rgba(0,0,0,.6);
-    display:none;
-}
-.modal-content{
-    background:white;
-    width:92%;
-    margin:40px auto;
-    padding:12px;
-    border-radius:18px;
-}
-
-.total{
-    text-align:right;
-    font-weight:bold;
-    padding-top:10px;
-}
-
-</style>
+<title>Leitor de Código de Barras</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body>
 
-<div class="container">
+<h2>Scanner</h2>
 
-    <div class="logo">
-        <img src="logo.jpg">
-    </div>
+<!-- Botões existentes -->
+<button id="abrirCamera">Abrir câmera</button>
+<button id="fecharCamera">Fechar câmera</button>
 
-    <h1 style="text-align:center">🛒 Compras do mês 🛍️</h1>
+<!-- Vídeo existente -->
+<video id="preview" width="100%" autoplay muted playsinline></video>
 
-    <!-- SCANNER -->
-    <div class="box">
-        <button class="btnStart" id="startButton">📸 Abrir câmera</button>
-        <button class="btnStop" id="stopButton">⏹️ Parar</button>
+<!-- Campo onde aparece o código lido -->
+<input type="text" id="resultado" placeholder="Resultado do código" />
 
-        <div id="camera"></div>
-
-        <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
-    </div>
-
-    <!-- PRODUTOS CADASTRADOS -->
-    <div class="box">
-        <h2>📦 Produtos cadastrados</h2>
-
-        <table id="produtosTable">
-            <thead>
-                <tr>
-                    <th>Código</th>
-                    <th>Nome</th>
-                    <th>Tipo</th>
-                    <th>Preço</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
-
-    <!-- EDIÇÃO -->
-    <div class="box">
-        <h2>✏️ Edição de produto</h2>
-
-        <label>Código</label>
-        <input id="codigo">
-
-        <label>Nome</label>
-        <input id="nome">
-
-        <label>Tipo</label>
-        <select id="tipo">
-            <option>Unidade (UN)</option>
-            <option>Peso (KG)</option>
-        </select>
-
-        <label>Valor</label>
-        <input id="valor" type="number" step="0.01">
-
-        <button onclick="salvarProduto()">Salvar</button>
-    </div>
-
-</div>
-
-<!-- ÍCONE DO CARRINHO -->
-<div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️</div>
-
-<!-- MODAL DO CARRINHO -->
-<div id="modalCarrinho" class="modal">
-  <div class="modal-content">
-
-    <h2>Carrinho</h2>
-
-    <table id="tabelaCarrinho">
-        <tr>
-            <th>Código</th>
-            <th>Nome</th>
-            <th>Qtd</th>
-            <th>Subtotal</th>
-            <th></th>
-        </tr>
-    </table>
-
-    <p id="total" class="total">Total: R$ 0,00</p>
-
-    <button onclick="fecharCarrinho()">Fechar</button>
-  </div>
-</div>
+<!-- Biblioteca ZXing -->
+<script src="https://unpkg.com/@zxing/browser@latest"></script>
 
 <script>
+let codeReader = null;
+let stream = null;
 
-let produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
-let carrinho = [];
+// Abrir câmera e iniciar scan
+document.getElementById("abrirCamera").addEventListener("click", async () => {
+    try {
+        // evita múltiplas leituras simultâneas
+        if (codeReader) return;
 
-/* ---------- ATUALIZA TABELA ---------- */
-function atualizarTabela(){
-    const tb=document.querySelector("#produtosTable tbody");
-    tb.innerHTML="";
-    produtos.forEach(p=>{
-        let tr=document.createElement("tr");
-        tr.innerHTML=`<td>${p.codigo}</td><td>${p.nome}</td><td>${p.tipo}</td><td>${p.valor}</td>`;
-        tb.appendChild(tr);
-    });
-}
-atualizarTabela();
+        codeReader = new ZXingBrowser.BrowserMultiFormatReader();
 
-/* ---------- SALVAR PRODUTO ---------- */
-function salvarProduto(){
+        const videoElement = document.getElementById("preview");
 
-    let p={
-        codigo:codigo.value,
-        nome:nome.value,
-        tipo:tipo.value,
-        valor:Number(valor.value)
-    };
+        // solicita câmera traseira
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" }
+        });
 
-    produtos = produtos.filter(x=>x.codigo!==p.codigo);
-    produtos.push(p);
+        videoElement.srcObject = stream;
 
-    localStorage.setItem("produtos",JSON.stringify(produtos));
-
-    atualizarTabela();
-
-    alert("Produto salvo");
-}
-
-/* ---------- CARRINHO ---------- */
-
-function abrirCarrinho(){
-    modalCarrinho.style.display="block";
-    atualizarCarrinho();
-}
-
-function fecharCarrinho(){
-    modalCarrinho.style.display="none";
-}
-
-function removerItem(i){
-    carrinho.splice(i,1);
-    atualizarCarrinho();
-}
-
-function atualizarCarrinho(){
-
-    let tabela = document.getElementById("tabelaCarrinho");
-    tabela.innerHTML = `
-        <tr>
-            <th>Código</th>
-            <th>Nome</th>
-            <th>Qtd</th>
-            <th>Subtotal</th>
-            <th></th>
-        </tr>`;
-
-    let total=0;
-
-    carrinho.forEach((x,i)=>{
-
-        let sub = x.valor*x.qtd;
-        total += sub;
-
-        tabela.innerHTML += `
-        <tr>
-            <td>${x.codigo}</td>
-            <td>${x.nome}</td>
-            <td>${x.qtd}</td>
-            <td>R$ ${sub.toFixed(2)}</td>
-            <td><button onclick="removerItem(${i})">Excluir</button></td>
-        </tr>`;
-    });
-
-    document.getElementById("total").innerText = "Total: R$ " + total.toFixed(2);
-}
-
-/* ---------- SCANNER (CORREÇÃO DOS BOTÕES) ---------- */
-
-let scannerAtivo = false;
-
-/* abre câmera */
-function iniciarScanner(){
-
-    if(scannerAtivo){
-        return;
-    }
-
-    scannerAtivo = true;
-
-    /* garante que nada antigo fique aberto */
-    try{ Quagga.stop(); }catch(e){}
-
-    Quagga.init({
-        inputStream:{
-            type:"LiveStream",
-            target: document.querySelector("#camera"),
-            constraints:{
-                facingMode:"environment"
+        // iniciar decodificação contínua
+        await codeReader.decodeFromVideoDevice(null, videoElement, (result, err) => {
+            if (result) {
+                document.getElementById("resultado").value = result.getText();
             }
-        },
-        decoder:{
-            readers:[
-                "ean_reader",
-                "ean_13_reader",
-                "code_128_reader"
-            ]
+        });
+
+    } catch (e) {
+        alert("Erro ao abrir câmera: " + e.message);
+        codeReader = null;
+    }
+});
+
+// Fechar câmera
+document.getElementById("fecharCamera").addEventListener("click", () => {
+    try {
+        if (codeReader) {
+            codeReader.reset();
+            codeReader = null;
         }
-    }, function(err){
-        if(err){
-            alert("Erro ao iniciar câmera");
-            scannerAtivo = false;
-            return;
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
         }
-
-        Quagga.start();
-    });
-
-    /* evita múltiplos detect listeners */
-    Quagga.offDetected();
-
-    Quagga.onDetected(result=>{
-
-        let code = result.codeResult.code;
-        detected.innerText = code;
-
-        let produto = produtos.find(p=>p.codigo==code);
-
-        if(produto){
-
-            let qtd = prompt("Quantidade?");
-
-            if(!qtd) return;
-
-            carrinho.push({
-                codigo:code,
-                nome:produto.nome,
-                valor:Number(produto.valor),
-                qtd:Number(qtd)
-            });
-
-            atualizarCarrinho();
-            return;
-        }
-
-        codigo.value = code;
-        alert("Produto não cadastrado. Preencha abaixo.");
-    });
-
-}
-
-/* fecha câmera real e limpa tela */
-function pararScanner(){
-
-    try{
-        Quagga.stop();
-    }catch(e){}
-
-    /* limpa vídeo preto */
-    const cam = document.getElementById("camera");
-    cam.innerHTML = "";
-
-    scannerAtivo = false;
-}
-
-/* BOTÕES */
-document.getElementById("startButton").onclick = iniciarScanner;
-document.getElementById("stopButton").onclick  = pararScanner;
-
+        document.getElementById("preview").srcObject = null;
+    } catch (e) {}
+});
 </script>
 
 </body>
