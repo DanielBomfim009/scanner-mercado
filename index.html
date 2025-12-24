@@ -1,99 +1,98 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Compras do mês</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- ZXING BARCODE SCANNER -->
-<script src="https://unpkg.com/@zxing/library@latest"></script>
+<!-- QuaggaJS (scanner) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 
 <style>
+
 body{
-  font-family: Arial, Helvetica, sans-serif;
-  background:#f4f7ff;
+  font-family: Arial;
+  background:#f3f6ff;
   margin:0;
 }
 
 .container{
   max-width:900px;
-  margin:0 auto;
-  padding:14px;
+  margin:auto;
+  padding:16px;
 }
 
-/* LOGO */
-.logo-box{
-  text-align:center;
-  margin-top:10px;
-}
-.logo-box img{
-  width:120px;
-  height:120px;
-  border-radius:50%;
-  object-fit:cover;
-  border:4px solid #2d7bff;
-}
-
-/* TITULO */
-h1{
-  text-align:center;
-}
-
-/* CARDS */
 .card{
   background:white;
   padding:16px;
-  border-radius:18px;
-  margin-top:12px;
-  box-shadow:0 8px 30px rgba(0,0,0,.08);
+  border-radius:16px;
+  box-shadow:0 5px 16px rgba(0,0,0,.08);
+  margin-top:14px;
 }
 
-/* BUTTONS */
+h2{
+  margin-top:0;
+}
+
+.logo{
+  width:140px;
+  height:140px;
+  border-radius:50%;
+  object-fit:cover;
+  border:5px solid #2f7bff;
+  display:block;
+  margin:18px auto;
+}
+
 button{
-  width:100%;
-  padding:14px;
-  font-size:16px;
-  border:none;
-  border-radius:14px;
-  font-weight:bold;
-  cursor:pointer;
-  margin-top:8px;
-}
-
-.primary{background:#1e6bff;color:white;}
-.secondary{background:#6c757d;color:white;}
-.danger{background:#dd3333;color:white;}
-.success{background:#22bb33;color:white;}
-
-/* VIDEO */
-video{
-  width:100%;
-  background:black;
-  border-radius:14px;
-  margin-top:8px;
-}
-
-/* FORM GRID */
-.form-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-}
-.form-grid input{
   width:100%;
   padding:12px;
   border-radius:12px;
-  border:1px solid #ccc;
+  border:none;
+  color:white;
+  font-size:16px;
+  cursor:pointer;
 }
 
-/* TABLE */
+.primary{
+  background:#2165ff;
+}
+
+.stop{
+  background:#707b87;
+}
+
+/* scanner video */
+#scanner{
+  width:100%;
+  max-height:260px;
+  border-radius:14px;
+  object-fit:cover;
+  background:black;
+}
+
+/* tabela */
 table{
   width:100%;
   border-collapse:collapse;
 }
+
 th,td{
   padding:8px;
-  border-bottom:1px solid #ddd;
+  text-align:left;
+}
+
+/* inputs */
+input,select{
+  width:100%;
+  padding:10px;
+  border-radius:12px;
+  border:1px solid #ccc;
+  font-size:15px;
+}
+
+.save{
+  background:#10b164;
 }
 </style>
 </head>
@@ -102,75 +101,84 @@ th,td{
 
 <div class="container">
 
-  <div class="logo-box">
-    <img src="logo.jpg">
-  </div>
+<img src="logo.jpg" class="logo">
 
-  <h1>🛒 Compras do mês</h1>
+<h2>🛒 Compras do mês</h2>
 
-  <!-- SCANNER -->
-  <div class="card">
-      <button class="primary" id="btnStart">📷 Abrir câmera</button>
-      <button class="secondary" id="btnStop">⏹️ Parar</button>
+<div class="card">
 
-      <video id="preview" playsinline></video>
+<button class="primary" onclick="iniciarScanner()">📷 Abrir câmera</button>
+<br><br>
+<button class="stop" onclick="pararScanner()">⏹️ Parar</button>
 
-      <p><b>Código detectado:</b> <span id="codigoLido">—</span></p>
-  </div>
+<video id="scanner"></video>
 
-  <!-- LISTA -->
-  <div class="card">
-      <h2>📦 Produtos cadastrados</h2>
-      <table>
-          <thead>
-              <tr>
-                  <th>Código</th>
-                  <th>Nome</th>
-                  <th>Tipo</th>
-                  <th>Preço</th>
-                  <th>Ações</th>
-              </tr>
-          </thead>
-          <tbody id="listaTabela"></tbody>
-      </table>
-  </div>
+<p><b>Código detectado:</b> <span id="codigoDetectado">—</span></p>
 
-  <!-- EDIÇÃO -->
-  <div class="card">
-      <h2>✏️ Edição de produto</h2>
+</div>
 
-      <div class="form-grid">
-          <input id="editCodigo" placeholder="Código (somente leitura)" disabled>
-          <input id="editNome" placeholder="Nome">
-          <input id="editTipo" placeholder="Tipo">
-          <input id="editPreco" placeholder="Preço">
-      </div>
+<div class="card">
+<h3>📦 Produtos cadastrados</h3>
 
-      <button class="success" onclick="salvarEdicao()">💾 Salvar alterações</button>
-  </div>
+<table border="1">
+<thead>
+<tr>
+<th>Código</th>
+<th>Nome</th>
+<th>Tipo</th>
+<th>Preço</th>
+<th>Ações</th>
+</tr>
+</thead>
+<tbody id="listaProdutos"></tbody>
+</table>
+</div>
+
+<div class="card">
+
+<h3>✏️ Edição de produto</h3>
+
+<input id="editCodigo" placeholder="Código" readonly>
+
+<br><br>
+<input id="editNome" placeholder="Nome">
+
+<br><br>
+<select id="editTipo">
+<option value="UN">Unidade (UN)</option>
+<option value="KG">Quilo (KG)</option>
+</select>
+
+<br><br>
+<input id="editPreco" placeholder="Preço">
+
+<br><br>
+<button class="save" onclick="salvarEdicao()">💾 Salvar alterações</button>
+
+</div>
 
 </div>
 
 <script>
-let selectedDeviceId = null;
-let codeReader = new ZXing.BrowserMultiFormatReader();
+
 let scanning = false;
 
-/* LOCAL STORAGE */
+/* ------------------ LOCALSTORAGE ------------------ */
+
 function getProdutos(){
-  return JSON.parse(localStorage.getItem("produtos") || "[]");
+  return JSON.parse(localStorage.getItem("produtos")||"[]");
 }
+
 function salvarProdutos(lista){
-  localStorage.setItem("produtos", JSON.stringify(lista));
+  localStorage.setItem("produtos",JSON.stringify(lista));
+  renderTabela();
 }
 
-/* RENDER TABLE */
 function renderTabela(){
-  let tbody = document.getElementById("listaTabela");
-  tbody.innerHTML = "";
-
+  let tbody = document.getElementById("listaProdutos");
+  tbody.innerHTML="";
   getProdutos().forEach(p=>{
-    tbody.innerHTML += `
+    tbody.innerHTML+=`
       <tr>
         <td>${p.codigo}</td>
         <td>${p.nome}</td>
@@ -178,17 +186,64 @@ function renderTabela(){
         <td>${p.preco}</td>
         <td>
           <button onclick="editar('${p.codigo}')">✏️</button>
-          <button class="danger" onclick="excluir('${p.codigo}')">🗑️</button>
+          <button onclick="excluir('${p.codigo}')">🗑️</button>
         </td>
-      </tr>
-    `;
+      </tr>`;
   });
 }
 
-/* EDITAR */
+/* ------------------ SCANNER ------------------ */
+
+function iniciarScanner(){
+
+  if(scanning) return;
+
+  scanning=true;
+
+  Quagga.init({
+    inputStream:{
+      name:"Live",
+      type:"LiveStream",
+      target:document.querySelector('#scanner')
+    },
+    decoder:{
+      readers:["ean_reader","ean_13_reader","ean_8_reader","code_128_reader"]
+    }
+  },function(err){
+    if(err){alert("Erro câmera");return;}
+    Quagga.start();
+  });
+
+  Quagga.onDetected(function(data){
+    let code = data.codeResult.code;
+
+    document.getElementById("codigoDetectado").innerText=code;
+
+    // preenche automaticamente no formulário
+    document.getElementById("editCodigo").value=code;
+
+    let lista=getProdutos();
+    let p = lista.find(x=>x.codigo==code);
+
+    if(p){
+      document.getElementById("editNome").value=p.nome;
+      document.getElementById("editTipo").value=p.tipo;
+      document.getElementById("editPreco").value=p.preco;
+    }
+  });
+}
+
+function pararScanner(){
+  if(!scanning) return;
+  Quagga.stop();
+  scanning=false;
+}
+
+/* ------------------ CRUD ------------------ */
+
 function editar(codigo){
-  let p = getProdutos().find(x=>x.codigo==codigo);
-  if(!p) return;
+  let p=getProdutos().find(x=>x.codigo==codigo);
+  if(!p)return;
 
   document.getElementById("editCodigo").value=p.codigo;
   document.getElementById("editNome").value=p.nome;
@@ -196,73 +251,36 @@ function editar(codigo){
   document.getElementById("editPreco").value=p.preco;
 }
 
+function excluir(codigo){
+  let nova=getProdutos().filter(x=>x.codigo!=codigo);
+  salvarProdutos(nova);
+}
+
 function salvarEdicao(){
-  let lista = getProdutos();
 
-  let codigo = document.getElementById("editCodigo").value;
+  let codigo=document.getElementById("editCodigo").value;
+  let nome=document.getElementById("editNome").value;
+  let tipo=document.getElementById("editTipo").value;
+  let preco=document.getElementById("editPreco").value;
 
-  let idx = lista.findIndex(x=>x.codigo==codigo);
+  if(!codigo){alert("Código não preenchido");return;}
 
-  if(idx>=0){
-    lista[idx].nome = document.getElementById("editNome").value;
-    lista[idx].tipo = document.getElementById("editTipo").value;
-    lista[idx].preco = document.getElementById("editPreco").value;
+  let lista=getProdutos();
+
+  let idx=lista.findIndex(x=>x.codigo==codigo);
+
+  if(idx==-1){
+    lista.push({codigo,nome,tipo,preco});
+  }else{
+    lista[idx]={codigo,nome,tipo,preco};
   }
 
   salvarProdutos(lista);
-  renderTabela();
-  alert("Alterações salvas");
+  alert("Salvo com sucesso!");
 }
-
-/* EXCLUIR */
-function excluir(codigo){
-  salvarProdutos(getProdutos().filter(p=>p.codigo!=codigo));
-  renderTabela();
-}
-
-/* SCAN */
-document.getElementById("btnStart").onclick = async ()=>{
-
-  scanning = true;
-
-  const cams = await codeReader.listVideoInputDevices();
-
-  if(cams.length==0){
-    alert("Nenhuma câmera encontrada");
-    return;
-  }
-
-  selectedDeviceId = cams[cams.length-1].deviceId;
-
-  codeReader.decodeFromVideoDevice(selectedDeviceId,"preview",(result,err)=>{
-    if(result){
-      let code = result.text;
-      document.getElementById("codigoLido").innerText = code;
-
-      let lista = getProdutos();
-      let existe = lista.find(p=>p.codigo==code);
-
-      if(existe){
-        editar(code);
-      }else{
-        let nome = prompt("Produto novo! Digite o nome:");
-        let tipo = prompt("Tipo:");
-        let preco = prompt("Preço:");
-
-        lista.push({codigo:code,nome,tipo,preco});
-        salvarProdutos(lista);
-        renderTabela();
-        alert("Produto cadastrado");
-      }
-    }
-  });
-};
-
-document.getElementById("btnStop").onclick = ()=>{
-  codeReader.reset();
-};
 
 renderTabela();
+
 </script>
 
 </body>
