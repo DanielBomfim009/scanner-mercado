@@ -2,106 +2,97 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Sistema com Scanner</title>
+<title>Scanner Mercado</title>
 
 <style>
 
 body{
     font-family: Arial;
+    background:#ffffff;
     margin:0;
-    background:#f3f3f3;
 }
 
-/* --------- LOGO --------- */
-.header{
+/* TOPO ANTIGO */
+.topo{
     text-align:center;
-    padding:15px 0;
+    margin-top:10px;
 }
 
-.header img{
-    width:140px;
-    height:140px;
+.topo img{
+    width:130px;
+    height:130px;
     border-radius:50%;
     object-fit:cover;
-    box-shadow:0 5px 18px rgba(0,0,0,0.35);
-    border:3px solid white;
+
+    /* profundidade */
+    box-shadow:0 10px 25px rgba(0,0,0,0.35);
+    border:3px solid #fff;
 }
 
-/* --------- CONTAINERS --------- */
-.container{
-    max-width:900px;
-    margin:auto;
-    padding:10px 15px 40px 15px;
-}
-
-/* --------- CARD --------- */
-.card{
+/* BLOCOS ANTIGOS */
+.bloco{
     background:white;
-    border-radius:18px;
-    padding:18px;
-    box-shadow:0 5px 18px rgba(0,0,0,0.20);
-    margin-top:12px;
+    padding:15px;
+    width:92%;
+    margin:auto;
+    border-radius:15px;
+    box-shadow:0 0 10px rgba(0,0,0,0.15);
+    margin-top:15px;
 }
 
-/* --------- TITULOS --------- */
-h2{
-    margin-top:0;
+label{
+    font-size:14px;
 }
 
-/* --------- INPUTS --------- */
 input, select{
     width:100%;
-    padding:8px;
-    margin-top:6px;
-    border-radius:8px;
-    border:1px solid #bbb;
+    padding:6px;
+    border-radius:6px;
+    border:1px solid #cfcfcf;
 }
 
-/* --------- GRID CAMPOS --------- */
-.grid3{
+/* GRID ANTIGO LINHA IGUAL */
+.linha{
     display:grid;
     grid-template-columns:1fr 1fr 1fr;
-    gap:10px;
+    gap:8px;
 }
 
-/* --------- BOTÕES --------- */
-button{
-    padding:10px;
-    border:none;
-    border-radius:20px;
-    cursor:pointer;
-    background:#1a73e8;
-    color:white;
-}
-button.red{
-    background:#d22424;
-}
-
-/* --------- VIDEO --------- */
+/* VIDEO ANTIGO */
 #preview{
     width:100%;
-    border-radius:18px;
+    border-radius:12px;
     background:black;
 }
 
-/* --------- CARRINHO ICON --------- */
-.cart-btn{
-    position:fixed;
-    right:20px;
-    top:20px;
+/* BOTÃO PADRÃO */
+button{
     background:#1a73e8;
-    width:60px;
-    height:60px;
+    color:white;
+    border:none;
+    border-radius:15px;
+    padding:8px 12px;
+    margin-top:8px;
+}
+
+/* CARRINHO ANTIGO FLOATING */
+.carrinho-btn{
+    position:fixed;
+    right:15px;
+    bottom:15px;
+    width:65px;
+    height:65px;
+    background:#1a73e8;
+    color:white;
+    font-size:28px;
+    border-radius:50%;
     display:flex;
     align-items:center;
     justify-content:center;
-    border-radius:50%;
-    color:white;
-    font-size:26px;
-    box-shadow:0 5px 18px rgba(0,0,0,0.25);
+    box-shadow:0 5px 18px rgba(0,0,0,0.3);
 }
 
-/* --------- MODAL DO CARRINHO --------- */
+/* MODAL ANTIGO */
 .modal{
     position:fixed;
     left:0;
@@ -110,105 +101,93 @@ button.red{
     height:100%;
     background:rgba(0,0,0,0.6);
     display:none;
-    align-items:center;
-    justify-content:center;
 }
 
-.modal-content{
+.modal-caixa{
     background:white;
-    border-radius:18px;
     width:92%;
-    max-width:600px;
-    max-height:85%;
-    overflow-y:auto;
-    padding:18px;
+    margin:40px auto;
+    border-radius:15px;
+    padding:12px;
 }
 
-/* --------- TABELA --------- */
+/* TABELA ANTIGA */
 table{
     width:100%;
     border-collapse:collapse;
 }
 
 th, td{
-    padding:8px;
     border-bottom:1px solid #ddd;
+    padding:5px;
 }
 
 .total{
-    font-size:20px;
     text-align:right;
-    margin-top:10px;
     font-weight:bold;
+    margin-top:6px;
 }
-</style>
 
+</style>
 </head>
 
 <body>
 
-<div class="header">
+<div class="topo">
     <img src="logo.jpg">
 </div>
 
-<div class="container">
+<div class="bloco">
+    <h3>Scanner de Código de Barras</h3>
+    <video id="preview"></video>
+</div>
 
-    <div class="card">
-        <h2>Scanner de Código de Barras</h2>
-        <video id="preview"></video>
-    </div>
+<div class="bloco">
+    <h3>Cadastro / Edição de Produto</h3>
 
-    <div class="card">
-        <h2>Cadastro / Edição de Produto</h2>
-
-        <div class="grid3">
-            <div>
-                <label>Código</label>
-                <input id="codigo">
-            </div>
-
-            <div>
-                <label>Nome</label>
-                <input id="nome">
-            </div>
-
-            <div>
-                <label>Valor</label>
-                <input id="valor" type="number" step="0.01">
-            </div>
+    <div class="linha">
+        <div>
+            <label>Código</label>
+            <input id="codigo">
         </div>
 
-        <label>Tipo</label>
-        <select id="tipo">
-            <option>UN</option>
-            <option>KG</option>
-            <option>LT</option>
-        </select>
+        <div>
+            <label>Nome</label>
+            <input id="nome">
+        </div>
 
-        <br><br>
-        <button onclick="salvarProduto()">Salvar / Atualizar</button>
+        <div>
+            <label>Valor</label>
+            <input id="valor" type="number" step="0.01">
+        </div>
     </div>
 
+    <label>Tipo</label>
+    <select id="tipo">
+        <option>UN</option>
+        <option>KG</option>
+        <option>LT</option>
+    </select>
+
+    <button onclick="salvarProduto()">Salvar / Atualizar</button>
 </div>
 
-<!-- Botão Carrinho -->
-<div class="cart-btn" onclick="abrirCarrinho()">🛒</div>
+<!-- BOTÃO CARRINHO ORIGINAL -->
+<div class="carrinho-btn" onclick="abrirCarrinho()">🛒</div>
 
-<!-- Modal Carrinho -->
-<div id="modalCarrinho" class="modal">
-    <div class="modal-content">
-        <h2>Carrinho</h2>
+<!-- MODAL -->
+<div id="modal" class="modal">
+    <div class="modal-caixa">
+        <h3>Carrinho</h3>
 
-        <table id="tabelaCarrinho"></table>
+        <table id="tabela"></table>
 
-        <div id="valorTotal" class="total"></div>
+        <div id="total" class="total"></div>
 
-        <br>
-        <button class="red" onclick="fecharCarrinho()">Fechar</button>
+        <button onclick="fecharCarrinho()">Fechar</button>
     </div>
 </div>
 
-<!-- JS -->
 <script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
 
 <script>
@@ -216,58 +195,58 @@ th, td{
 let produtos = {};
 let carrinho = [];
 
-/* ------------------ SCANNER ------------------ */
+/* ========== SCANNER FUNCIONANDO SEM TELA PRETA ========== */
 
-function iniciarScanner(){
+function iniciar(){
 
     Quagga.stop();
 
     Quagga.init({
         inputStream:{
+            name:"Live",
             type:"LiveStream",
+            target:document.querySelector('#preview'),
             constraints:{
-                facingMode:"environment" // força traseira
+                facingMode:"environment"   /* traseira */
             }
         },
         decoder:{
             readers:["ean_reader","ean_13_reader","code_128_reader"]
-        },
-        locate:true,
+        }
     }, function(err){
-        if(err){ console.log(err); return; }
+        if(err){console.log(err);return;}
         Quagga.start();
     });
 
-    // melhora precisão: exige mesma leitura repetida
-    let ultimo = "";
-    let repeticoes = 0;
+    let ultimo="";
+    let repetido=0;
 
-    Quagga.onDetected(function(data){
+    Quagga.onDetected(function(e){
 
-        const code = data.codeResult.code;
+        let code = e.codeResult.code;
 
         if(code === ultimo){
-            repeticoes++;
+            repetido++;
         } else {
-            repeticoes = 0;
             ultimo = code;
+            repetido = 0;
         }
 
-        if(repeticoes >= 3){ // precisa confirmar
+        if(repetido >= 2){
             Quagga.stop();
-            processarCodigo(code);
+            tratarCodigo(code);
         }
     });
 }
 
-function processarCodigo(code){
+function tratarCodigo(code){
 
-    // já existe produto
+    // já existe
     if(produtos[code]){
 
-        let qtd = prompt("Quantidade adicionar ao carrinho?");
+        let qtd = prompt("Quantidade?");
 
-        if(!qtd || qtd<=0) return;
+        if(!qtd) { iniciar(); return;}
 
         carrinho.push({
             codigo:code,
@@ -277,50 +256,50 @@ function processarCodigo(code){
         });
 
         atualizarCarrinho();
-        iniciarScanner();
-
-    } else {
-
-        // preenche para cadastro
-        document.getElementById("codigo").value = code;
-        alert("Produto não cadastrado. Preencha abaixo para salvar.");
-        iniciarScanner();
+        iniciar();
+        return;
     }
+
+    // não cadastrado
+    document.getElementById("codigo").value = code;
+    alert("Produto não cadastrado. Preencha abaixo para salvar.");
+    iniciar();
 }
 
-/* ------------------ PRODUTOS ------------------ */
+/* ========== SALVAR PRODUTO ========== */
 
 function salvarProduto(){
 
-    let codigo = codigo.value;
-    produtos[codigo] = {
+    let c = codigo.value;
+
+    produtos[c] = {
         nome:nome.value,
         valor:Number(valor.value),
         tipo:tipo.value
     };
 
-    alert("Produto salvo.");
+    alert("Salvo com sucesso");
 }
 
-/* ------------------ CARRINHO ------------------ */
+/* ========== CARRINHO ========== */
 
 function abrirCarrinho(){
-    document.getElementById("modalCarrinho").style.display = "flex";
+    document.getElementById("modal").style.display="block";
     atualizarCarrinho();
 }
 
 function fecharCarrinho(){
-    document.getElementById("modalCarrinho").style.display = "none";
+    document.getElementById("modal").style.display="none";
 }
 
-function removerItem(i){
+function remover(i){
     carrinho.splice(i,1);
     atualizarCarrinho();
 }
 
 function atualizarCarrinho(){
 
-    let tabela = document.getElementById("tabelaCarrinho");
+    let tabela = document.getElementById("tabela");
     let total = 0;
 
     tabela.innerHTML = `
@@ -329,30 +308,30 @@ function atualizarCarrinho(){
             <th>Nome</th>
             <th>Qtd</th>
             <th>Valor</th>
-            <th>Ação</th>
+            <th></th>
         </tr>
     `;
 
-    carrinho.forEach((item,i)=>{
-        let subtotal = item.valor * item.qtd;
+    carrinho.forEach((x,i)=>{
+
+        let subtotal = x.valor * x.qtd;
         total += subtotal;
 
         tabela.innerHTML += `
         <tr>
-            <td>${item.codigo}</td>
-            <td>${item.nome}</td>
-            <td>${item.qtd}</td>
+            <td>${x.codigo}</td>
+            <td>${x.nome}</td>
+            <td>${x.qtd}</td>
             <td>R$ ${subtotal.toFixed(2)}</td>
-            <td><button class="red" onclick="removerItem(${i})">Excluir</button></td>
+            <td><button onclick="remover(${i})">Excluir</button></td>
         </tr>`;
     });
 
-    document.getElementById("valorTotal").innerHTML =
+    document.getElementById("total").innerHTML =
         "Total: R$ " + total.toFixed(2);
 }
 
-/* iniciar ao abrir */
-window.onload = iniciarScanner;
+window.onload = iniciar;
 
 </script>
 
