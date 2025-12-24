@@ -21,30 +21,21 @@ body{
     padding:12px;
 }
 
-/* LOGO */
+/* LOGO REDONDA */
 .logo{
     text-align:center;
     margin-top:10px;
 }
 .logo img{
-    width:140px;
-    border-radius:12px;
+    width:160px;
+    height:160px;
+    object-fit:cover;
+    border-radius:50%;
+    border:5px solid #ffffff;
+    box-shadow:0 0 12px #00000022;
 }
 
-/* HEADER + CARRINHO */
-.headerRow{
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:14px;
-}
-
-.cartIcon{
-    font-size:32px;
-    cursor:pointer;
-}
-
-/* BOX */
+/* BOX GERAL */
 .box{
     background:white;
     border-radius:18px;
@@ -65,44 +56,36 @@ button{
 .btnStart{ background:#2e6bff; color:white; }
 .btnStop{ background:#6b6b6b; color:white; }
 
+/* CAMERA PREVIEW */
 #camera{
     width:100%;
-    border-radius:16px;
+    height:260px;
+    background:#000;
+    border-radius:18px;
+    margin-top:10px;
+    overflow:hidden;
 }
 
+/* CAMPOS AJUSTADOS – não saem do retângulo */
 input, select{
     width:100%;
     padding:12px;
     border-radius:12px;
     border:1px solid #ccc;
-    margin-top:8px;
     box-sizing:border-box;
+    margin-top:6px;
 }
 
-/* TABLE */
+/* tabela */
 table{
     width:100%;
     border-collapse:collapse;
 }
-
 td,th{
     padding:10px;
 }
-
 tr:nth-child(even){
     background:#f5f5f5;
-}
-
-/* CARRINHO */
-#carrinhoBox{
-    display:none;
-}
-
-.total{
-    font-size:20px;
-    font-weight:bold;
-    text-align:right;
-    margin-top:10px;
 }
 
 </style>
@@ -112,15 +95,12 @@ tr:nth-child(even){
 
 <div class="container">
 
-    <!-- LOGO -->
+    <!-- SUA LOGO -->
     <div class="logo">
         <img src="logo.jpg">
     </div>
 
-    <div class="headerRow">
-        <h1>🛒 Compras do mês</h1>
-        <span class="cartIcon" onclick="toggleCarrinho()">🛍️</span>
-    </div>
+    <h1 style="text-align:center">🛒 Compras do mês 🛍️</h1>
 
     <!-- SCANNER -->
     <div class="box">
@@ -132,37 +112,18 @@ tr:nth-child(even){
         <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
     </div>
 
-    <!-- CARRINHO -->
-    <div class="box" id="carrinhoBox">
-        <h2>🛍️ Carrinho</h2>
-
-        <table id="carrinhoTable">
-            <thead>
-            <tr>
-                <th>Produto</th>
-                <th>Qtd</th>
-                <th>Preço</th>
-                <th>Subtotal</th>
-            </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-
-        <p class="total">Total: R$ <span id="totalValor">0.00</span></p>
-    </div>
-
-    <!-- PRODUTOS -->
+    <!-- PRODUTOS CADASTRADOS -->
     <div class="box">
         <h2>📦 Produtos cadastrados</h2>
 
         <table id="produtosTable">
             <thead>
-            <tr>
-                <th>Código</th>
-                <th>Nome</th>
-                <th>Tipo</th>
-                <th>Preço</th>
-            </tr>
+                <tr>
+                    <th>Código</th>
+                    <th>Nome</th>
+                    <th>Tipo</th>
+                    <th>Preço</th>
+                </tr>
             </thead>
             <tbody></tbody>
         </table>
@@ -195,11 +156,10 @@ tr:nth-child(even){
 <script>
 
 let produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
-let carrinho = [];
 
-/* ---------- TABELAS ---------- */
+/* tabela */
 function atualizarTabela(){
-    const tb = document.querySelector("#produtosTable tbody");
+    const tb=document.querySelector("#produtosTable tbody");
     tb.innerHTML="";
     produtos.forEach(p=>{
         let tr=document.createElement("tr");
@@ -209,120 +169,68 @@ function atualizarTabela(){
 }
 atualizarTabela();
 
-/* ---------- SALVAR PRODUTO ---------- */
+/* salvar */
 function salvarProduto(){
     let p={
         codigo:codigo.value,
         nome:nome.value,
         tipo:tipo.value,
-        valor:parseFloat(valor.value||0)
+        valor:valor.value
     };
 
     produtos = produtos.filter(x=>x.codigo!==p.codigo);
     produtos.push(p);
 
     localStorage.setItem("produtos",JSON.stringify(produtos));
-
     atualizarTabela();
-    alert("Produto salvo com sucesso!");
+    alert("Produto salvo");
 }
 
-/* ---------- CARRINHO ---------- */
-
-function toggleCarrinho(){
-    let box=document.getElementById("carrinhoBox");
-    box.style.display = (box.style.display=="none"||box.style.display=="") ? "block" : "none";
-}
-
-function atualizarCarrinho(){
-
-    const tb=document.querySelector("#carrinhoTable tbody");
-    tb.innerHTML="";
-
-    let total=0;
-
-    carrinho.forEach(item=>{
-
-        let prod = produtos.find(p=>p.codigo==item.codigo);
-        if(!prod) return;
-
-        let subtotal = item.qtd * parseFloat(prod.valor||0);
-        total += subtotal;
-
-        let tr=document.createElement("tr");
-        tr.innerHTML=`
-            <td>${prod.nome}</td>
-            <td>${item.qtd}</td>
-            <td>R$ ${prod.valor}</td>
-            <td>R$ ${subtotal.toFixed(2)}</td>
-        `;
-        tb.appendChild(tr);
-    });
-
-    document.getElementById("totalValor").innerText = total.toFixed(2);
-}
-
-/* ---------- SCANNER ---------- */
+/* SCANNER — totalmente corrigido */
 
 function iniciarScanner(){
 
+    try{ Quagga.stop(); }catch(e){}
+
     Quagga.init({
         inputStream:{
-            name:"Live",
             type:"LiveStream",
             target:document.querySelector("#camera"),
-            constraints:{ facingMode:"environment" }
+            constraints:{
+                facingMode:"environment",
+                width:{ideal:1280},
+                height:{ideal:720}
+            }
         },
-        locator:{ patchSize:"medium", halfSample:true },
-        decoder:{ readers:["ean_reader","ean_13_reader","upc_reader","code_128_reader"] },
+        decoder:{
+            readers:[
+                "ean_reader",
+                "ean_13_reader",
+                "upc_reader",
+                "code_128_reader"
+            ]
+        },
         locate:true
     },function(err){
-        if(err){console.log(err);return;}
+        if(err){
+            alert("Erro ao abrir câmera: " + err);
+            return;
+        }
         Quagga.start();
     });
 
-    Quagga.onDetected(function(result){
-
-        let codigo = result.codeResult.code;
-        document.getElementById("detected").innerText=codigo;
-
-        tratarCodigo(codigo);
-
-        Quagga.stop();
+    Quagga.onDetected(result=>{
+        let code=result.codeResult.code;
+        document.getElementById("detected").innerText=code;
     });
 }
 
 function pararScanner(){
-    Quagga.stop();
+    try{ Quagga.stop(); }catch(e){}
 }
 
-/* ---------- LÓGICA PRINCIPAL ---------- */
-function tratarCodigo(cod){
-
-    let existente = produtos.find(p=>p.codigo==cod);
-
-    if(existente){
-
-        let q = prompt("Quantidade para "+existente.nome);
-        if(!q) return;
-
-        carrinho.push({
-            codigo:cod,
-            qtd:Number(q)
-        });
-
-        atualizarCarrinho();
-        alert("Adicionado ao carrinho!");
-    }
-    else{
-        alert("Produto não cadastrado. Preencha abaixo.");
-        document.getElementById("codigo").value = cod;
-        document.getElementById("nome").focus();
-    }
-}
-
-startButton.onclick=iniciarScanner;
-stopButton.onclick=pararScanner;
+document.getElementById("startButton").onclick=iniciarScanner;
+document.getElementById("stopButton").onclick=pararScanner;
 
 </script>
 
