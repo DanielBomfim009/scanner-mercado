@@ -7,81 +7,89 @@
 
 <style>
 body{
-    font-family: Arial, sans-serif;
-    background: linear-gradient(180deg,#eef3ff,#ffffff);
-    margin:0;
-    padding:0;
+  font-family: Arial, sans-serif;
+  background:#eef3ff;
+  margin:0;
 }
 
 .container{
-    max-width:900px;
-    margin:auto;
-    padding:15px;
+  max-width:900px;
+  margin:auto;
+  padding:14px;
 }
 
+/* LOGO NO TOPO */
+.logo-box{
+  width:130px;
+  height:130px;
+  border-radius:50%;
+  overflow:hidden;
+  border:4px solid #2f6bff;
+  margin:14px auto 4px auto;
+}
+.logo-box img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+/* CARD GERAL */
 .card{
-    background:white;
-    padding:18px;
-    border-radius:16px;
-    box-shadow:0 5px 15px rgba(0,0,0,.1);
-    margin-top:15px;
+  background:#fff;
+  border-radius:18px;
+  padding:16px;
+  box-shadow:0 8px 20px rgba(0,0,0,.08);
+  margin-top:14px;
 }
 
-h1{
-    display:flex;
-    align-items:center;
-    gap:8px;
-}
-
-button{
-    width:100%;
-    padding:14px;
-    border-radius:12px;
-    border:none;
-    font-size:16px;
-    margin-top:8px;
-    cursor:pointer;
-}
-
-.primary{background:#2563ff;color:white;}
-.stop{background:#6b7280;color:white;}
-
+/* VÍDEO */
 #videoContainer{
-    width:100%;
-    height:260px;
-    background:black;
-    border-radius:14px;
-    overflow:hidden;
-    margin-top:10px;
+  width:100%;
+  height:260px;
+  background:#000;
+  overflow:hidden;
+  border-radius:16px;
+}
+video{
+  width:100%;
+  height:100%;
+  object-fit:cover;
 }
 
-video{
-    width:100%;
-    height:100%;
-    object-fit:cover;
+/* BOTÕES */
+button{
+  width:100%;
+  border:none;
+  padding:12px;
+  border-radius:12px;
+  font-size:16px;
+  cursor:pointer;
+  margin-top:8px;
+}
+.primary{background:#2563ff;color:#fff;}
+.stop{background:#6b7280;color:#fff;}
+
+/* INPUTS CORRIGIDOS – não escapam mais */
+input,select{
+  width:100%;
+  border-radius:12px;
+  border:1px solid #cfd3dd;
+  padding:12px;
+  font-size:15px;
+  box-sizing:border-box;   /* <- impede sair do retângulo */
+  margin-top:8px;
 }
 
 table{
-    width:100%;
-    border-collapse:collapse;
+  width:100%;
+  border-collapse:collapse;
 }
-
 th,td{
-    text-align:left;
-    padding:8px;
+  padding:8px;
+  border-bottom:1px solid #e2e8f0;
+  text-align:left;
 }
 
-tr:nth-child(even){
-    background:#f3f4f6;
-}
-
-input,select{
-    width:100%;
-    padding:12px;
-    border-radius:10px;
-    border:1px solid #ccc;
-    font-size:15px;
-}
 </style>
 </head>
 
@@ -89,55 +97,58 @@ input,select{
 
 <div class="container">
 
-<h1>🛒 Compras do mês</h1>
+<!-- LOGO .JPG solicitada -->
+<div class="logo-box">
+  <img src="logo.jpg">
+</div>
 
+<h1 style="text-align:center;">🛒 Compras do mês</h1>
+
+<!-- SCANNER -->
 <div class="card">
+  <button id="startBtn" class="primary">📷 Abrir câmera</button>
+  <button id="stopBtn" class="stop">⏹ Parar</button>
 
-<button id="startBtn" class="primary">📷 Abrir câmera</button>
-<button id="stopBtn" class="stop">⏹ Parar</button>
-
-<div id="videoContainer">
+  <div id="videoContainer">
     <video id="video" playsinline></video>
+  </div>
+
+  <p><b>Código detectado:</b> <span id="detectedCode">—</span></p>
 </div>
 
-<p><strong>Código detectado:</strong> <span id="detectedCode">—</span></p>
-
-</div>
-
+<!-- TABELA PRODUTOS -->
 <div class="card">
-<h2>📦 Produtos cadastrados</h2>
+  <h2>📦 Produtos cadastrados</h2>
 
-<table>
-<thead>
-<tr>
-<th>Código</th>
-<th>Nome</th>
-<th>Tipo</th>
-<th>Preço</th>
-<th>Ações</th>
-</tr>
-</thead>
-<tbody id="productTable"></tbody>
-</table>
+  <table>
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Nome</th>
+        <th>Tipo</th>
+        <th>Preço</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="productTable"></tbody>
+  </table>
 </div>
 
+<!-- EDIÇÃO / CADASTRO -->
 <div class="card">
+  <h2>✏️ Edição de produto</h2>
 
-<h2>✏️ Edição de produto</h2>
+  <input id="codeInput" placeholder="Código" readonly>
+  <input id="nameInput" placeholder="Nome">
 
-<input id="codeInput" placeholder="Código" readonly>
+  <select id="typeInput">
+    <option value="UN">Unidade (UN)</option>
+    <option value="KG">Quilo (KG)</option>
+  </select>
 
-<input id="nameInput" placeholder="Nome">
+  <input id="priceInput" type="number" step="0.01" placeholder="Preço">
 
-<select id="typeInput">
-<option value="UN">Unidade (UN)</option>
-<option value="KG">Quilo (KG)</option>
-</select>
-
-<input id="priceInput" placeholder="Preço" type="number" step="0.01">
-
-<button class="primary" id="saveBtn">💾 Salvar alterações</button>
-
+  <button id="saveBtn" class="primary">💾 Salvar alterações</button>
 </div>
 
 </div>
@@ -146,102 +157,139 @@ input,select{
 
 <script>
 let codeReader = new ZXing.BrowserMultiFormatReader();
-let currentStream = null;
-
-const startBtn = document.getElementById("startBtn");
-const stopBtn = document.getElementById("stopBtn");
-const video = document.getElementById("video");
-const detectedCode = document.getElementById("detectedCode");
-
-const codeInput = document.getElementById("codeInput");
-const nameInput = document.getElementById("nameInput");
-const typeInput = document.getElementById("typeInput");
-const priceInput = document.getElementById("priceInput");
-
-const productTable = document.getElementById("productTable");
+let stream = null;
 
 let products = JSON.parse(localStorage.getItem("products") || "[]");
+let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+function saveData(){
+  localStorage.setItem("products", JSON.stringify(products));
+  localStorage.setItem("cart", JSON.stringify(cart));
+}
 
 function renderTable(){
-    productTable.innerHTML = "";
-    products.forEach((p,i)=>{
-        productTable.innerHTML += `
-        <tr>
-            <td>${p.code}</td>
-            <td>${p.name}</td>
-            <td>${p.type}</td>
-            <td>${p.price}</td>
-            <td><button onclick="edit(${i})">Editar</button></td>
-        </tr>`;
-    });
+  productTable.innerHTML = "";
+  products.forEach((p,i)=>{
+    productTable.innerHTML += `
+      <tr>
+        <td>${p.code}</td>
+        <td>${p.name}</td>
+        <td>${p.type}</td>
+        <td>${p.price}</td>
+        <td>
+          <button onclick="edit(${i})">Editar</button>
+        </td>
+      </tr>`;
+  });
 }
 renderTable();
 
 function edit(i){
-    let p = products[i];
-    codeInput.value = p.code;
-    nameInput.value = p.name;
-    typeInput.value = p.type;
-    priceInput.value = p.price;
+  let p = products[i];
+  codeInput.value = p.code;
+  nameInput.value = p.name;
+  typeInput.value = p.type;
+  priceInput.value = p.price;
 }
 
-// iniciar câmera
+/* ====== SCANNER LOGIC NOVA ====== */
+
+let lastCode = "";
+let repeatCount = 0;
+
 startBtn.onclick = async ()=>{
-    try{
-        currentStream = await navigator.mediaDevices.getUserMedia({
-            video:{ facingMode:"environment" },
-            audio:false
-        });
 
-        video.srcObject = currentStream;
-        video.play();
+  stream = await navigator.mediaDevices.getUserMedia({
+    video:{facingMode:"environment"},
+    audio:false
+  });
 
-        codeReader.decodeFromVideoDevice(null, "video", (result)=>{
-            if(result){
-                detectedCode.textContent = result.text;
+  video.srcObject = stream;
+  video.play();
 
-                // 🔥 auto preencher campo de cadastro
-                codeInput.value = result.text;
-            }
-        });
+  codeReader.decodeFromVideoDevice(null, "video", (result)=>{
 
-    }catch(e){
-        alert("Erro ao acessar câmera: " + e);
+    if(!result) return;
+
+    // confirma 3 leituras iguais para precisão
+    if(result.text === lastCode){
+      repeatCount++;
+    } else {
+      repeatCount = 1;
+      lastCode = result.text;
     }
+
+    if(repeatCount < 3) return;
+
+    const code = result.text;
+    detectedCode.textContent = code;
+
+    // verifica se já existe na base
+    const found = products.find(p=>p.code == code);
+
+    if(found){
+
+      // perguntar quantidade
+      let q = prompt("Produto encontrado: " + found.name + "\nDigite a quantidade para adicionar ao carrinho:");
+
+      if(q && !isNaN(q)){
+        q = Number(q);
+
+        let item = cart.find(c=>c.code==code);
+        if(item){
+          item.quantity += q;
+        }else{
+          cart.push({
+            code:code,
+            name:found.name,
+            price:Number(found.price),
+            quantity:q
+          });
+        }
+
+        saveData();
+        alert("Adicionado ao carrinho!");
+      }
+
+    } else {
+      // não cadastrado → prepara cadastro
+      codeInput.value = code;
+      nameInput.focus();
+    }
+  });
 };
 
-// parar câmera
 stopBtn.onclick = ()=>{
-    if(currentStream){
-        currentStream.getTracks().forEach(t=>t.stop());
-    }
-    codeReader.reset();
+  if(stream){
+    stream.getTracks().forEach(t=>t.stop());
+  }
+  codeReader.reset();
 };
 
-// salvar edição
-document.getElementById("saveBtn").onclick = ()=>{
-    let code = codeInput.value;
-    if(!code){ alert("Sem código"); return; }
+/* ====== SALVAR PRODUTO ====== */
 
-    let existing = products.find(p=>p.code === code);
+saveBtn.onclick = ()=>{
 
-    if(existing){
-        existing.name = nameInput.value;
-        existing.type = typeInput.value;
-        existing.price = priceInput.value;
-    }else{
-        products.push({
-            code,
-            name:nameInput.value,
-            type:typeInput.value,
-            price:priceInput.value
-        });
-    }
+  let code = codeInput.value;
+  let name = nameInput.value;
+  let type = typeInput.value;
+  let price = priceInput.value;
 
-    localStorage.setItem("products", JSON.stringify(products));
-    renderTable();
+  if(!code){ alert("Código vazio"); return; }
 
-    alert("Salvo com sucesso!");
+  let existing = products.find(p=>p.code==code);
+
+  if(existing){
+    existing.name = name;
+    existing.type = type;
+    existing.price = price;
+  }else{
+    products.push({code,name,type,price});
+  }
+
+  saveData();
+  renderTable();
+  alert("Produto salvo!");
 };
 </script>
 
