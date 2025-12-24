@@ -104,6 +104,7 @@ tr:nth-child(even){
     justify-content:center;
     font-size:28px;
     box-shadow:0 8px 20px rgba(0,0,0,.35);
+    cursor:pointer;
 }
 
 /* MODAL */
@@ -303,7 +304,10 @@ function atualizarCarrinho(){
     document.getElementById("total").innerText = "Total: R$ " + total.toFixed(2);
 }
 
-/* ---------- SCANNER CORRIGIDO DEFINITIVO ---------- */
+/* ---------- SOM DE LEITURA ---------- */
+const beep = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
+
+/* ---------- SCANNER CORRIGIDO ---------- */
 
 let scannerAtivo = false;
 let ultimoCodigo = null;
@@ -323,17 +327,16 @@ function iniciarScanner(){
             target: document.querySelector("#camera"),
             constraints:{
                 facingMode:"environment",
-                focusMode:"continuous",
                 width:{ ideal:1280 },
                 height:{ ideal:720 }
             }
         },
         locator:{
-            patchSize:"large",
+            patchSize:"x-large",
             halfSample:false
         },
         locate:true,
-        numOfWorkers: navigator.hardwareConcurrency || 4,
+        frequency:10,
         decoder:{
             readers:[
                 "ean_reader",
@@ -352,22 +355,28 @@ function iniciarScanner(){
         Quagga.start();
     });
 
+    /* remove antigos ouvintes */
     Quagga.offDetected && Quagga.offDetected();
 
+    /* leitura */
     Quagga.onDetected(function(result){
 
         if(!result?.codeResult?.code) return;
 
-        let code = result.codeResult.code;
+        let code = result.codeResult.code.trim();
 
+        /* evita repetição */
         if(code === ultimoCodigo) return;
 
         ultimoCodigo = code;
         detected.innerText = code;
 
-        clearTimeout(timeoutLeitura);
-        timeoutLeitura = setTimeout(()=>ultimoCodigo=null, 1200);
+        beep.play().catch(()=>{});
 
+        clearTimeout(timeoutLeitura);
+        timeoutLeitura = setTimeout(()=>ultimoCodigo=null, 1500);
+
+        /* procura produto */
         let produto = produtos.find(p=>p.codigo==code);
 
         if(produto){
@@ -383,7 +392,9 @@ function iniciarScanner(){
             });
 
             atualizarCarrinho();
+
         } else {
+
             codigo.value = code;
             alert("Produto não cadastrado. Preencha abaixo.");
         }
@@ -393,8 +404,9 @@ function iniciarScanner(){
 
 function pararScanner(){
     try{ Quagga.stop(); }catch(e){}
-    document.getElementById("camera").innerHTML = "";
     scannerAtivo = false;
+    ultimoCodigo=null;
+    document.getElementById("camera").innerHTML="";
 }
 
 /* BOTÕES */
