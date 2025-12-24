@@ -2,310 +2,232 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Compras do Mês</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2f80ed">
+<link rel="manifest" href="manifest.json">
 
 <script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
 
 <style>
+* { box-sizing: border-box; }
 body {
   font-family: Arial, sans-serif;
   background: #f2f4f8;
   margin: 0;
-}
-
-.container {
-  max-width: 480px;
-  margin: auto;
-  padding: 15px;
+  padding: 16px;
 }
 
 .logo {
-  display: flex;
-  justify-content: center;
-  margin-top: 15px;
-}
-
-.logo img {
-  width: 110px;
-  height: 110px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
+  margin: 0 auto 10px;
+  display: block;
   object-fit: cover;
-  box-shadow: 0 4px 10px rgba(0,0,0,.2);
 }
 
-h1 {
+h2 {
   text-align: center;
-  margin: 10px 0 20px;
+  margin-bottom: 20px;
 }
 
 .card {
-  background: white;
+  background: #fff;
   border-radius: 12px;
-  padding: 15px;
-  margin-bottom: 15px;
-  box-shadow: 0 2px 6px rgba(0,0,0,.1);
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
 }
 
-button {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
-  margin-top: 8px;
-}
-
-.primary { background: #2f80ed; color: white; }
-.gray { background: #828282; color: white; }
-.danger { background: #eb5757; color: white; }
-
-#camera {
-  width: 100%;
-  height: 280px;
-  display: none;
-  margin-top: 10px;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-input, select {
+button, input, select {
   width: 100%;
   padding: 12px;
   margin-top: 8px;
+  font-size: 16px;
   border-radius: 8px;
-  border: 1px solid #ccc;
+  border: none;
+}
+
+button {
+  background: #2f80ed;
+  color: #fff;
+  font-weight: bold;
+}
+
+button.sec {
+  background: #777;
+}
+
+#camera {
+  width: 100%;
+  height: 260px;
+  background: #000;
+  margin-top: 10px;
+  border-radius: 10px;
+  overflow: hidden;
+  display: none;
 }
 
 ul {
-  list-style: none;
-  padding: 0;
+  padding-left: 18px;
 }
 
-li {
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
-}
-
-.actions button {
-  width: auto;
-  padding: 6px 10px;
-  font-size: 13px;
+.total {
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: 10px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<img src="logo.jpg" class="logo">
+<h2>🛒 Compras do Mês</h2>
 
-  <div class="logo">
-    <img src="https://raw.githubusercontent.com/DanielBomfim009/scanner-mercado/main/logo.jpg">
-  </div>
+<div class="card">
+  <button onclick="startScanner()">📷 Abrir Câmera</button>
+  <button class="sec" onclick="stopScanner()">⏹️ Parar</button>
+  <div id="camera"></div>
+</div>
 
-  <h1>🛒 Compras do Mês</h1>
+<div class="card" id="cadastro" style="display:none">
+  <h3>Novo Produto</h3>
+  <input id="nome" placeholder="Nome do produto">
+  <select id="tipo">
+    <option value="UN">Unidade (UN)</option>
+    <option value="KG">Peso (KG)</option>
+  </select>
+  <input id="preco" type="number" step="0.01" placeholder="Preço">
+  <button onclick="salvarProduto()">Salvar Produto</button>
+</div>
 
-  <div class="card">
-    <button class="primary" onclick="startScanner()">📷 Abrir Câmera</button>
-    <button class="gray" onclick="stopScanner()">⏹ Parar</button>
-    <div id="camera"></div>
-  </div>
-
-  <div class="card" id="cadastro" style="display:none">
-    <h3>📦 Cadastro / Edição</h3>
-
-    <input id="codigo" readonly placeholder="Código de barras">
-    <input id="nome" placeholder="Nome do produto">
-
-    <select id="tipo">
-      <option value="UN">Unidade</option>
-      <option value="KG">Kg</option>
-    </select>
-
-    <input id="preco" type="number" step="0.01" placeholder="Preço">
-    <button class="primary" onclick="salvarProduto()">Salvar</button>
-  </div>
-
-  <div class="card">
-    <h3>📦 Produtos Cadastrados</h3>
-    <ul id="listaProdutos"></ul>
-  </div>
-
-  <div class="card">
-    <h3>🛒 Carrinho</h3>
-    <ul id="listaCarrinho"></ul>
-    <h2>Total: R$ <span id="total">0.00</span></h2>
-    <button class="danger" onclick="limparCarrinho()">Limpar Carrinho</button>
-  </div>
-
+<div class="card">
+  <h3>🛒 Carrinho</h3>
+  <ul id="lista"></ul>
+  <p class="total">Total: R$ <span id="total">0.00</span></p>
+  <button class="sec" onclick="limpar()">Limpar Carrinho</button>
 </div>
 
 <script>
-const camera = document.getElementById("camera");
-const cadastro = document.getElementById("cadastro");
-const codigoInput = document.getElementById("codigo");
-const nome = document.getElementById("nome");
-const tipo = document.getElementById("tipo");
-const preco = document.getElementById("preco");
-const listaProdutos = document.getElementById("listaProdutos");
-const listaCarrinho = document.getElementById("listaCarrinho");
-const totalSpan = document.getElementById("total");
-
 let produtos = JSON.parse(localStorage.getItem("produtos")) || {};
 let carrinho = [];
 let codigoAtual = null;
-let lendo = false;
+let scannerAtivo = false;
 
-/* 🔒 CONTROLE DE LEITURA */
-let ultimoCodigo = null;
-let contadorLeitura = 0;
-let bloqueado = false;
-
+/* ===== SCANNER ===== */
 function startScanner() {
-  if (lendo) return;
-  lendo = true;
-  camera.style.display = "block";
+  if (scannerAtivo) return;
+  scannerAtivo = true;
+
+  document.getElementById("camera").style.display = "block";
 
   Quagga.init({
     inputStream: {
       type: "LiveStream",
-      target: camera,
-      constraints: { facingMode: "environment" }
+      target: document.querySelector("#camera"),
+      constraints: {
+        facingMode: "environment"
+      }
     },
-    decoder: { readers: ["ean_reader","code_128_reader"] }
+    decoder: {
+      readers: ["ean_reader", "ean_8_reader", "code_128_reader"]
+    }
   }, err => {
     if (err) {
-      alert("Erro na câmera");
-      lendo = false;
+      alert("Erro ao acessar câmera");
+      scannerAtivo = false;
       return;
     }
     Quagga.start();
   });
 
-  Quagga.offDetected();
-  Quagga.onDetected(res => {
-    if (bloqueado) return;
-
-    const cod = res.codeResult.code;
-
-    if (cod === ultimoCodigo) {
-      contadorLeitura++;
-    } else {
-      ultimoCodigo = cod;
-      contadorLeitura = 1;
-    }
-
-    if (contadorLeitura >= 2) {
-      bloqueado = true;
-      setTimeout(() => bloqueado = false, 2000);
-      stopScanner();
-      processarCodigo(cod);
-    }
-  });
+  Quagga.onDetected(onDetect);
 }
 
 function stopScanner() {
-  lendo = false;
-  try { Quagga.stop(); } catch(e){}
-  camera.style.display = "none";
+  if (!scannerAtivo) return;
+  scannerAtivo = false;
+  Quagga.offDetected(onDetect);
+  Quagga.stop();
+  document.getElementById("camera").style.display = "none";
 }
 
+function onDetect(data) {
+  const code = data.codeResult.code;
+  stopScanner();
+  processarCodigo(code);
+}
+
+/* ===== LÓGICA ===== */
 function processarCodigo(cod) {
   codigoAtual = cod;
 
   if (produtos[cod]) {
     pedirQuantidade(produtos[cod]);
   } else {
-    cadastro.style.display = "block";
-    codigoInput.value = cod;
-    nome.value = "";
-    tipo.value = "UN";
-    preco.value = "";
+    document.getElementById("cadastro").style.display = "block";
   }
 }
 
 function salvarProduto() {
-  if (!nome.value || !preco.value) {
-    alert("Preencha tudo");
+  const nome = nomeEl.value.trim();
+  const tipo = tipoEl.value;
+  const preco = parseFloat(precoEl.value);
+
+  if (!nome || isNaN(preco)) {
+    alert("Preencha todos os campos");
     return;
   }
 
-  produtos[codigoAtual] = {
-    nome: nome.value,
-    tipo: tipo.value,
-    preco: parseFloat(preco.value)
-  };
-
+  produtos[codigoAtual] = { codigo: codigoAtual, nome, tipo, preco };
   localStorage.setItem("produtos", JSON.stringify(produtos));
-  cadastro.style.display = "none";
-  listarProdutos();
+
+  document.getElementById("cadastro").style.display = "none";
+  nomeEl.value = precoEl.value = "";
+
   pedirQuantidade(produtos[codigoAtual]);
 }
 
-function listarProdutos() {
-  listaProdutos.innerHTML = "";
-  Object.keys(produtos).forEach(cod => {
-    const p = produtos[cod];
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <b>${p.nome}</b><br>
-      Código: ${cod}<br>
-      ${p.tipo} - R$ ${p.preco.toFixed(2)}
-      <div class="actions">
-        <button onclick="editarProduto('${cod}')">Editar</button>
-        <button class="danger" onclick="excluirProduto('${cod}')">Excluir</button>
-      </div>`;
-    listaProdutos.appendChild(li);
-  });
-}
-
-function editarProduto(cod) {
-  const p = produtos[cod];
-  codigoAtual = cod;
-  codigoInput.value = cod;
-  nome.value = p.nome;
-  tipo.value = p.tipo;
-  preco.value = p.preco;
-  cadastro.style.display = "block";
-}
-
-function excluirProduto(cod) {
-  if (!confirm("Excluir produto?")) return;
-  delete produtos[cod];
-  localStorage.setItem("produtos", JSON.stringify(produtos));
-  listarProdutos();
-}
-
-function pedirQuantidade(p) {
-  let q = prompt(p.tipo === "UN" ? "Quantidade:" : "Peso (KG):");
+function pedirQuantidade(prod) {
+  let q = prompt(prod.tipo === "UN" ? "Quantidade:" : "Peso (KG):");
   q = parseFloat(q);
-  if (!q) return;
+  if (isNaN(q) || q <= 0) return;
 
-  carrinho.push({ ...p, q, subtotal: q * p.preco });
-  atualizarCarrinho();
+  const subtotal = prod.preco * q;
+  carrinho.push({ ...prod, q, subtotal });
+  atualizar();
 }
 
-function atualizarCarrinho() {
-  listaCarrinho.innerHTML = "";
+function atualizar() {
   let total = 0;
-
+  lista.innerHTML = "";
   carrinho.forEach(p => {
     total += p.subtotal;
     const li = document.createElement("li");
     li.textContent = `${p.nome} (${p.q} ${p.tipo}) - R$ ${p.subtotal.toFixed(2)}`;
-    listaCarrinho.appendChild(li);
+    lista.appendChild(li);
   });
-
-  totalSpan.textContent = total.toFixed(2);
+  document.getElementById("total").textContent = total.toFixed(2);
 }
 
-function limparCarrinho() {
+function limpar() {
   carrinho = [];
-  atualizarCarrinho();
+  atualizar();
 }
 
-listarProdutos();
+/* ===== ELEMENTOS ===== */
+const nomeEl = document.getElementById("nome");
+const tipoEl = document.getElementById("tipo");
+const precoEl = document.getElementById("preco");
+const lista = document.getElementById("lista");
+
+/* ===== PWA ===== */
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js");
+}
 </script>
 
 </body>
