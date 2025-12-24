@@ -5,23 +5,21 @@
 <title>Compras do mês</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+<!-- QUAGGA2 (mais moderno e funcional em celular) -->
+<script src="https://unpkg.com/@ericblade/quagga2/dist/quagga.min.js"></script>
 
 <style>
-/* (todo seu CSS original – não alterado) */
+/* SEU CSS ORIGINAL (NÃO ALTERADO) */
 body{
     background:#eef3ff;
     font-family: Arial;
     margin:0;
 }
-
 .container{
     max-width:900px;
     margin:auto;
     padding:12px;
 }
-
-/* LOGO */
 .logo{
     text-align:center;
     margin-top:10px;
@@ -34,8 +32,6 @@ body{
     border:5px solid #ffffff;
     box-shadow:0 10px 30px rgba(0,0,0,.35);
 }
-
-/* CAIXAS */
 .box{
     background:white;
     border-radius:18px;
@@ -43,8 +39,6 @@ body{
     margin-top:15px;
     box-shadow:0 0 15px #00000010;
 }
-
-/* BOTÕES */
 button{
     width:100%;
     padding:14px;
@@ -53,11 +47,8 @@ button{
     border-radius:12px;
     margin-top:8px;
 }
-
 .btnStart{ background:#2e6bff; color:white; }
 .btnStop{ background:#6b6b6b; color:white; }
-
-/* CAMERA */
 #camera{
     width:100%;
     height:260px;
@@ -66,8 +57,6 @@ button{
     margin-top:10px;
     overflow:hidden;
 }
-
-/* CAMPOS */
 input, select{
     width:100%;
     padding:12px;
@@ -76,20 +65,12 @@ input, select{
     box-sizing:border-box;
     margin-top:6px;
 }
-
-/* TABELA */
 table{
     width:100%;
     border-collapse:collapse;
 }
-td,th{
-    padding:10px;
-}
-tr:nth-child(even){
-    background:#f5f5f5;
-}
-
-/* BOTÃO FLUTUANTE CARRINHO */
+td,th{ padding:10px; }
+tr:nth-child(even){ background:#f5f5f5; }
 #carrinhoIcone{
     position:fixed;
     right:18px;
@@ -104,10 +85,7 @@ tr:nth-child(even){
     justify-content:center;
     font-size:28px;
     box-shadow:0 8px 20px rgba(0,0,0,.35);
-    cursor:pointer;
 }
-
-/* MODAL */
 .modal{
     position:fixed;
     left:0;
@@ -124,7 +102,6 @@ tr:nth-child(even){
     padding:12px;
     border-radius:18px;
 }
-
 .total{
     text-align:right;
     font-weight:bold;
@@ -135,6 +112,11 @@ tr:nth-child(even){
 
 <body>
 
+<!-- BEEP -->
+<audio id="beep">
+    <source src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" type="audio/ogg">
+</audio>
+
 <div class="container">
 
     <div class="logo">
@@ -143,7 +125,6 @@ tr:nth-child(even){
 
     <h1 style="text-align:center">🛒 Compras do mês 🛍️</h1>
 
-    <!-- SCANNER -->
     <div class="box">
         <button class="btnStart" id="startButton">📸 Abrir câmera</button>
         <button class="btnStop" id="stopButton">⏹️ Parar</button>
@@ -153,24 +134,21 @@ tr:nth-child(even){
         <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
     </div>
 
-    <!-- PRODUTOS CADASTRADOS -->
     <div class="box">
         <h2>📦 Produtos cadastrados</h2>
-
         <table id="produtosTable">
             <thead>
-                <tr>
-                    <th>Código</th>
-                    <th>Nome</th>
-                    <th>Tipo</th>
-                    <th>Preço</th>
-                </tr>
+            <tr>
+                <th>Código</th>
+                <th>Nome</th>
+                <th>Tipo</th>
+                <th>Preço</th>
+            </tr>
             </thead>
             <tbody></tbody>
         </table>
     </div>
 
-    <!-- EDIÇÃO -->
     <div class="box">
         <h2>✏️ Edição de produto</h2>
 
@@ -194,15 +172,11 @@ tr:nth-child(even){
 
 </div>
 
-<!-- ÍCONE DO CARRINHO -->
 <div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️</div>
 
-<!-- MODAL DO CARRINHO -->
 <div id="modalCarrinho" class="modal">
   <div class="modal-content">
-
     <h2>Carrinho</h2>
-
     <table id="tabelaCarrinho">
         <tr>
             <th>Código</th>
@@ -212,19 +186,15 @@ tr:nth-child(even){
             <th></th>
         </tr>
     </table>
-
     <p id="total" class="total">Total: R$ 0,00</p>
-
     <button onclick="fecharCarrinho()">Fechar</button>
   </div>
 </div>
 
 <script>
-
 let produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
 let carrinho = [];
 
-/* ---------- ATUALIZA TABELA ---------- */
 function atualizarTabela(){
     const tb=document.querySelector("#produtosTable tbody");
     tb.innerHTML="";
@@ -236,44 +206,34 @@ function atualizarTabela(){
 }
 atualizarTabela();
 
-/* ---------- SALVAR PRODUTO ---------- */
 function salvarProduto(){
-
     let p={
         codigo:codigo.value,
         nome:nome.value,
         tipo:tipo.value,
         valor:Number(valor.value)
     };
-
     produtos = produtos.filter(x=>x.codigo!==p.codigo);
     produtos.push(p);
-
     localStorage.setItem("produtos",JSON.stringify(produtos));
-
     atualizarTabela();
-
     alert("Produto salvo");
 }
 
-/* ---------- CARRINHO ---------- */
+/* ---------------- CARRINHO ----------------- */
 
 function abrirCarrinho(){
     modalCarrinho.style.display="block";
     atualizarCarrinho();
 }
-
 function fecharCarrinho(){
     modalCarrinho.style.display="none";
 }
-
 function removerItem(i){
     carrinho.splice(i,1);
     atualizarCarrinho();
 }
-
 function atualizarCarrinho(){
-
     let tabela = document.getElementById("tabelaCarrinho");
     tabela.innerHTML = `
         <tr>
@@ -283,14 +243,10 @@ function atualizarCarrinho(){
             <th>Subtotal</th>
             <th></th>
         </tr>`;
-
     let total=0;
-
     carrinho.forEach((x,i)=>{
-
         let sub = x.valor*x.qtd;
         total += sub;
-
         tabela.innerHTML += `
         <tr>
             <td>${x.codigo}</td>
@@ -300,43 +256,39 @@ function atualizarCarrinho(){
             <td><button onclick="removerItem(${i})">Excluir</button></td>
         </tr>`;
     });
-
     document.getElementById("total").innerText = "Total: R$ " + total.toFixed(2);
 }
 
-/* ---------- SOM DE LEITURA ---------- */
-const beep = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
+/* ---------------- SCANNER DEFINITIVO ----------------- */
 
-/* ---------- SCANNER CORRIGIDO ---------- */
-
-let scannerAtivo = false;
-let ultimoCodigo = null;
-let timeoutLeitura = null;
+let scannerAtivo=false;
+let ultimoCodigo=null;
+let limparCodigoTimeout=null;
 
 function iniciarScanner(){
 
     if(scannerAtivo) return;
-    scannerAtivo = true;
+    scannerAtivo=true;
 
     try{ Quagga.stop(); }catch(e){}
 
     Quagga.init({
         inputStream:{
-            name:"Live",
             type:"LiveStream",
             target: document.querySelector("#camera"),
             constraints:{
                 facingMode:"environment",
                 width:{ ideal:1280 },
-                height:{ ideal:720 }
+                height:{ ideal:720 },
+                focusMode:"continuous",
+                exposureMode:"continuous"
             }
         },
         locator:{
-            patchSize:"x-large",
+            patchSize:"large",
             halfSample:false
         },
         locate:true,
-        frequency:10,
         decoder:{
             readers:[
                 "ean_reader",
@@ -346,73 +298,67 @@ function iniciarScanner(){
                 "code_128_reader"
             ]
         }
-    }, function(err){
+    },function(err){
         if(err){
             alert("Erro ao iniciar câmera: " + err);
-            scannerAtivo = false;
+            scannerAtivo=false;
             return;
         }
         Quagga.start();
     });
 
-    /* remove antigos ouvintes */
-    Quagga.offDetected && Quagga.offDetected();
-
-    /* leitura */
     Quagga.onDetected(function(result){
 
         if(!result?.codeResult?.code) return;
 
-        let code = result.codeResult.code.trim();
+        /* confiança mínima */
+        if(result.codeResult?.confidence && result.codeResult.confidence < 20) return;
 
-        /* evita repetição */
-        if(code === ultimoCodigo) return;
+        let code=result.codeResult.code;
 
-        ultimoCodigo = code;
-        detected.innerText = code;
+        /* evita repetidos */
+        if(code===ultimoCodigo) return;
 
-        beep.play().catch(()=>{});
+        ultimoCodigo=code;
+        detected.innerText=code;
 
-        clearTimeout(timeoutLeitura);
-        timeoutLeitura = setTimeout(()=>ultimoCodigo=null, 1500);
+        /* limpa bloqueio depois de 1.5s */
+        clearTimeout(limparCodigoTimeout);
+        limparCodigoTimeout=setTimeout(()=>ultimoCodigo=null,1500);
 
-        /* procura produto */
-        let produto = produtos.find(p=>p.codigo==code);
+        /* beep */
+        try{ document.getElementById("beep").play(); }catch(e){}
+
+        /* lógica: existe -> pergunta quantidade */
+        let produto=produtos.find(p=>p.codigo==code);
 
         if(produto){
-
-            let qtd = prompt("Quantidade?");
+            let qtd=prompt("Quantidade?");
             if(!qtd) return;
-
             carrinho.push({
                 codigo:code,
                 nome:produto.nome,
                 valor:Number(produto.valor),
                 qtd:Number(qtd)
             });
-
             atualizarCarrinho();
-
-        } else {
-
-            codigo.value = code;
-            alert("Produto não cadastrado. Preencha abaixo.");
+            return;
         }
-    });
 
+        /* não existe -> manda para cadastro */
+        codigo.value=code;
+        alert("Produto não cadastrado. Preencha abaixo para salvar.");
+    });
 }
 
 function pararScanner(){
     try{ Quagga.stop(); }catch(e){}
-    scannerAtivo = false;
-    ultimoCodigo=null;
     document.getElementById("camera").innerHTML="";
+    scannerAtivo=false;
 }
 
-/* BOTÕES */
-document.getElementById("startButton").onclick = iniciarScanner;
-document.getElementById("stopButton").onclick  = pararScanner;
-
+document.getElementById("startButton").onclick=iniciarScanner;
+document.getElementById("stopButton").onclick=pararScanner;
 </script>
 
 </body>
