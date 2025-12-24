@@ -1,0 +1,21 @@
+{
+  "name": "Compras do Mês",
+  "short_name": "Compras",
+  "start_url": "/scanner-mercado/",
+  "display": "standalone",
+  "background_color": "#f2f4f8",
+  "theme_color": "#2f80ed",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
