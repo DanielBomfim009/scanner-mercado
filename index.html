@@ -2,205 +2,261 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Compras do Mês</title>
 
-<link rel="manifest" href="manifest.json">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
 
 <style>
 body {
   font-family: Arial, sans-serif;
-  background:#f4f6f8;
-  margin:0;
-  padding:16px;
+  background:#f2f2f2;
+  padding:10px;
 }
 
-h1 { text-align:center; }
+h2 { text-align:center }
 
-.card {
+.box {
   background:#fff;
-  border-radius:12px;
-  padding:16px;
-  margin-bottom:16px;
-  box-shadow:0 4px 10px rgba(0,0,0,.08);
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:15px;
+}
+
+button, input, select {
+  width:100%;
+  padding:12px;
+  margin-top:8px;
+  font-size:16px;
 }
 
 button {
-  width:100%;
-  padding:12px;
   border:none;
   border-radius:8px;
-  font-size:16px;
   cursor:pointer;
 }
 
-.primary { background:#2f80ed; color:#fff; }
-.gray { background:#777; color:#fff; }
+.btn-primary { background:#2f80ed; color:#fff }
+.btn-danger { background:#c0392b; color:#fff }
+.btn-gray { background:#777; color:#fff }
 
-input, select {
+#camera {
   width:100%;
-  padding:10px;
-  margin-top:8px;
-  margin-bottom:12px;
-  border-radius:6px;
-  border:1px solid #ccc;
+  height:260px;
+  background:#000;
+  display:none;
+  margin-top:10px;
 }
 
-video {
-  width:100%;
-  border-radius:12px;
-  margin-top:10px;
+.tabs button {
+  width:33%;
+  margin:0;
+  border-radius:0;
 }
 
 table {
   width:100%;
   border-collapse:collapse;
+  margin-top:10px;
 }
 
 th, td {
-  padding:8px;
   border-bottom:1px solid #ddd;
+  padding:8px;
   font-size:14px;
+  text-align:center;
 }
 
-th { background:#eee; }
+.total {
+  font-size:20px;
+  font-weight:bold;
+  margin-top:10px;
+}
 </style>
 </head>
 
 <body>
 
-<h1>🛒 Compras do Mês</h1>
+<h2>🛒 Compras do Mês</h2>
 
-<div class="card">
-  <button class="primary" onclick="startScanner()">📷 Abrir Câmera</button>
-  <button class="gray" onclick="stopScanner()">⏹️ Parar</button>
-  <video id="video" autoplay playsinline></video>
-  <p><strong>Código detectado:</strong> <span id="barcode">---</span></p>
+<div class="tabs">
+  <button class="btn-primary" onclick="showTab('scanner')">📷 Scanner</button>
+  <button class="btn-primary" onclick="showTab('produtos')">📦 Produtos</button>
+  <button class="btn-primary" onclick="showTab('carrinho')">🛒 Carrinho</button>
 </div>
 
-<div class="card" id="cadastro" style="display:none">
+<!-- SCANNER -->
+<div class="box" id="tab-scanner">
+  <button class="btn-primary" onclick="startScanner()">📷 Abrir Câmera</button>
+  <button class="btn-gray" onclick="stopScanner()">⏹️ Parar</button>
+  <div id="camera"></div>
+  <p><strong>Código lido:</strong> <span id="codigoLido">---</span></p>
+</div>
+
+<!-- CADASTRO -->
+<div class="box" id="cadastro" style="display:none">
   <h3>Novo Produto</h3>
+  <p><strong>Código:</strong> <span id="codigoCadastro"></span></p>
   <input id="nome" placeholder="Nome do produto">
-  <select id="unidade">
+  <select id="tipo">
     <option value="UN">Unidade (UN)</option>
-    <option value="KG">Quilo (KG)</option>
-    <option value="LT">Litro (LT)</option>
+    <option value="KG">Peso (KG)</option>
   </select>
-  <input id="preco" placeholder="Preço" type="number" step="0.01">
-  <button class="primary" onclick="salvarProduto()">Salvar Produto</button>
+  <input id="preco" type="number" step="0.01" placeholder="Preço">
+  <button class="btn-primary" onclick="salvarProduto()">Salvar Produto</button>
 </div>
 
-<div class="card" id="quantidadeBox" style="display:none">
-  <h3>Quantidade</h3>
-  <input id="quantidade" type="number" step="0.01" value="1">
-  <button class="primary" onclick="adicionarCarrinho()">Adicionar ao Carrinho</button>
-</div>
-
-<div class="card">
+<!-- PRODUTOS -->
+<div class="box" id="tab-produtos" style="display:none">
   <h3>📦 Produtos Cadastrados</h3>
-  <table id="tabelaProdutos"></table>
+  <table>
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Nome</th>
+        <th>Un</th>
+        <th>Preço</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="listaProdutos"></tbody>
+  </table>
 </div>
 
-<div class="card">
-  <h3>🛍️ Carrinho</h3>
-  <ul id="carrinho"></ul>
-  <h3>Total: R$ <span id="total">0.00</span></h3>
-  <button class="gray" onclick="limparCarrinho()">Limpar Carrinho</button>
+<!-- CARRINHO -->
+<div class="box" id="tab-carrinho" style="display:none">
+  <ul id="listaCarrinho"></ul>
+  <p class="total">Total: R$ <span id="total">0.00</span></p>
+  <button class="btn-gray" onclick="limparCarrinho()">Limpar Carrinho</button>
 </div>
 
 <script>
-let stream, codigoAtual=null;
-let produtos = JSON.parse(localStorage.getItem("produtos")||"{}");
-let carrinho=[];
+let produtos = JSON.parse(localStorage.getItem("produtos")) || {};
+let carrinho = [];
+let codigoAtual = null;
+let lendo = false;
 
-const video=document.getElementById("video");
-
-async function startScanner(){
-  stream = await navigator.mediaDevices.getUserMedia({
-    video:{facingMode:{ideal:"environment"}}
+function showTab(tab) {
+  ["scanner","produtos","carrinho"].forEach(t=>{
+    document.getElementById("tab-"+t).style.display = "none";
   });
-  video.srcObject=stream;
-  scanLoop();
+  document.getElementById("tab-"+tab).style.display = "block";
+  if(tab === "produtos") renderProdutos();
+  if(tab === "carrinho") renderCarrinho();
 }
 
-function stopScanner(){
-  if(stream) stream.getTracks().forEach(t=>t.stop());
+function startScanner() {
+  if (lendo) return;
+  lendo = true;
+  document.getElementById("camera").style.display = "block";
+
+  Quagga.init({
+    inputStream: {
+      type: "LiveStream",
+      target: document.querySelector('#camera'),
+      constraints: { facingMode: "environment" }
+    },
+    decoder: { readers: ["ean_reader","ean_8_reader","code_128_reader"] }
+  }, err => {
+    if (err) alert("Erro ao acessar câmera");
+    else Quagga.start();
+  });
+
+  Quagga.onDetected(data => {
+    if(!lendo) return;
+    lendo = false;
+    codigoAtual = data.codeResult.code;
+    document.getElementById("codigoLido").innerText = codigoAtual;
+    stopScanner();
+    processarCodigo(codigoAtual);
+  });
 }
 
-async function scanLoop(){
-  if(!("BarcodeDetector" in window)) return;
-  const detector=new BarcodeDetector({formats:["ean_13","ean_8","upc_a","upc_e"]});
-  const detect=async()=>{
-    const barcodes=await detector.detect(video);
-    if(barcodes.length){
-      codigoAtual=barcodes[0].rawValue;
-      document.getElementById("barcode").innerText=codigoAtual;
-      verificarProduto();
-    }
-    requestAnimationFrame(detect);
-  };
-  detect();
+function stopScanner() {
+  Quagga.stop();
+  document.getElementById("camera").style.display = "none";
 }
 
-function verificarProduto(){
-  if(produtos[codigoAtual]){
-    document.getElementById("cadastro").style.display="none";
-    document.getElementById("quantidadeBox").style.display="block";
+function processarCodigo(cod) {
+  if(produtos[cod]) {
+    pedirQuantidade(produtos[cod]);
   } else {
-    document.getElementById("cadastro").style.display="block";
-    document.getElementById("quantidadeBox").style.display="none";
+    document.getElementById("cadastro").style.display = "block";
+    document.getElementById("codigoCadastro").innerText = cod;
   }
 }
 
-function salvarProduto(){
-  produtos[codigoAtual]={
-    nome:nome.value,
-    unidade:unidade.value,
-    preco:parseFloat(preco.value)
-  };
-  localStorage.setItem("produtos",JSON.stringify(produtos));
-  atualizarTabela();
-  verificarProduto();
+function salvarProduto() {
+  const nome = nomeEl.value;
+  const tipo = tipoEl.value;
+  const preco = parseFloat(precoEl.value);
+  if(!nome || isNaN(preco)) return alert("Preencha tudo");
+
+  produtos[codigoAtual] = { nome, tipo, preco };
+  localStorage.setItem("produtos", JSON.stringify(produtos));
+  document.getElementById("cadastro").style.display = "none";
+  nomeEl.value = precoEl.value = "";
+  pedirQuantidade(produtos[codigoAtual]);
 }
 
-function adicionarCarrinho(){
-  const q=parseFloat(quantidade.value);
-  const p=produtos[codigoAtual];
-  carrinho.push({nome:p.nome,q,preco:p.preco});
+function pedirQuantidade(prod) {
+  let q = prompt(prod.tipo === "UN" ? "Quantidade:" : "Peso (KG):");
+  q = parseFloat(q);
+  if(isNaN(q) || q<=0) return;
+  carrinho.push({ ...prod, q, subtotal: q*prod.preco });
   renderCarrinho();
 }
 
-function renderCarrinho(){
-  let total=0;
-  carrinho.innerHTML="";
-  carrinho.forEach(i=>{
-    total+=i.q*i.preco;
-    carrinho.innerHTML+=`<li>${i.nome} (${i.q}) - R$ ${(i.q*i.preco).toFixed(2)}</li>`;
+function renderCarrinho() {
+  let total = 0;
+  listaCarrinho.innerHTML = "";
+  carrinho.forEach(p=>{
+    total += p.subtotal;
+    const li = document.createElement("li");
+    li.textContent = `${p.nome} (${p.q} ${p.tipo}) - R$ ${p.subtotal.toFixed(2)}`;
+    listaCarrinho.appendChild(li);
   });
-  document.getElementById("total").innerText=total.toFixed(2);
+  totalEl.innerText = total.toFixed(2);
 }
 
-function limparCarrinho(){
-  carrinho=[];
+function limparCarrinho() {
+  carrinho = [];
   renderCarrinho();
 }
 
-function atualizarTabela(){
-  let html="<tr><th>Código</th><th>Nome</th><th>Un</th><th>Preço</th><th>Ação</th></tr>";
-  for(let c in produtos){
-    let p=produtos[c];
-    html+=`<tr>
-      <td>${c}</td>
+function renderProdutos() {
+  listaProdutos.innerHTML = "";
+  Object.keys(produtos).forEach(cod=>{
+    const p = produtos[cod];
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${cod}</td>
       <td>${p.nome}</td>
-      <td>${p.unidade}</td>
-      <td>${p.preco.toFixed(2)}</td>
-      <td><button onclick="delete produtos['${c}'];localStorage.setItem('produtos',JSON.stringify(produtos));atualizarTabela()">❌</button></td>
-    </tr>`;
-  }
-  tabelaProdutos.innerHTML=html;
+      <td>${p.tipo}</td>
+      <td>R$ ${p.preco.toFixed(2)}</td>
+      <td><button class="btn-danger" onclick="excluirProduto('${cod}')">Excluir</button></td>
+    `;
+    listaProdutos.appendChild(tr);
+  });
 }
 
-atualizarTabela();
+function excluirProduto(cod) {
+  if(confirm("Excluir produto?")) {
+    delete produtos[cod];
+    localStorage.setItem("produtos", JSON.stringify(produtos));
+    renderProdutos();
+  }
+}
+
+const nomeEl = document.getElementById("nome");
+const tipoEl = document.getElementById("tipo");
+const precoEl = document.getElementById("preco");
+const listaCarrinho = document.getElementById("listaCarrinho");
+const totalEl = document.getElementById("total");
+const listaProdutos = document.getElementById("listaProdutos");
+
+showTab("scanner");
 </script>
 
 </body>
