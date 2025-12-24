@@ -1,127 +1,146 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Compras do Mês</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
+<title>Compras do Mês</title>
 
 <style>
 body{
   font-family: Arial;
-  background:#eef1f6;
+  background:#f3f4f6;
   margin:0;
-  padding:12px;
 }
+
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:15px;
+}
+
 .card{
-  background:#fff;
+  background:white;
+  padding:15px;
   border-radius:12px;
-  padding:14px;
-  margin-bottom:12px;
-  box-shadow:0 2px 6px rgba(0,0,0,.1);
+  margin-top:10px;
+  box-shadow:0 2px 8px rgba(0,0,0,.1);
 }
+
 button{
   width:100%;
-  padding:10px;
+  padding:12px;
+  border-radius:8px;
   border:none;
-  border-radius:6px;
-  font-size:15px;
+  font-size:16px;
+  font-weight:bold;
+  color:white;
 }
-.primary{background:#2f80ed;color:#fff;}
-.secondary{background:#666;color:#fff;}
-.danger{background:#e74c3c;color:#fff;}
-input,select{
+
+.primary{background:#1e73ff;}
+.danger{background:#555;}
+
+#camera-box{
   width:100%;
-  margin-top:6px;
-  padding:8px;
+  max-height:320px;
+  overflow:hidden;
+  border-radius:12px;
+  background:black;
+  margin-top:10px;
 }
+
+#camera{
+  width:100%;
+  object-fit:cover;
+}
+
 table{
   width:100%;
   border-collapse:collapse;
 }
-th,td{
-  padding:6px;
-  border-bottom:1px solid #ccc;
+
+td,th{
+  padding:8px;
 }
-th{
-  background:#f0f0f0;
-}
-#camera{
-  width:100%;
-  height:260px;
-  background:black;
-  display:none;
+
+tr:nth-child(even){
+  background:#f8f8f8;
 }
 </style>
-</head>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+
+</head>
 <body>
 
-<h2>🛒 Compras do Mês</h2>
+<div class="container">
+
+<h2>🛒 Compras do mês</h2>
 
 <div class="card">
-  <button class="primary" onclick="abrirCamera()">📷 Abrir Câmera</button>
-  <button class="secondary" onclick="parar()">⏹️ Parar</button>
-  <div id="camera"></div>
-  <p><b>Código lido:</b> <span id="codigoLido">---</span></p>
+
+<button class="primary" onclick="startScanner()">📷 Abrir câmera</button>
+<button class="danger" onclick="stopScanner()">⏹ Parar</button>
+
+<div id="camera-box">
+  <video id="camera"></video>
+</div>
+
+<p id="codigoLido"></p>
+
 </div>
 
 <button class="primary" onclick="toggleProdutos()">📦 Ver produtos cadastrados</button>
 
-<div id="produtosBox" class="card" style="display:none">
-  <h3>📋 Produtos cadastrados</h3>
+<div class="card" id="produtosCard" style="display:none">
 
-  <table>
-    <thead>
-      <tr>
-        <th>Código de barras</th>
-        <th>Nome</th>
-        <th>Tipo</th>
-        <th>Preço</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-    <tbody id="listaProdutos"></tbody>
-  </table>
-</div>
+<h3>📋 Produtos cadastrados</h3>
 
-<div id="cadastroBox" class="card" style="display:none">
-  <h3>Cadastro / Edição</h3>
-  <p><b>Código:</b> <span id="codigoCadastro"></span></p>
+<table id="tabelaProdutos">
+<thead>
+<tr>
+<th>Código</th><th>Nome</th><th>Tipo</th><th>Preço</th><th>Ações</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
 
-  <input id="nome" placeholder="Nome do produto">
-  <select id="tipo">
-    <option value="UN">Unidade (UN)</option>
-    <option value="KG">Peso (KG)</option>
-  </select>
-  <input id="preco" type="number" step="0.01" placeholder="Preço">
-
-  <button class="primary" onclick="salvarProduto()">Salvar</button>
 </div>
 
 <div class="card">
-  <h3>🛒 Carrinho</h3>
-  <ul id="carrinho"></ul>
-  <p><b>Total:</b> R$ <span id="total">0.00</span></p>
-  <button class="secondary" onclick="limparCarrinho()">Limpar carrinho</button>
+
+<h3>Cadastro / Edição</h3>
+
+<p><b id="codigoAtual"></b></p>
+
+<input id="nome" placeholder="Nome do produto">
+
+<select id="tipo">
+<option value="UN">Unidade</option>
+<option value="KG">Kg</option>
+</select>
+
+<input id="preco" type="number" step="0.01" placeholder="Preço">
+
+<button class="primary" onclick="salvarProduto()">Salvar</button>
+
+</div>
+
+<div class="card">
+<h3>🛒 Carrinho</h3>
+<p id="total">Total R$ 0,00</p>
+</div>
+
 </div>
 
 <script>
-let produtos = JSON.parse(localStorage.getItem("produtos")) || {};
-let carrinho = [];
-let codigoAtual = null;
 
-// ----------- toggle lista -----------
-function toggleProdutos(){
-  const box = document.getElementById("produtosBox");
-  box.style.display = box.style.display === "none" ? "block" : "none";
-  atualizarTabela();
-}
+let ultimoCodigo = null;
+let banco = JSON.parse(localStorage.getItem("produtos")||"{}");
 
-// ----------- CAMERA -----------
-function abrirCamera(){
-  document.getElementById("camera").style.display="block";
+function startScanner(){
+
+  Quagga.stop();
 
   Quagga.init({
     inputStream:{
@@ -129,131 +148,91 @@ function abrirCamera(){
       target:document.querySelector("#camera"),
       constraints:{facingMode:"environment"}
     },
-    decoder:{readers:["ean_reader","code_128_reader"]}
-  },err=>{
-    if(err){alert("Erro ao abrir câmera");return;}
+    decoder:{
+      readers:["ean_reader","ean_13_reader"]
+    },
+    locate:true
+  }, function(err){
+    if(err){alert("Erro câmera");return;}
     Quagga.start();
   });
 
-  Quagga.onDetected(d=>{
-    parar();
-    const code = d.codeResult.code;
-    document.getElementById("codigoLido").innerText = code;
-    processarCodigo(code);
+  Quagga.onDetected(e =>{
+    const code=e.codeResult.code;
+
+    // evita falso positivo
+    if(code===ultimoCodigo) return;
+    ultimoCodigo=code;
+
+    document.getElementById("codigoLido").innerText="Código lido: "+code;
+    document.getElementById("codigoAtual").innerText=code;
+
+    if(banco[code]){
+      carregarParaEdicao(code);
+    } else {
+      limparCampos();
+    }
   });
 }
 
-function parar(){
-  try{Quagga.stop()}catch{}
-  document.getElementById("camera").style.display="none";
+function stopScanner(){
+  Quagga.stop();
 }
 
-// ----------- PROCESSAMENTO -----------
-function processarCodigo(code){
-  codigoAtual = code;
-
-  if(produtos[code]){
-    pedirQuantidade(produtos[code]);
-  }else{
-    document.getElementById("codigoCadastro").innerText = code;
-    document.getElementById("cadastroBox").style.display="block";
-  }
-}
-
-// ----------- SALVAR PRODUTO -----------
 function salvarProduto(){
-  const nome = nome.value.trim();
-  const tipo = tipo.value;
-  const preco = parseFloat(preco.value);
-
-  if(!nome || isNaN(preco)){
-    alert("Preencha todos os campos");
-    return;
-  }
-
-  produtos[codigoAtual] = {nome,tipo,preco};
-
-  localStorage.setItem("produtos",JSON.stringify(produtos));
-
-  document.getElementById("cadastroBox").style.display="none";
-
-  atualizarTabela();
+  const codigo=document.getElementById("codigoAtual").innerText;
+  banco[codigo]={
+    nome:document.getElementById("nome").value,
+    tipo:document.getElementById("tipo").value,
+    preco:document.getElementById("preco").value
+  };
+  localStorage.setItem("produtos",JSON.stringify(banco));
+  montarTabela();
+  alert("Salvo com sucesso!");
 }
 
-// ----------- TABELA -----------
-function atualizarTabela(){
-  const lista = document.getElementById("listaProdutos");
-  lista.innerHTML="";
-
-  Object.entries(produtos).forEach(([cod,p])=>{
-    const tr = document.createElement("tr");
-
-    tr.innerHTML = `
-      <td>${cod}</td>
-      <td>${p.nome}</td>
-      <td>${p.tipo}</td>
-      <td>R$ ${p.preco.toFixed(2)}</td>
-      <td>
-        <button onclick="editar('${cod}')">✏️</button>
-        <button onclick="excluir('${cod}')">🗑️</button>
-      </td>
-    `;
-
-    lista.appendChild(tr);
-  });
+function toggleProdutos(){
+  const d=document.getElementById("produtosCard");
+  d.style.display=d.style.display==="none"?"block":"none";
+  montarTabela();
 }
 
-function editar(cod){
-  const p = produtos[cod];
-  codigoAtual = cod;
-
-  document.getElementById("codigoCadastro").innerText = cod;
-  nome.value = p.nome;
-  tipo.value = p.tipo;
-  preco.value = p.preco;
-
-  document.getElementById("cadastroBox").style.display="block";
+function carregarParaEdicao(c){
+ document.getElementById("nome").value=banco[c].nome;
+ document.getElementById("tipo").value=banco[c].tipo;
+ document.getElementById("preco").value=banco[c].preco;
 }
 
-function excluir(cod){
-  if(!confirm("Excluir produto?")) return;
-  delete produtos[cod];
-  localStorage.setItem("produtos",JSON.stringify(produtos));
-  atualizarTabela();
+function limparCampos(){
+ document.getElementById("nome").value="";
+ document.getElementById("preco").value="";
 }
 
-// ----------- CARRINHO -----------
-function pedirQuantidade(p){
-  let q = parseFloat(prompt("Quantidade/Peso:"));
-  if(isNaN(q) || q<=0) return;
-
-  const sub = q * p.preco;
-  carrinho.push({...p,q,sub});
-  atualizarCarrinho();
+function excluir(c){
+ delete banco[c];
+ localStorage.setItem("produtos",JSON.stringify(banco));
+ montarTabela();
 }
 
-function atualizarCarrinho(){
-  const ul = document.getElementById("carrinho");
-  ul.innerHTML="";
-  let total=0;
-
-  carrinho.forEach(p=>{
-    total+=p.sub;
-    const li=document.createElement("li");
-    li.innerText = `${p.nome} (${p.q} ${p.tipo}) = R$ ${p.sub.toFixed(2)}`;
-    ul.appendChild(li);
-  });
-
-  document.getElementById("total").innerText = total.toFixed(2);
+function montarTabela(){
+ const tbody=document.querySelector("#tabelaProdutos tbody");
+ tbody.innerHTML="";
+ Object.keys(banco).forEach(c=>{
+  let p=banco[c];
+  tbody.innerHTML+=`
+<tr>
+<td>${c}</td>
+<td>${p.nome}</td>
+<td>${p.tipo}</td>
+<td>${p.preco}</td>
+<td>
+<button onclick="document.getElementById('codigoAtual').innerText='${c}'; carregarParaEdicao('${c}')">Editar</button>
+<button onclick="excluir('${c}')">Excluir</button>
+</td>
+</tr>`;
+ })
 }
 
-function limparCarrinho(){
-  carrinho=[];
-  atualizarCarrinho();
-}
-
-// carregar tabela ao abrir
-atualizarTabela();
 </script>
 
 </body>
