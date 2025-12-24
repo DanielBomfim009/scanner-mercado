@@ -303,7 +303,7 @@ function atualizarCarrinho(){
     document.getElementById("total").innerText = "Total: R$ " + total.toFixed(2);
 }
 
-/* ---------- SCANNER CORRIGIDO ---------- */
+/* ---------- SCANNER CORRIGIDO DEFINITIVO ---------- */
 
 let scannerAtivo = false;
 let ultimoCodigo = null;
@@ -323,22 +323,24 @@ function iniciarScanner(){
             target: document.querySelector("#camera"),
             constraints:{
                 facingMode:"environment",
+                focusMode:"continuous",
                 width:{ ideal:1280 },
                 height:{ ideal:720 }
             }
         },
         locator:{
-            patchSize:"medium",
-            halfSample:true
+            patchSize:"large",
+            halfSample:false
         },
-        locate:true,                /* <- ESSENCIAL PARA DETECTAR */
-        frequency:10,
+        locate:true,
+        numOfWorkers: navigator.hardwareConcurrency || 4,
         decoder:{
             readers:[
+                "ean_reader",
                 "ean_13_reader",
-                "code_128_reader",
                 "upc_reader",
-                "upc_e_reader"
+                "upc_e_reader",
+                "code_128_reader"
             ]
         }
     }, function(err){
@@ -350,30 +352,27 @@ function iniciarScanner(){
         Quagga.start();
     });
 
-    /* remove listeners anteriores */
     Quagga.offDetected && Quagga.offDetected();
 
     Quagga.onDetected(function(result){
 
-        if(!result || !result.codeResult) return;
+        if(!result?.codeResult?.code) return;
 
         let code = result.codeResult.code;
 
-        /* evita disparos repetidos contínuos */
         if(code === ultimoCodigo) return;
-        ultimoCodigo = code;
 
+        ultimoCodigo = code;
         detected.innerText = code;
 
         clearTimeout(timeoutLeitura);
-        timeoutLeitura = setTimeout(()=>ultimoCodigo=null, 1500);
+        timeoutLeitura = setTimeout(()=>ultimoCodigo=null, 1200);
 
         let produto = produtos.find(p=>p.codigo==code);
 
         if(produto){
 
             let qtd = prompt("Quantidade?");
-
             if(!qtd) return;
 
             carrinho.push({
@@ -384,21 +383,16 @@ function iniciarScanner(){
             });
 
             atualizarCarrinho();
-            return;
+        } else {
+            codigo.value = code;
+            alert("Produto não cadastrado. Preencha abaixo.");
         }
-
-        codigo.value = code;
-        alert("Produto não cadastrado. Preencha abaixo.");
     });
 
 }
 
 function pararScanner(){
-
-    try{
-        Quagga.stop();
-    }catch(e){}
-
+    try{ Quagga.stop(); }catch(e){}
     document.getElementById("camera").innerHTML = "";
     scannerAtivo = false;
 }
