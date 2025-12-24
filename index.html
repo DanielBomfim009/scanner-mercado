@@ -1,236 +1,358 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Compras do mês</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+<title>Sistema com Scanner</title>
 
 <style>
 
 body{
-    background:#eef3ff;
     font-family: Arial;
     margin:0;
+    background:#f3f3f3;
 }
 
+/* --------- LOGO --------- */
+.header{
+    text-align:center;
+    padding:15px 0;
+}
+
+.header img{
+    width:140px;
+    height:140px;
+    border-radius:50%;
+    object-fit:cover;
+    box-shadow:0 5px 18px rgba(0,0,0,0.35);
+    border:3px solid white;
+}
+
+/* --------- CONTAINERS --------- */
 .container{
     max-width:900px;
     margin:auto;
-    padding:12px;
+    padding:10px 15px 40px 15px;
 }
 
-/* LOGO REDONDA */
-.logo{
-    text-align:center;
-    margin-top:10px;
-}
-.logo img{
-    width:160px;
-    height:160px;
-    object-fit:cover;
-    border-radius:50%;
-    border:5px solid #ffffff;
-    box-shadow:0 0 12px #00000022;
-}
-
-/* BOX GERAL */
-.box{
+/* --------- CARD --------- */
+.card{
     background:white;
     border-radius:18px;
-    padding:16px;
-    margin-top:15px;
-    box-shadow:0 0 15px #00000010;
+    padding:18px;
+    box-shadow:0 5px 18px rgba(0,0,0,0.20);
+    margin-top:12px;
 }
 
-/* BOTÕES */
-button{
-    width:100%;
-    padding:14px;
-    border:none;
-    font-size:16px;
-    border-radius:12px;
-    margin-top:8px;
-}
-.btnStart{ background:#2e6bff; color:white; }
-.btnStop{ background:#6b6b6b; color:white; }
-
-/* CAMERA PREVIEW */
-#camera{
-    width:100%;
-    height:260px;
-    background:#000;
-    border-radius:18px;
-    margin-top:10px;
-    overflow:hidden;
+/* --------- TITULOS --------- */
+h2{
+    margin-top:0;
 }
 
-/* CAMPOS AJUSTADOS – não saem do retângulo */
+/* --------- INPUTS --------- */
 input, select{
     width:100%;
-    padding:12px;
-    border-radius:12px;
-    border:1px solid #ccc;
-    box-sizing:border-box;
+    padding:8px;
     margin-top:6px;
+    border-radius:8px;
+    border:1px solid #bbb;
 }
 
-/* tabela */
+/* --------- GRID CAMPOS --------- */
+.grid3{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:10px;
+}
+
+/* --------- BOTÕES --------- */
+button{
+    padding:10px;
+    border:none;
+    border-radius:20px;
+    cursor:pointer;
+    background:#1a73e8;
+    color:white;
+}
+button.red{
+    background:#d22424;
+}
+
+/* --------- VIDEO --------- */
+#preview{
+    width:100%;
+    border-radius:18px;
+    background:black;
+}
+
+/* --------- CARRINHO ICON --------- */
+.cart-btn{
+    position:fixed;
+    right:20px;
+    top:20px;
+    background:#1a73e8;
+    width:60px;
+    height:60px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
+    color:white;
+    font-size:26px;
+    box-shadow:0 5px 18px rgba(0,0,0,0.25);
+}
+
+/* --------- MODAL DO CARRINHO --------- */
+.modal{
+    position:fixed;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.6);
+    display:none;
+    align-items:center;
+    justify-content:center;
+}
+
+.modal-content{
+    background:white;
+    border-radius:18px;
+    width:92%;
+    max-width:600px;
+    max-height:85%;
+    overflow-y:auto;
+    padding:18px;
+}
+
+/* --------- TABELA --------- */
 table{
     width:100%;
     border-collapse:collapse;
 }
-td,th{
-    padding:10px;
-}
-tr:nth-child(even){
-    background:#f5f5f5;
+
+th, td{
+    padding:8px;
+    border-bottom:1px solid #ddd;
 }
 
+.total{
+    font-size:20px;
+    text-align:right;
+    margin-top:10px;
+    font-weight:bold;
+}
 </style>
+
 </head>
 
 <body>
 
+<div class="header">
+    <img src="logo.jpg">
+</div>
+
 <div class="container">
 
-    <!-- SUA LOGO -->
-    <div class="logo">
-        <img src="logo.jpg">
+    <div class="card">
+        <h2>Scanner de Código de Barras</h2>
+        <video id="preview"></video>
     </div>
 
-    <h1 style="text-align:center">🛒 Compras do mês 🛍️</h1>
+    <div class="card">
+        <h2>Cadastro / Edição de Produto</h2>
 
-    <!-- SCANNER -->
-    <div class="box">
-        <button class="btnStart" id="startButton">📸 Abrir câmera</button>
-        <button class="btnStop" id="stopButton">⏹️ Parar</button>
+        <div class="grid3">
+            <div>
+                <label>Código</label>
+                <input id="codigo">
+            </div>
 
-        <div id="camera"></div>
+            <div>
+                <label>Nome</label>
+                <input id="nome">
+            </div>
 
-        <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
-    </div>
-
-    <!-- PRODUTOS CADASTRADOS -->
-    <div class="box">
-        <h2>📦 Produtos cadastrados</h2>
-
-        <table id="produtosTable">
-            <thead>
-                <tr>
-                    <th>Código</th>
-                    <th>Nome</th>
-                    <th>Tipo</th>
-                    <th>Preço</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
-
-    <!-- EDIÇÃO -->
-    <div class="box">
-        <h2>✏️ Edição de produto</h2>
-
-        <label>Código</label>
-        <input id="codigo">
-
-        <label>Nome</label>
-        <input id="nome">
+            <div>
+                <label>Valor</label>
+                <input id="valor" type="number" step="0.01">
+            </div>
+        </div>
 
         <label>Tipo</label>
         <select id="tipo">
-            <option>Unidade (UN)</option>
-            <option>Peso (KG)</option>
+            <option>UN</option>
+            <option>KG</option>
+            <option>LT</option>
         </select>
 
-        <label>Valor</label>
-        <input id="valor" type="number" step="0.01">
-
-        <button onclick="salvarProduto()">Salvar</button>
+        <br><br>
+        <button onclick="salvarProduto()">Salvar / Atualizar</button>
     </div>
 
 </div>
 
+<!-- Botão Carrinho -->
+<div class="cart-btn" onclick="abrirCarrinho()">🛒</div>
+
+<!-- Modal Carrinho -->
+<div id="modalCarrinho" class="modal">
+    <div class="modal-content">
+        <h2>Carrinho</h2>
+
+        <table id="tabelaCarrinho"></table>
+
+        <div id="valorTotal" class="total"></div>
+
+        <br>
+        <button class="red" onclick="fecharCarrinho()">Fechar</button>
+    </div>
+</div>
+
+<!-- JS -->
+<script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
+
 <script>
 
-let produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
+let produtos = {};
+let carrinho = [];
 
-/* tabela */
-function atualizarTabela(){
-    const tb=document.querySelector("#produtosTable tbody");
-    tb.innerHTML="";
-    produtos.forEach(p=>{
-        let tr=document.createElement("tr");
-        tr.innerHTML=`<td>${p.codigo}</td><td>${p.nome}</td><td>${p.tipo}</td><td>${p.valor}</td>`;
-        tb.appendChild(tr);
-    });
-}
-atualizarTabela();
-
-/* salvar */
-function salvarProduto(){
-    let p={
-        codigo:codigo.value,
-        nome:nome.value,
-        tipo:tipo.value,
-        valor:valor.value
-    };
-
-    produtos = produtos.filter(x=>x.codigo!==p.codigo);
-    produtos.push(p);
-
-    localStorage.setItem("produtos",JSON.stringify(produtos));
-    atualizarTabela();
-    alert("Produto salvo");
-}
-
-/* SCANNER — totalmente corrigido */
+/* ------------------ SCANNER ------------------ */
 
 function iniciarScanner(){
 
-    try{ Quagga.stop(); }catch(e){}
+    Quagga.stop();
 
     Quagga.init({
         inputStream:{
             type:"LiveStream",
-            target:document.querySelector("#camera"),
             constraints:{
-                facingMode:"environment",
-                width:{ideal:1280},
-                height:{ideal:720}
+                facingMode:"environment" // força traseira
             }
         },
         decoder:{
-            readers:[
-                "ean_reader",
-                "ean_13_reader",
-                "upc_reader",
-                "code_128_reader"
-            ]
+            readers:["ean_reader","ean_13_reader","code_128_reader"]
         },
-        locate:true
-    },function(err){
-        if(err){
-            alert("Erro ao abrir câmera: " + err);
-            return;
-        }
+        locate:true,
+    }, function(err){
+        if(err){ console.log(err); return; }
         Quagga.start();
     });
 
-    Quagga.onDetected(result=>{
-        let code=result.codeResult.code;
-        document.getElementById("detected").innerText=code;
+    // melhora precisão: exige mesma leitura repetida
+    let ultimo = "";
+    let repeticoes = 0;
+
+    Quagga.onDetected(function(data){
+
+        const code = data.codeResult.code;
+
+        if(code === ultimo){
+            repeticoes++;
+        } else {
+            repeticoes = 0;
+            ultimo = code;
+        }
+
+        if(repeticoes >= 3){ // precisa confirmar
+            Quagga.stop();
+            processarCodigo(code);
+        }
     });
 }
 
-function pararScanner(){
-    try{ Quagga.stop(); }catch(e){}
+function processarCodigo(code){
+
+    // já existe produto
+    if(produtos[code]){
+
+        let qtd = prompt("Quantidade adicionar ao carrinho?");
+
+        if(!qtd || qtd<=0) return;
+
+        carrinho.push({
+            codigo:code,
+            nome:produtos[code].nome,
+            valor:produtos[code].valor,
+            qtd:Number(qtd)
+        });
+
+        atualizarCarrinho();
+        iniciarScanner();
+
+    } else {
+
+        // preenche para cadastro
+        document.getElementById("codigo").value = code;
+        alert("Produto não cadastrado. Preencha abaixo para salvar.");
+        iniciarScanner();
+    }
 }
 
-document.getElementById("startButton").onclick=iniciarScanner;
-document.getElementById("stopButton").onclick=pararScanner;
+/* ------------------ PRODUTOS ------------------ */
+
+function salvarProduto(){
+
+    let codigo = codigo.value;
+    produtos[codigo] = {
+        nome:nome.value,
+        valor:Number(valor.value),
+        tipo:tipo.value
+    };
+
+    alert("Produto salvo.");
+}
+
+/* ------------------ CARRINHO ------------------ */
+
+function abrirCarrinho(){
+    document.getElementById("modalCarrinho").style.display = "flex";
+    atualizarCarrinho();
+}
+
+function fecharCarrinho(){
+    document.getElementById("modalCarrinho").style.display = "none";
+}
+
+function removerItem(i){
+    carrinho.splice(i,1);
+    atualizarCarrinho();
+}
+
+function atualizarCarrinho(){
+
+    let tabela = document.getElementById("tabelaCarrinho");
+    let total = 0;
+
+    tabela.innerHTML = `
+        <tr>
+            <th>Código</th>
+            <th>Nome</th>
+            <th>Qtd</th>
+            <th>Valor</th>
+            <th>Ação</th>
+        </tr>
+    `;
+
+    carrinho.forEach((item,i)=>{
+        let subtotal = item.valor * item.qtd;
+        total += subtotal;
+
+        tabela.innerHTML += `
+        <tr>
+            <td>${item.codigo}</td>
+            <td>${item.nome}</td>
+            <td>${item.qtd}</td>
+            <td>R$ ${subtotal.toFixed(2)}</td>
+            <td><button class="red" onclick="removerItem(${i})">Excluir</button></td>
+        </tr>`;
+    });
+
+    document.getElementById("valorTotal").innerHTML =
+        "Total: R$ " + total.toFixed(2);
+}
+
+/* iniciar ao abrir */
+window.onload = iniciarScanner;
 
 </script>
 
