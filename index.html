@@ -2,103 +2,69 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Compras do mês</title>
 
-<!-- ZXing -->
-<script src="https://unpkg.com/@zxing/browser@latest"></script>
-
 <style>
-*{
-  box-sizing:border-box;
-}
 body{
-  font-family: "Segoe UI", Arial, sans-serif;
-  background: linear-gradient(180deg,#f3f6ff,#ffffff);
-  margin:0;
-  color:#1f1f1f;
+    font-family: Arial;
+    background: linear-gradient(180deg,#f3f7ff,#ffffff);
+    margin:0;
 }
-
-.header{
-  text-align:center;
-  padding:25px 10px 10px 10px;
-}
-
-.avatar{
-  width:120px;
-  height:120px;
-  border-radius:50%;
-  object-fit:cover;
-  border:4px solid #1f71ff;
-  box-shadow:0 4px 14px rgba(0,0,0,.18);
-}
-
-.title{
-  font-size:22px;
-  margin-top:12px;
-  font-weight:700;
-}
-
 .container{
-  max-width:900px;
-  margin:auto;
+    max-width:900px;
+    margin:0 auto;
+    padding:12px;
 }
-
+.logo-container{
+    display:flex;
+    justify-content:center;
+    margin-top:10px;
+}
+.logo-container img{
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    object-fit:cover;
+    border:4px solid #2d7bff;
+    box-shadow:0 4px 20px rgba(0,0,0,.12);
+}
+h1{
+    text-align:center;
+    font-size:24px;
+}
 .card{
-  background:white;
-  margin:12px;
-  padding:18px;
-  border-radius:18px;
-  box-shadow:0 8px 24px rgba(0,0,0,.08);
+    background:white;
+    padding:15px;
+    border-radius:18px;
+    box-shadow:0 8px 30px rgba(0,0,0,.08);
+    margin-bottom:15px;
 }
-
-h3{
-  margin:6px 0 14px 0;
-}
-
 button{
-  width:100%;
-  padding:14px;
-  font-size:16px;
-  border-radius:12px;
-  border:0;
-  font-weight:600;
-  cursor:pointer;
+    width:100%;
+    padding:14px;
+    font-size:16px;
+    border-radius:14px;
+    border:none;
+    font-weight:bold;
 }
-
-.primary{background:#1f71ff;color:white;}
+.primary{background:#1e6bff;color:white;}
 .secondary{background:#6c757d;color:white;}
-.danger{background:#d9534f;color:white;}
+.success{background:#22bb33;color:white;}
+.danger{background:#dd3333;color:white;}
 
-#preview{
-  width:100%;
-  height:260px;
-  background:black;
-  border-radius:16px;
-  margin-top:10px;
+video{
+    width:100%;
+    border-radius:14px;
+    background:#000;
 }
-
-input,select{
-  width:100%;
-  padding:12px;
-  border-radius:10px;
-  border:1px solid #cfd3dc;
-  margin-top:6px;
-}
-
 table{
-  width:100%;
-  border-collapse:collapse;
+    width:100%;
+    border-collapse:collapse;
 }
-
 th,td{
-  padding:8px;
-  border-bottom:1px solid #ececec;
-  text-align:left;
-  font-size:14px;
-}
-td button{
-  margin-top:4px;
+    padding:8px;
+    border-bottom:1px solid #ddd;
 }
 </style>
 </head>
@@ -107,167 +73,157 @@ td button{
 
 <div class="container">
 
-  <!-- CABEÇALHO -->
-  <div class="header">
-    <img src="avatar.jpg" class="avatar">
-    <div class="title">🛒 Compras do mês</div>
-  </div>
+    <div class="logo-container">
+        <img src="logo.jpg" alt="Logo">
+    </div>
 
-  <!-- SCANNER -->
-  <div class="card">
-    <button id="openCam" class="primary">📷 Abrir câmera</button>
-    <button id="stopCam" class="secondary" style="margin-top:8px">⏹ Parar</button>
+    <h1>🛒 Compras do mês</h1>
 
-    <video id="preview" muted></video>
+    <div class="card">
+        <button class="primary" id="btnAbrir">📷 Abrir câmera</button><br><br>
+        <button class="secondary" id="btnParar">⏹️ Parar</button><br><br>
 
-    <p id="codeRead" style="font-weight:bold"></p>
+        <video id="video" autoplay playsinline></video>
 
-    <button id="showList" class="primary">📦 Ver produtos cadastrados</button>
-  </div>
+        <p><b>Código lido:</b> <span id="codigoLido">—</span></p>
 
-  <!-- LISTA -->
-  <div class="card">
-    <h3>📋 Produtos cadastrados</h3>
+        <button class="primary" id="btnVer">📦 Ver produtos cadastrados</button>
+    </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Código</th>
-          <th>Nome</th>
-          <th>Tipo</th>
-          <th>Preço</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody id="tableProducts"></tbody>
-    </table>
-  </div>
+    <div class="card" id="listaCard" style="display:none;">
+        <h2>📋 Produtos cadastrados</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nome</th>
+                    <th>Tipo</th>
+                    <th>Preço</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaProdutos"></tbody>
+        </table>
+    </div>
 
-  <!-- FORM -->
-  <div class="card">
-    <h3>Cadastro / Edição</h3>
+    <div class="card">
+        <h2>Cadastro / Edição</h2>
 
-    <p id="editCode" style="font-weight:600"></p>
+        <input type="hidden" id="codigoEditando">
 
-    <input id="name" placeholder="Nome do produto">
+        <label>Código de barras</label>
+        <input id="codigo" class="field" placeholder="escaneie ou digite manual">
 
-    <select id="unit">
-      <option value="UN">Unidade (UN)</option>
-      <option value="KG">Quilo (KG)</option>
-      <option value="LT">Litro (LT)</option>
-    </select>
+        <label>Nome</label>
+        <input id="nome">
 
-    <input id="price" type="number" step="0.01" placeholder="Preço">
+        <label>Tipo</label>
+        <input id="tipo">
 
-    <button id="save" class="primary">💾 Salvar</button>
-  </div>
+        <label>Preço</label>
+        <input id="preco" type="number" step="0.01">
+
+        <br><br>
+        <button class="success" onclick="salvarProduto()">💾 Salvar</button>
+    </div>
 
 </div>
 
 <script>
-let products = JSON.parse(localStorage.getItem("produtos") || "{}")
-let currentCode = null
-let runningScanner = null
+let stream = null;
 
-render()
+const video = document.getElementById("video");
+const codigoSpan = document.getElementById("codigoLido");
 
-// abrir câmera
-document.getElementById("openCam").onclick = async ()=>{
-  const video = document.getElementById("preview")
-  const reader = new ZXingBrowser.BrowserMultiFormatReader()
-
-  runningScanner = await reader.decodeFromVideoDevice(
-    null,
-    video,
-    (result)=>{
-      if(result){
-        currentCode = result.getText()
-        document.getElementById("codeRead").innerText =
-          "Código lido: " + currentCode
-
-        if(products[currentCode]){
-          fillForm(products[currentCode])
-        }else{
-          clearForm()
-        }
-      }
+document.getElementById("btnAbrir").onclick = async ()=>{
+    try{
+        stream = await navigator.mediaDevices.getUserMedia({
+            video:{facingMode:"environment"},
+            audio:false
+        });
+        video.srcObject = stream;
+    }catch(e){
+        alert("Erro ao abrir câmera. Libere permissão no navegador.");
+        console.log(e);
     }
-  )
+};
+
+document.getElementById("btnParar").onclick = ()=>{
+    if(stream){
+        stream.getTracks().forEach(t=>t.stop());
+        stream = null;
+    }
+};
+
+document.getElementById("btnVer").onclick = ()=>{
+    document.getElementById("listaCard").style.display="block";
+    renderProdutos();
+};
+
+function getProdutos(){
+    return JSON.parse(localStorage.getItem("produtos")||"[]");
 }
 
-// parar câmera
-document.getElementById("stopCam").onclick = ()=>{
-  if(runningScanner && runningScanner.stop){
-    runningScanner.stop()
-  }
+function salvarProdutos(lista){
+    localStorage.setItem("produtos",JSON.stringify(lista));
 }
 
-// salvar produto
-document.getElementById("save").onclick = ()=>{
-  if(!currentCode){
-    alert("Leia o código de barras primeiro")
-    return
-  }
+function salvarProduto(){
+    let lista = getProdutos();
 
-  products[currentCode] = {
-    nome: document.getElementById("name").value,
-    tipo: document.getElementById("unit").value,
-    preco: parseFloat(document.getElementById("price").value || 0)
-  }
+    const codigo = document.getElementById("codigo").value;
+    const nome = document.getElementById("nome").value;
+    const tipo = document.getElementById("tipo").value;
+    const preco = document.getElementById("preco").value;
 
-  localStorage.setItem("produtos", JSON.stringify(products))
-  render()
-  alert("Produto salvo com sucesso!")
+    if(!codigo){alert("Informe o código"); return;}
+
+    const index = lista.findIndex(p=>p.codigo==codigo);
+
+    if(index>=0){
+        lista[index]={codigo,nome,tipo,preco};
+    }else{
+        lista.push({codigo,nome,tipo,preco});
+    }
+
+    salvarProdutos(lista);
+    renderProdutos();
+    alert("Salvo com sucesso");
 }
 
-// renderizar lista
-function render(){
-  const tbody = document.getElementById("tableProducts")
-  tbody.innerHTML = ""
-
-  Object.keys(products).forEach(code=>{
-    const p = products[code]
-
-    const tr = document.createElement("tr")
-    tr.innerHTML = `
-      <td>${code}</td>
-      <td>${p.nome}</td>
-      <td>${p.tipo}</td>
-      <td>R$ ${p.preco.toFixed(2)}</td>
-      <td>
-        <button class="secondary" onclick="edit('${code}')">Editar</button>
-        <button class="danger" onclick="del('${code}')">Excluir</button>
-      </td>
-    `
-    tbody.appendChild(tr)
-  })
+function excluir(codigo){
+    let lista = getProdutos().filter(p=>p.codigo!=codigo);
+    salvarProdutos(lista);
+    renderProdutos();
 }
 
-window.edit = (code)=>{
-  currentCode = code
-  fillForm(products[code])
-  document.getElementById("editCode").innerText = "Editando código: " + code
+function editar(codigo){
+    let p = getProdutos().find(x=>x.codigo==codigo);
+    if(!p)return;
+
+    document.getElementById("codigo").value=p.codigo;
+    document.getElementById("nome").value=p.nome;
+    document.getElementById("tipo").value=p.tipo;
+    document.getElementById("preco").value=p.preco;
 }
 
-window.del = (code)=>{
-  if(confirm("Excluir produto?")){
-    delete products[code]
-    localStorage.setItem("produtos", JSON.stringify(products))
-    render()
-  }
-}
+function renderProdutos(){
+    let body = document.getElementById("tabelaProdutos");
+    body.innerHTML = "";
 
-function fillForm(p){
-  document.getElementById("name").value = p.nome
-  document.getElementById("unit").value = p.tipo
-  document.getElementById("price").value = p.preco
-}
-
-function clearForm(){
-  document.getElementById("name").value = ""
-  document.getElementById("unit").value = "UN"
-  document.getElementById("price").value = ""
-  document.getElementById("editCode").innerText = "Novo código: " + currentCode
+    getProdutos().forEach(p=>{
+        body.innerHTML += `
+            <tr>
+                <td>${p.codigo}</td>
+                <td>${p.nome}</td>
+                <td>${p.tipo}</td>
+                <td>${p.preco}</td>
+                <td>
+                    <button onclick="editar('${p.codigo}')">✏️</button>
+                    <button class="danger" onclick="excluir('${p.codigo}')">🗑️</button>
+                </td>
+            </tr>`;
+    });
 }
 </script>
 
