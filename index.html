@@ -1,98 +1,86 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Compras do mês</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<!-- QuaggaJS (scanner) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 
 <style>
-
 body{
-  font-family: Arial;
-  background:#f3f6ff;
-  margin:0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(180deg,#eef3ff,#ffffff);
+    margin:0;
+    padding:0;
 }
 
 .container{
-  max-width:900px;
-  margin:auto;
-  padding:16px;
+    max-width:900px;
+    margin:auto;
+    padding:15px;
 }
 
 .card{
-  background:white;
-  padding:16px;
-  border-radius:16px;
-  box-shadow:0 5px 16px rgba(0,0,0,.08);
-  margin-top:14px;
+    background:white;
+    padding:18px;
+    border-radius:16px;
+    box-shadow:0 5px 15px rgba(0,0,0,.1);
+    margin-top:15px;
 }
 
-h2{
-  margin-top:0;
-}
-
-.logo{
-  width:140px;
-  height:140px;
-  border-radius:50%;
-  object-fit:cover;
-  border:5px solid #2f7bff;
-  display:block;
-  margin:18px auto;
+h1{
+    display:flex;
+    align-items:center;
+    gap:8px;
 }
 
 button{
-  width:100%;
-  padding:12px;
-  border-radius:12px;
-  border:none;
-  color:white;
-  font-size:16px;
-  cursor:pointer;
+    width:100%;
+    padding:14px;
+    border-radius:12px;
+    border:none;
+    font-size:16px;
+    margin-top:8px;
+    cursor:pointer;
 }
 
-.primary{
-  background:#2165ff;
+.primary{background:#2563ff;color:white;}
+.stop{background:#6b7280;color:white;}
+
+#videoContainer{
+    width:100%;
+    height:260px;
+    background:black;
+    border-radius:14px;
+    overflow:hidden;
+    margin-top:10px;
 }
 
-.stop{
-  background:#707b87;
+video{
+    width:100%;
+    height:100%;
+    object-fit:cover;
 }
 
-/* scanner video */
-#scanner{
-  width:100%;
-  max-height:260px;
-  border-radius:14px;
-  object-fit:cover;
-  background:black;
-}
-
-/* tabela */
 table{
-  width:100%;
-  border-collapse:collapse;
+    width:100%;
+    border-collapse:collapse;
 }
 
 th,td{
-  padding:8px;
-  text-align:left;
+    text-align:left;
+    padding:8px;
 }
 
-/* inputs */
+tr:nth-child(even){
+    background:#f3f4f6;
+}
+
 input,select{
-  width:100%;
-  padding:10px;
-  border-radius:12px;
-  border:1px solid #ccc;
-  font-size:15px;
-}
-
-.save{
-  background:#10b164;
+    width:100%;
+    padding:12px;
+    border-radius:10px;
+    border:1px solid #ccc;
+    font-size:15px;
 }
 </style>
 </head>
@@ -101,26 +89,25 @@ input,select{
 
 <div class="container">
 
-<img src="logo.jpg" class="logo">
-
-<h2>🛒 Compras do mês</h2>
+<h1>🛒 Compras do mês</h1>
 
 <div class="card">
 
-<button class="primary" onclick="iniciarScanner()">📷 Abrir câmera</button>
-<br><br>
-<button class="stop" onclick="pararScanner()">⏹️ Parar</button>
+<button id="startBtn" class="primary">📷 Abrir câmera</button>
+<button id="stopBtn" class="stop">⏹ Parar</button>
 
-<video id="scanner"></video>
+<div id="videoContainer">
+    <video id="video" playsinline></video>
+</div>
 
-<p><b>Código detectado:</b> <span id="codigoDetectado">—</span></p>
+<p><strong>Código detectado:</strong> <span id="detectedCode">—</span></p>
 
 </div>
 
 <div class="card">
-<h3>📦 Produtos cadastrados</h3>
+<h2>📦 Produtos cadastrados</h2>
 
-<table border="1">
+<table>
 <thead>
 <tr>
 <th>Código</th>
@@ -130,157 +117,132 @@ input,select{
 <th>Ações</th>
 </tr>
 </thead>
-<tbody id="listaProdutos"></tbody>
+<tbody id="productTable"></tbody>
 </table>
 </div>
 
 <div class="card">
 
-<h3>✏️ Edição de produto</h3>
+<h2>✏️ Edição de produto</h2>
 
-<input id="editCodigo" placeholder="Código" readonly>
+<input id="codeInput" placeholder="Código" readonly>
 
-<br><br>
-<input id="editNome" placeholder="Nome">
+<input id="nameInput" placeholder="Nome">
 
-<br><br>
-<select id="editTipo">
+<select id="typeInput">
 <option value="UN">Unidade (UN)</option>
 <option value="KG">Quilo (KG)</option>
 </select>
 
-<br><br>
-<input id="editPreco" placeholder="Preço">
+<input id="priceInput" placeholder="Preço" type="number" step="0.01">
 
-<br><br>
-<button class="save" onclick="salvarEdicao()">💾 Salvar alterações</button>
+<button class="primary" id="saveBtn">💾 Salvar alterações</button>
 
 </div>
 
 </div>
+
+<script src="https://unpkg.com/@zxing/library@latest"></script>
 
 <script>
+let codeReader = new ZXing.BrowserMultiFormatReader();
+let currentStream = null;
 
-let scanning = false;
+const startBtn = document.getElementById("startBtn");
+const stopBtn = document.getElementById("stopBtn");
+const video = document.getElementById("video");
+const detectedCode = document.getElementById("detectedCode");
 
-/* ------------------ LOCALSTORAGE ------------------ */
+const codeInput = document.getElementById("codeInput");
+const nameInput = document.getElementById("nameInput");
+const typeInput = document.getElementById("typeInput");
+const priceInput = document.getElementById("priceInput");
 
-function getProdutos(){
-  return JSON.parse(localStorage.getItem("produtos")||"[]");
+const productTable = document.getElementById("productTable");
+
+let products = JSON.parse(localStorage.getItem("products") || "[]");
+
+function renderTable(){
+    productTable.innerHTML = "";
+    products.forEach((p,i)=>{
+        productTable.innerHTML += `
+        <tr>
+            <td>${p.code}</td>
+            <td>${p.name}</td>
+            <td>${p.type}</td>
+            <td>${p.price}</td>
+            <td><button onclick="edit(${i})">Editar</button></td>
+        </tr>`;
+    });
+}
+renderTable();
+
+function edit(i){
+    let p = products[i];
+    codeInput.value = p.code;
+    nameInput.value = p.name;
+    typeInput.value = p.type;
+    priceInput.value = p.price;
 }
 
-function salvarProdutos(lista){
-  localStorage.setItem("produtos",JSON.stringify(lista));
-  renderTabela();
-}
+// iniciar câmera
+startBtn.onclick = async ()=>{
+    try{
+        currentStream = await navigator.mediaDevices.getUserMedia({
+            video:{ facingMode:"environment" },
+            audio:false
+        });
 
-function renderTabela(){
-  let tbody = document.getElementById("listaProdutos");
-  tbody.innerHTML="";
-  getProdutos().forEach(p=>{
-    tbody.innerHTML+=`
-      <tr>
-        <td>${p.codigo}</td>
-        <td>${p.nome}</td>
-        <td>${p.tipo}</td>
-        <td>${p.preco}</td>
-        <td>
-          <button onclick="editar('${p.codigo}')">✏️</button>
-          <button onclick="excluir('${p.codigo}')">🗑️</button>
-        </td>
-      </tr>`;
-  });
-}
+        video.srcObject = currentStream;
+        video.play();
 
-/* ------------------ SCANNER ------------------ */
+        codeReader.decodeFromVideoDevice(null, "video", (result)=>{
+            if(result){
+                detectedCode.textContent = result.text;
 
-function iniciarScanner(){
+                // 🔥 auto preencher campo de cadastro
+                codeInput.value = result.text;
+            }
+        });
 
-  if(scanning) return;
-
-  scanning=true;
-
-  Quagga.init({
-    inputStream:{
-      name:"Live",
-      type:"LiveStream",
-      target:document.querySelector('#scanner')
-    },
-    decoder:{
-      readers:["ean_reader","ean_13_reader","ean_8_reader","code_128_reader"]
+    }catch(e){
+        alert("Erro ao acessar câmera: " + e);
     }
-  },function(err){
-    if(err){alert("Erro câmera");return;}
-    Quagga.start();
-  });
+};
 
-  Quagga.onDetected(function(data){
-    let code = data.codeResult.code;
-
-    document.getElementById("codigoDetectado").innerText=code;
-
-    // preenche automaticamente no formulário
-    document.getElementById("editCodigo").value=code;
-
-    let lista=getProdutos();
-    let p = lista.find(x=>x.codigo==code);
-
-    if(p){
-      document.getElementById("editNome").value=p.nome;
-      document.getElementById("editTipo").value=p.tipo;
-      document.getElementById("editPreco").value=p.preco;
+// parar câmera
+stopBtn.onclick = ()=>{
+    if(currentStream){
+        currentStream.getTracks().forEach(t=>t.stop());
     }
-  });
-}
+    codeReader.reset();
+};
 
-function pararScanner(){
-  if(!scanning) return;
-  Quagga.stop();
-  scanning=false;
-}
+// salvar edição
+document.getElementById("saveBtn").onclick = ()=>{
+    let code = codeInput.value;
+    if(!code){ alert("Sem código"); return; }
 
-/* ------------------ CRUD ------------------ */
+    let existing = products.find(p=>p.code === code);
 
-function editar(codigo){
-  let p=getProdutos().find(x=>x.codigo==codigo);
-  if(!p)return;
+    if(existing){
+        existing.name = nameInput.value;
+        existing.type = typeInput.value;
+        existing.price = priceInput.value;
+    }else{
+        products.push({
+            code,
+            name:nameInput.value,
+            type:typeInput.value,
+            price:priceInput.value
+        });
+    }
 
-  document.getElementById("editCodigo").value=p.codigo;
-  document.getElementById("editNome").value=p.nome;
-  document.getElementById("editTipo").value=p.tipo;
-  document.getElementById("editPreco").value=p.preco;
-}
+    localStorage.setItem("products", JSON.stringify(products));
+    renderTable();
 
-function excluir(codigo){
-  let nova=getProdutos().filter(x=>x.codigo!=codigo);
-  salvarProdutos(nova);
-}
-
-function salvarEdicao(){
-
-  let codigo=document.getElementById("editCodigo").value;
-  let nome=document.getElementById("editNome").value;
-  let tipo=document.getElementById("editTipo").value;
-  let preco=document.getElementById("editPreco").value;
-
-  if(!codigo){alert("Código não preenchido");return;}
-
-  let lista=getProdutos();
-
-  let idx=lista.findIndex(x=>x.codigo==codigo);
-
-  if(idx==-1){
-    lista.push({codigo,nome,tipo,preco});
-  }else{
-    lista[idx]={codigo,nome,tipo,preco};
-  }
-
-  salvarProdutos(lista);
-  alert("Salvo com sucesso!");
-}
-
-renderTabela();
-
+    alert("Salvo com sucesso!");
+};
 </script>
 
 </body>
