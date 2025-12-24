@@ -2,92 +2,107 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Compras do mês</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 
 <style>
+
 body{
-  font-family: Arial, sans-serif;
-  background:#eef3ff;
-  margin:0;
+    background:#eef3ff;
+    font-family: Arial;
+    margin:0;
 }
 
 .container{
-  max-width:900px;
-  margin:auto;
-  padding:14px;
+    max-width:900px;
+    margin:auto;
+    padding:12px;
 }
 
-/* LOGO NO TOPO */
-.logo-box{
-  width:130px;
-  height:130px;
-  border-radius:50%;
-  overflow:hidden;
-  border:4px solid #2f6bff;
-  margin:14px auto 4px auto;
+/* LOGO */
+.logo{
+    text-align:center;
+    margin-top:10px;
 }
-.logo-box img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
+.logo img{
+    width:140px;
+    border-radius:12px;
 }
 
-/* CARD GERAL */
-.card{
-  background:#fff;
-  border-radius:18px;
-  padding:16px;
-  box-shadow:0 8px 20px rgba(0,0,0,.08);
-  margin-top:14px;
+/* HEADER + CARRINHO */
+.headerRow{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:14px;
 }
 
-/* VÍDEO */
-#videoContainer{
-  width:100%;
-  height:260px;
-  background:#000;
-  overflow:hidden;
-  border-radius:16px;
+.cartIcon{
+    font-size:32px;
+    cursor:pointer;
 }
-video{
-  width:100%;
-  height:100%;
-  object-fit:cover;
+
+/* BOX */
+.box{
+    background:white;
+    border-radius:18px;
+    padding:16px;
+    margin-top:15px;
+    box-shadow:0 0 15px #00000010;
 }
 
 /* BOTÕES */
 button{
-  width:100%;
-  border:none;
-  padding:12px;
-  border-radius:12px;
-  font-size:16px;
-  cursor:pointer;
-  margin-top:8px;
+    width:100%;
+    padding:14px;
+    border:none;
+    font-size:16px;
+    border-radius:12px;
+    margin-top:8px;
 }
-.primary{background:#2563ff;color:#fff;}
-.stop{background:#6b7280;color:#fff;}
+.btnStart{ background:#2e6bff; color:white; }
+.btnStop{ background:#6b6b6b; color:white; }
 
-/* INPUTS CORRIGIDOS – não escapam mais */
-input,select{
-  width:100%;
-  border-radius:12px;
-  border:1px solid #cfd3dd;
-  padding:12px;
-  font-size:15px;
-  box-sizing:border-box;   /* <- impede sair do retângulo */
-  margin-top:8px;
+#camera{
+    width:100%;
+    border-radius:16px;
 }
 
+input, select{
+    width:100%;
+    padding:12px;
+    border-radius:12px;
+    border:1px solid #ccc;
+    margin-top:8px;
+    box-sizing:border-box;
+}
+
+/* TABLE */
 table{
-  width:100%;
-  border-collapse:collapse;
+    width:100%;
+    border-collapse:collapse;
 }
-th,td{
-  padding:8px;
-  border-bottom:1px solid #e2e8f0;
-  text-align:left;
+
+td,th{
+    padding:10px;
+}
+
+tr:nth-child(even){
+    background:#f5f5f5;
+}
+
+/* CARRINHO */
+#carrinhoBox{
+    display:none;
+}
+
+.total{
+    font-size:20px;
+    font-weight:bold;
+    text-align:right;
+    margin-top:10px;
 }
 
 </style>
@@ -97,200 +112,218 @@ th,td{
 
 <div class="container">
 
-<!-- LOGO .JPG solicitada -->
-<div class="logo-box">
-  <img src="logo.jpg">
+    <!-- LOGO -->
+    <div class="logo">
+        <img src="logo.jpg">
+    </div>
+
+    <div class="headerRow">
+        <h1>🛒 Compras do mês</h1>
+        <span class="cartIcon" onclick="toggleCarrinho()">🛍️</span>
+    </div>
+
+    <!-- SCANNER -->
+    <div class="box">
+        <button class="btnStart" id="startButton">📸 Abrir câmera</button>
+        <button class="btnStop" id="stopButton">⏹️ Parar</button>
+
+        <div id="camera"></div>
+
+        <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
+    </div>
+
+    <!-- CARRINHO -->
+    <div class="box" id="carrinhoBox">
+        <h2>🛍️ Carrinho</h2>
+
+        <table id="carrinhoTable">
+            <thead>
+            <tr>
+                <th>Produto</th>
+                <th>Qtd</th>
+                <th>Preço</th>
+                <th>Subtotal</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <p class="total">Total: R$ <span id="totalValor">0.00</span></p>
+    </div>
+
+    <!-- PRODUTOS -->
+    <div class="box">
+        <h2>📦 Produtos cadastrados</h2>
+
+        <table id="produtosTable">
+            <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nome</th>
+                <th>Tipo</th>
+                <th>Preço</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- EDIÇÃO -->
+    <div class="box">
+        <h2>✏️ Edição de produto</h2>
+
+        <label>Código</label>
+        <input id="codigo">
+
+        <label>Nome</label>
+        <input id="nome">
+
+        <label>Tipo</label>
+        <select id="tipo">
+            <option>Unidade (UN)</option>
+            <option>Peso (KG)</option>
+        </select>
+
+        <label>Valor</label>
+        <input id="valor" type="number" step="0.01">
+
+        <button onclick="salvarProduto()">Salvar</button>
+    </div>
+
 </div>
-
-<h1 style="text-align:center;">🛒 Compras do mês</h1>
-
-<!-- SCANNER -->
-<div class="card">
-  <button id="startBtn" class="primary">📷 Abrir câmera</button>
-  <button id="stopBtn" class="stop">⏹ Parar</button>
-
-  <div id="videoContainer">
-    <video id="video" playsinline></video>
-  </div>
-
-  <p><b>Código detectado:</b> <span id="detectedCode">—</span></p>
-</div>
-
-<!-- TABELA PRODUTOS -->
-<div class="card">
-  <h2>📦 Produtos cadastrados</h2>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Código</th>
-        <th>Nome</th>
-        <th>Tipo</th>
-        <th>Preço</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-    <tbody id="productTable"></tbody>
-  </table>
-</div>
-
-<!-- EDIÇÃO / CADASTRO -->
-<div class="card">
-  <h2>✏️ Edição de produto</h2>
-
-  <input id="codeInput" placeholder="Código" readonly>
-  <input id="nameInput" placeholder="Nome">
-
-  <select id="typeInput">
-    <option value="UN">Unidade (UN)</option>
-    <option value="KG">Quilo (KG)</option>
-  </select>
-
-  <input id="priceInput" type="number" step="0.01" placeholder="Preço">
-
-  <button id="saveBtn" class="primary">💾 Salvar alterações</button>
-</div>
-
-</div>
-
-<script src="https://unpkg.com/@zxing/library@latest"></script>
 
 <script>
-let codeReader = new ZXing.BrowserMultiFormatReader();
-let stream = null;
 
-let products = JSON.parse(localStorage.getItem("products") || "[]");
-let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+let produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
+let carrinho = [];
 
-function saveData(){
-  localStorage.setItem("products", JSON.stringify(products));
-  localStorage.setItem("cart", JSON.stringify(cart));
+/* ---------- TABELAS ---------- */
+function atualizarTabela(){
+    const tb = document.querySelector("#produtosTable tbody");
+    tb.innerHTML="";
+    produtos.forEach(p=>{
+        let tr=document.createElement("tr");
+        tr.innerHTML=`<td>${p.codigo}</td><td>${p.nome}</td><td>${p.tipo}</td><td>${p.valor}</td>`;
+        tb.appendChild(tr);
+    });
+}
+atualizarTabela();
+
+/* ---------- SALVAR PRODUTO ---------- */
+function salvarProduto(){
+    let p={
+        codigo:codigo.value,
+        nome:nome.value,
+        tipo:tipo.value,
+        valor:parseFloat(valor.value||0)
+    };
+
+    produtos = produtos.filter(x=>x.codigo!==p.codigo);
+    produtos.push(p);
+
+    localStorage.setItem("produtos",JSON.stringify(produtos));
+
+    atualizarTabela();
+    alert("Produto salvo com sucesso!");
 }
 
-function renderTable(){
-  productTable.innerHTML = "";
-  products.forEach((p,i)=>{
-    productTable.innerHTML += `
-      <tr>
-        <td>${p.code}</td>
-        <td>${p.name}</td>
-        <td>${p.type}</td>
-        <td>${p.price}</td>
-        <td>
-          <button onclick="edit(${i})">Editar</button>
-        </td>
-      </tr>`;
-  });
-}
-renderTable();
+/* ---------- CARRINHO ---------- */
 
-function edit(i){
-  let p = products[i];
-  codeInput.value = p.code;
-  nameInput.value = p.name;
-  typeInput.value = p.type;
-  priceInput.value = p.price;
+function toggleCarrinho(){
+    let box=document.getElementById("carrinhoBox");
+    box.style.display = (box.style.display=="none"||box.style.display=="") ? "block" : "none";
 }
 
-/* ====== SCANNER LOGIC NOVA ====== */
+function atualizarCarrinho(){
 
-let lastCode = "";
-let repeatCount = 0;
+    const tb=document.querySelector("#carrinhoTable tbody");
+    tb.innerHTML="";
 
-startBtn.onclick = async ()=>{
+    let total=0;
 
-  stream = await navigator.mediaDevices.getUserMedia({
-    video:{facingMode:"environment"},
-    audio:false
-  });
+    carrinho.forEach(item=>{
 
-  video.srcObject = stream;
-  video.play();
+        let prod = produtos.find(p=>p.codigo==item.codigo);
+        if(!prod) return;
 
-  codeReader.decodeFromVideoDevice(null, "video", (result)=>{
+        let subtotal = item.qtd * parseFloat(prod.valor||0);
+        total += subtotal;
 
-    if(!result) return;
+        let tr=document.createElement("tr");
+        tr.innerHTML=`
+            <td>${prod.nome}</td>
+            <td>${item.qtd}</td>
+            <td>R$ ${prod.valor}</td>
+            <td>R$ ${subtotal.toFixed(2)}</td>
+        `;
+        tb.appendChild(tr);
+    });
 
-    // confirma 3 leituras iguais para precisão
-    if(result.text === lastCode){
-      repeatCount++;
-    } else {
-      repeatCount = 1;
-      lastCode = result.text;
-    }
+    document.getElementById("totalValor").innerText = total.toFixed(2);
+}
 
-    if(repeatCount < 3) return;
+/* ---------- SCANNER ---------- */
 
-    const code = result.text;
-    detectedCode.textContent = code;
+function iniciarScanner(){
 
-    // verifica se já existe na base
-    const found = products.find(p=>p.code == code);
+    Quagga.init({
+        inputStream:{
+            name:"Live",
+            type:"LiveStream",
+            target:document.querySelector("#camera"),
+            constraints:{ facingMode:"environment" }
+        },
+        locator:{ patchSize:"medium", halfSample:true },
+        decoder:{ readers:["ean_reader","ean_13_reader","upc_reader","code_128_reader"] },
+        locate:true
+    },function(err){
+        if(err){console.log(err);return;}
+        Quagga.start();
+    });
 
-    if(found){
+    Quagga.onDetected(function(result){
 
-      // perguntar quantidade
-      let q = prompt("Produto encontrado: " + found.name + "\nDigite a quantidade para adicionar ao carrinho:");
+        let codigo = result.codeResult.code;
+        document.getElementById("detected").innerText=codigo;
 
-      if(q && !isNaN(q)){
-        q = Number(q);
+        tratarCodigo(codigo);
 
-        let item = cart.find(c=>c.code==code);
-        if(item){
-          item.quantity += q;
-        }else{
-          cart.push({
-            code:code,
-            name:found.name,
-            price:Number(found.price),
-            quantity:q
-          });
-        }
+        Quagga.stop();
+    });
+}
 
-        saveData();
+function pararScanner(){
+    Quagga.stop();
+}
+
+/* ---------- LÓGICA PRINCIPAL ---------- */
+function tratarCodigo(cod){
+
+    let existente = produtos.find(p=>p.codigo==cod);
+
+    if(existente){
+
+        let q = prompt("Quantidade para "+existente.nome);
+        if(!q) return;
+
+        carrinho.push({
+            codigo:cod,
+            qtd:Number(q)
+        });
+
+        atualizarCarrinho();
         alert("Adicionado ao carrinho!");
-      }
-
-    } else {
-      // não cadastrado → prepara cadastro
-      codeInput.value = code;
-      nameInput.focus();
     }
-  });
-};
+    else{
+        alert("Produto não cadastrado. Preencha abaixo.");
+        document.getElementById("codigo").value = cod;
+        document.getElementById("nome").focus();
+    }
+}
 
-stopBtn.onclick = ()=>{
-  if(stream){
-    stream.getTracks().forEach(t=>t.stop());
-  }
-  codeReader.reset();
-};
+startButton.onclick=iniciarScanner;
+stopButton.onclick=pararScanner;
 
-/* ====== SALVAR PRODUTO ====== */
-
-saveBtn.onclick = ()=>{
-
-  let code = codeInput.value;
-  let name = nameInput.value;
-  let type = typeInput.value;
-  let price = priceInput.value;
-
-  if(!code){ alert("Código vazio"); return; }
-
-  let existing = products.find(p=>p.code==code);
-
-  if(existing){
-    existing.name = name;
-    existing.type = type;
-    existing.price = price;
-  }else{
-    products.push({code,name,type,price});
-  }
-
-  saveData();
-  renderTable();
-  alert("Produto salvo!");
-};
 </script>
 
 </body>
