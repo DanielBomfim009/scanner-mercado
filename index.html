@@ -1,70 +1,99 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Compras do mês</title>
 
+<!-- ZXING BARCODE SCANNER -->
+<script src="https://unpkg.com/@zxing/library@latest"></script>
+
 <style>
 body{
-    font-family: Arial;
-    background: linear-gradient(180deg,#f3f7ff,#ffffff);
-    margin:0;
+  font-family: Arial, Helvetica, sans-serif;
+  background:#f4f7ff;
+  margin:0;
 }
+
 .container{
-    max-width:900px;
-    margin:0 auto;
-    padding:12px;
+  max-width:900px;
+  margin:0 auto;
+  padding:14px;
 }
-.logo-container{
-    display:flex;
-    justify-content:center;
-    margin-top:10px;
+
+/* LOGO */
+.logo-box{
+  text-align:center;
+  margin-top:10px;
 }
-.logo-container img{
-    width:120px;
-    height:120px;
-    border-radius:50%;
-    object-fit:cover;
-    border:4px solid #2d7bff;
-    box-shadow:0 4px 20px rgba(0,0,0,.12);
+.logo-box img{
+  width:120px;
+  height:120px;
+  border-radius:50%;
+  object-fit:cover;
+  border:4px solid #2d7bff;
 }
+
+/* TITULO */
 h1{
-    text-align:center;
-    font-size:24px;
+  text-align:center;
 }
+
+/* CARDS */
 .card{
-    background:white;
-    padding:15px;
-    border-radius:18px;
-    box-shadow:0 8px 30px rgba(0,0,0,.08);
-    margin-bottom:15px;
+  background:white;
+  padding:16px;
+  border-radius:18px;
+  margin-top:12px;
+  box-shadow:0 8px 30px rgba(0,0,0,.08);
 }
+
+/* BUTTONS */
 button{
-    width:100%;
-    padding:14px;
-    font-size:16px;
-    border-radius:14px;
-    border:none;
-    font-weight:bold;
+  width:100%;
+  padding:14px;
+  font-size:16px;
+  border:none;
+  border-radius:14px;
+  font-weight:bold;
+  cursor:pointer;
+  margin-top:8px;
 }
+
 .primary{background:#1e6bff;color:white;}
 .secondary{background:#6c757d;color:white;}
-.success{background:#22bb33;color:white;}
 .danger{background:#dd3333;color:white;}
+.success{background:#22bb33;color:white;}
 
+/* VIDEO */
 video{
-    width:100%;
-    border-radius:14px;
-    background:#000;
+  width:100%;
+  background:black;
+  border-radius:14px;
+  margin-top:8px;
 }
+
+/* FORM GRID */
+.form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.form-grid input{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid #ccc;
+}
+
+/* TABLE */
 table{
-    width:100%;
-    border-collapse:collapse;
+  width:100%;
+  border-collapse:collapse;
 }
 th,td{
-    padding:8px;
-    border-bottom:1px solid #ddd;
+  padding:8px;
+  border-bottom:1px solid #ddd;
 }
 </style>
 </head>
@@ -73,158 +102,167 @@ th,td{
 
 <div class="container">
 
-    <div class="logo-container">
-        <img src="logo.jpg" alt="Logo">
-    </div>
+  <div class="logo-box">
+    <img src="logo.jpg">
+  </div>
 
-    <h1>🛒 Compras do mês</h1>
+  <h1>🛒 Compras do mês</h1>
 
-    <div class="card">
-        <button class="primary" id="btnAbrir">📷 Abrir câmera</button><br><br>
-        <button class="secondary" id="btnParar">⏹️ Parar</button><br><br>
+  <!-- SCANNER -->
+  <div class="card">
+      <button class="primary" id="btnStart">📷 Abrir câmera</button>
+      <button class="secondary" id="btnStop">⏹️ Parar</button>
 
-        <video id="video" autoplay playsinline></video>
+      <video id="preview" playsinline></video>
 
-        <p><b>Código lido:</b> <span id="codigoLido">—</span></p>
+      <p><b>Código detectado:</b> <span id="codigoLido">—</span></p>
+  </div>
 
-        <button class="primary" id="btnVer">📦 Ver produtos cadastrados</button>
-    </div>
+  <!-- LISTA -->
+  <div class="card">
+      <h2>📦 Produtos cadastrados</h2>
+      <table>
+          <thead>
+              <tr>
+                  <th>Código</th>
+                  <th>Nome</th>
+                  <th>Tipo</th>
+                  <th>Preço</th>
+                  <th>Ações</th>
+              </tr>
+          </thead>
+          <tbody id="listaTabela"></tbody>
+      </table>
+  </div>
 
-    <div class="card" id="listaCard" style="display:none;">
-        <h2>📋 Produtos cadastrados</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Código</th>
-                    <th>Nome</th>
-                    <th>Tipo</th>
-                    <th>Preço</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody id="tabelaProdutos"></tbody>
-        </table>
-    </div>
+  <!-- EDIÇÃO -->
+  <div class="card">
+      <h2>✏️ Edição de produto</h2>
 
-    <div class="card">
-        <h2>Cadastro / Edição</h2>
+      <div class="form-grid">
+          <input id="editCodigo" placeholder="Código (somente leitura)" disabled>
+          <input id="editNome" placeholder="Nome">
+          <input id="editTipo" placeholder="Tipo">
+          <input id="editPreco" placeholder="Preço">
+      </div>
 
-        <input type="hidden" id="codigoEditando">
-
-        <label>Código de barras</label>
-        <input id="codigo" class="field" placeholder="escaneie ou digite manual">
-
-        <label>Nome</label>
-        <input id="nome">
-
-        <label>Tipo</label>
-        <input id="tipo">
-
-        <label>Preço</label>
-        <input id="preco" type="number" step="0.01">
-
-        <br><br>
-        <button class="success" onclick="salvarProduto()">💾 Salvar</button>
-    </div>
+      <button class="success" onclick="salvarEdicao()">💾 Salvar alterações</button>
+  </div>
 
 </div>
 
 <script>
-let stream = null;
+let selectedDeviceId = null;
+let codeReader = new ZXing.BrowserMultiFormatReader();
+let scanning = false;
 
-const video = document.getElementById("video");
-const codigoSpan = document.getElementById("codigoLido");
-
-document.getElementById("btnAbrir").onclick = async ()=>{
-    try{
-        stream = await navigator.mediaDevices.getUserMedia({
-            video:{facingMode:"environment"},
-            audio:false
-        });
-        video.srcObject = stream;
-    }catch(e){
-        alert("Erro ao abrir câmera. Libere permissão no navegador.");
-        console.log(e);
-    }
-};
-
-document.getElementById("btnParar").onclick = ()=>{
-    if(stream){
-        stream.getTracks().forEach(t=>t.stop());
-        stream = null;
-    }
-};
-
-document.getElementById("btnVer").onclick = ()=>{
-    document.getElementById("listaCard").style.display="block";
-    renderProdutos();
-};
-
+/* LOCAL STORAGE */
 function getProdutos(){
-    return JSON.parse(localStorage.getItem("produtos")||"[]");
+  return JSON.parse(localStorage.getItem("produtos") || "[]");
 }
-
 function salvarProdutos(lista){
-    localStorage.setItem("produtos",JSON.stringify(lista));
+  localStorage.setItem("produtos", JSON.stringify(lista));
 }
 
-function salvarProduto(){
-    let lista = getProdutos();
+/* RENDER TABLE */
+function renderTabela(){
+  let tbody = document.getElementById("listaTabela");
+  tbody.innerHTML = "";
 
-    const codigo = document.getElementById("codigo").value;
-    const nome = document.getElementById("nome").value;
-    const tipo = document.getElementById("tipo").value;
-    const preco = document.getElementById("preco").value;
-
-    if(!codigo){alert("Informe o código"); return;}
-
-    const index = lista.findIndex(p=>p.codigo==codigo);
-
-    if(index>=0){
-        lista[index]={codigo,nome,tipo,preco};
-    }else{
-        lista.push({codigo,nome,tipo,preco});
-    }
-
-    salvarProdutos(lista);
-    renderProdutos();
-    alert("Salvo com sucesso");
+  getProdutos().forEach(p=>{
+    tbody.innerHTML += `
+      <tr>
+        <td>${p.codigo}</td>
+        <td>${p.nome}</td>
+        <td>${p.tipo}</td>
+        <td>${p.preco}</td>
+        <td>
+          <button onclick="editar('${p.codigo}')">✏️</button>
+          <button class="danger" onclick="excluir('${p.codigo}')">🗑️</button>
+        </td>
+      </tr>
+    `;
+  });
 }
 
-function excluir(codigo){
-    let lista = getProdutos().filter(p=>p.codigo!=codigo);
-    salvarProdutos(lista);
-    renderProdutos();
-}
-
+/* EDITAR */
 function editar(codigo){
-    let p = getProdutos().find(x=>x.codigo==codigo);
-    if(!p)return;
+  let p = getProdutos().find(x=>x.codigo==codigo);
+  if(!p) return;
 
-    document.getElementById("codigo").value=p.codigo;
-    document.getElementById("nome").value=p.nome;
-    document.getElementById("tipo").value=p.tipo;
-    document.getElementById("preco").value=p.preco;
+  document.getElementById("editCodigo").value=p.codigo;
+  document.getElementById("editNome").value=p.nome;
+  document.getElementById("editTipo").value=p.tipo;
+  document.getElementById("editPreco").value=p.preco;
 }
 
-function renderProdutos(){
-    let body = document.getElementById("tabelaProdutos");
-    body.innerHTML = "";
+function salvarEdicao(){
+  let lista = getProdutos();
 
-    getProdutos().forEach(p=>{
-        body.innerHTML += `
-            <tr>
-                <td>${p.codigo}</td>
-                <td>${p.nome}</td>
-                <td>${p.tipo}</td>
-                <td>${p.preco}</td>
-                <td>
-                    <button onclick="editar('${p.codigo}')">✏️</button>
-                    <button class="danger" onclick="excluir('${p.codigo}')">🗑️</button>
-                </td>
-            </tr>`;
-    });
+  let codigo = document.getElementById("editCodigo").value;
+
+  let idx = lista.findIndex(x=>x.codigo==codigo);
+
+  if(idx>=0){
+    lista[idx].nome = document.getElementById("editNome").value;
+    lista[idx].tipo = document.getElementById("editTipo").value;
+    lista[idx].preco = document.getElementById("editPreco").value;
+  }
+
+  salvarProdutos(lista);
+  renderTabela();
+  alert("Alterações salvas");
 }
+
+/* EXCLUIR */
+function excluir(codigo){
+  salvarProdutos(getProdutos().filter(p=>p.codigo!=codigo));
+  renderTabela();
+}
+
+/* SCAN */
+document.getElementById("btnStart").onclick = async ()=>{
+
+  scanning = true;
+
+  const cams = await codeReader.listVideoInputDevices();
+
+  if(cams.length==0){
+    alert("Nenhuma câmera encontrada");
+    return;
+  }
+
+  selectedDeviceId = cams[cams.length-1].deviceId;
+
+  codeReader.decodeFromVideoDevice(selectedDeviceId,"preview",(result,err)=>{
+    if(result){
+      let code = result.text;
+      document.getElementById("codigoLido").innerText = code;
+
+      let lista = getProdutos();
+      let existe = lista.find(p=>p.codigo==code);
+
+      if(existe){
+        editar(code);
+      }else{
+        let nome = prompt("Produto novo! Digite o nome:");
+        let tipo = prompt("Tipo:");
+        let preco = prompt("Preço:");
+
+        lista.push({codigo:code,nome,tipo,preco});
+        salvarProdutos(lista);
+        renderTabela();
+        alert("Produto cadastrado");
+      }
+    }
+  });
+};
+
+document.getElementById("btnStop").onclick = ()=>{
+  codeReader.reset();
+};
+
+renderTabela();
 </script>
 
 </body>
