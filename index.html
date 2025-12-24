@@ -5,24 +5,19 @@
 <title>Compras do mês</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- ZXING (novo scanner) -->
-<script src="https://unpkg.com/@zxing/browser@latest"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 
 <style>
-/* (seu CSS original – mantido) */
 body{
     background:#eef3ff;
     font-family: Arial;
     margin:0;
 }
-
 .container{
     max-width:900px;
     margin:auto;
     padding:12px;
 }
-
-/* LOGO */
 .logo{
     text-align:center;
     margin-top:10px;
@@ -35,8 +30,6 @@ body{
     border:5px solid #ffffff;
     box-shadow:0 10px 30px rgba(0,0,0,.35);
 }
-
-/* CAIXAS */
 .box{
     background:white;
     border-radius:18px;
@@ -44,8 +37,6 @@ body{
     margin-top:15px;
     box-shadow:0 0 15px #00000010;
 }
-
-/* BOTÕES */
 button{
     width:100%;
     padding:14px;
@@ -54,11 +45,9 @@ button{
     border-radius:12px;
     margin-top:8px;
 }
-
 .btnStart{ background:#2e6bff; color:white; }
 .btnStop{ background:#6b6b6b; color:white; }
 
-/* CAMERA */
 #camera{
     width:100%;
     height:260px;
@@ -68,7 +57,6 @@ button{
     overflow:hidden;
 }
 
-/* CAMPOS */
 input, select{
     width:100%;
     padding:12px;
@@ -78,7 +66,6 @@ input, select{
     margin-top:6px;
 }
 
-/* TABELA */
 table{
     width:100%;
     border-collapse:collapse;
@@ -90,7 +77,6 @@ tr:nth-child(even){
     background:#f5f5f5;
 }
 
-/* BOTÃO FLUTUANTE CARRINHO */
 #carrinhoIcone{
     position:fixed;
     right:18px;
@@ -108,7 +94,6 @@ tr:nth-child(even){
     cursor:pointer;
 }
 
-/* MODAL */
 .modal{
     position:fixed;
     left:0;
@@ -125,7 +110,6 @@ tr:nth-child(even){
     padding:12px;
     border-radius:18px;
 }
-
 .total{
     text-align:right;
     font-weight:bold;
@@ -144,7 +128,6 @@ tr:nth-child(even){
 
     <h1 style="text-align:center">🛒 Compras do mês 🛍️</h1>
 
-    <!-- SCANNER -->
     <div class="box">
         <button class="btnStart" id="startButton">📸 Abrir câmera</button>
         <button class="btnStop" id="stopButton">⏹️ Parar</button>
@@ -154,7 +137,6 @@ tr:nth-child(even){
         <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
     </div>
 
-    <!-- PRODUTOS CADASTRADOS -->
     <div class="box">
         <h2>📦 Produtos cadastrados</h2>
 
@@ -171,7 +153,6 @@ tr:nth-child(even){
         </table>
     </div>
 
-    <!-- EDIÇÃO -->
     <div class="box">
         <h2>✏️ Edição de produto</h2>
 
@@ -195,13 +176,10 @@ tr:nth-child(even){
 
 </div>
 
-<!-- ÍCONE DO CARRINHO -->
 <div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️</div>
 
-<!-- MODAL DO CARRINHO -->
 <div id="modalCarrinho" class="modal">
   <div class="modal-content">
-
     <h2>Carrinho</h2>
 
     <table id="tabelaCarrinho">
@@ -221,8 +199,6 @@ tr:nth-child(even){
 </div>
 
 <script>
-/* ---------------- DADOS ---------------- */
-
 let produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
 let carrinho = [];
 
@@ -251,24 +227,19 @@ function salvarProduto(){
     alert("Produto salvo");
 }
 
-/* ---------------- CARRINHO ---------------- */
-
+/* Carrinho */
 function abrirCarrinho(){
     modalCarrinho.style.display="block";
     atualizarCarrinho();
 }
-
 function fecharCarrinho(){
     modalCarrinho.style.display="none";
 }
-
 function removerItem(i){
     carrinho.splice(i,1);
     atualizarCarrinho();
 }
-
 function atualizarCarrinho(){
-
     let tabela = document.getElementById("tabelaCarrinho");
     tabela.innerHTML = `
         <tr>
@@ -278,13 +249,10 @@ function atualizarCarrinho(){
             <th>Subtotal</th>
             <th></th>
         </tr>`;
-
     let total=0;
-
     carrinho.forEach((x,i)=>{
         let sub = x.valor*x.qtd;
         total += sub;
-
         tabela.innerHTML += `
         <tr>
             <td>${x.codigo}</td>
@@ -294,103 +262,141 @@ function atualizarCarrinho(){
             <td><button onclick="removerItem(${i})">Excluir</button></td>
         </tr>`;
     });
-
     document.getElementById("total").innerText = "Total: R$ " + total.toFixed(2);
 }
 
-/* ---------------- SCANNER NOVO ZXING ---------------- */
+/* ---------- SOM DE LEITURA (com fallback) ---------- */
+let beep = null;
+try{
+    beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+}catch(e){}
 
-const { BrowserMultiFormatReader } = ZXingBrowser;
-let codeReader = null;
-let ultimoCodigo = null;
-let scannerRodando = false;
-
-/* beep simples */
-const beep = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=");
-
-async function iniciarScanner(){
-
-    if(scannerRodando) return;
-    scannerRodando = true;
-
-    document.getElementById("detected").innerText = "—";
-
-    codeReader = new BrowserMultiFormatReader();
-
-    try{
-
-        const devices = await BrowserMultiFormatReader.listVideoInputDevices();
-
-        await codeReader.decodeFromVideoDevice(
-            devices[0]?.deviceId || null,
-            "camera",
-            (result, err)=>{
-
-                if(result){
-
-                    let code = result.getText();
-
-                    if(code === ultimoCodigo) return;
-                    ultimoCodigo = code;
-
-                    document.getElementById("detected").innerText = code;
-
-                    try{ beep.play(); }catch(e){}
-
-                    setTimeout(()=>ultimoCodigo=null,1200);
-
-                    tratarCodigo(code);
-                }
-            }
-        );
-
-    }catch(e){
-        alert("Erro ao iniciar câmera: " + e);
-        scannerRodando=false;
+function tocarBeep(){
+    if(beep){
+        beep.currentTime = 0;
+        beep.play().catch(()=>{});
+        return;
     }
+    /* fallback */
+    try{
+        const ctx = new (window.AudioContext||window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        osc.type="square";
+        osc.frequency.value=1200;
+        osc.connect(ctx.destination);
+        osc.start();
+        setTimeout(()=>osc.stop(),120);
+    }catch(e){}
+}
+
+/* ---------- SCANNER CORRIGIDO ---------- */
+let scannerAtivo=false;
+let ultimoCodigo=null;
+let timeoutLeitura=null;
+
+function iniciarScanner(){
+
+    if(scannerAtivo) return;
+    scannerAtivo=true;
+
+    try{Quagga.stop();}catch(e){}
+
+    Quagga.init({
+        inputStream:{
+            name:"Live",
+            type:"LiveStream",
+            target: document.querySelector("#camera"),
+            constraints:{
+                facingMode:"environment",
+                focusMode:"continuous",
+                width:{ideal:1280},
+                height:{ideal:720}
+            }
+        },
+        locator:{
+            patchSize:"large",
+            halfSample:true
+        },
+        locate:true,
+        numOfWorkers:0, /* mobile mais estável */
+        decoder:{
+            readers:[
+                "ean_reader",
+                "ean_13_reader",
+                "ean_8_reader",
+                "upc_reader",
+                "upc_e_reader",
+                "code_128_reader",
+                "code_39_reader"
+            ]
+        }
+    }, function(err){
+        if(err){
+            alert("Erro ao iniciar câmera: " + err);
+            scannerAtivo=false;
+            return;
+        }
+        Quagga.start();
+    });
+
+    Quagga.offDetected && Quagga.offDetected();
+
+    Quagga.onDetected(function(result){
+
+        if(!result || !result.codeResult || !result.codeResult.code) return;
+
+        let code = result.codeResult.code.trim();
+
+        /* simples verificação de confiança */
+        if(result.codeResult.decodedCodes){
+            const erros = result.codeResult.decodedCodes
+               .filter(x=>x.error!==undefined)
+               .map(x=>x.error);
+            const mediaErro = erros.reduce((a,b)=>a+b,0)/erros.length;
+            if(mediaErro>0.15) return; /* ignora leitura ruim */
+        }
+
+        if(code===ultimoCodigo) return;
+
+        ultimoCodigo=code;
+        detected.innerText=code;
+
+        tocarBeep();
+
+        clearTimeout(timeoutLeitura);
+        timeoutLeitura=setTimeout(()=>ultimoCodigo=null,1400);
+
+        let produto = produtos.find(p=>p.codigo==code);
+
+        if(produto){
+            let qtd = prompt("Quantidade?");
+            if(!qtd) return;
+
+            carrinho.push({
+                codigo:code,
+                nome:produto.nome,
+                valor:Number(produto.valor),
+                qtd:Number(qtd)
+            });
+
+            atualizarCarrinho();
+
+        }else{
+            codigo.value=code;
+            alert("Produto não cadastrado. Preencha abaixo.");
+        }
+    });
 }
 
 function pararScanner(){
-    if(codeReader){
-        codeReader.reset();
-    }
-    scannerRodando=false;
+    try{Quagga.stop();}catch(e){}
+    scannerAtivo=false;
+    ultimoCodigo=null;
     document.getElementById("camera").innerHTML="";
 }
 
-/* ---------------- LÓGICA DO CÓDIGO DETECTADO ---------------- */
-
-function tratarCodigo(code){
-
-    let produto = produtos.find(p=>p.codigo==code);
-
-    if(produto){
-
-        let qtd = prompt("Quantidade?");
-        if(!qtd) return;
-
-        carrinho.push({
-            codigo:code,
-            nome:produto.nome,
-            valor:Number(produto.valor),
-            qtd:Number(qtd)
-        });
-
-        atualizarCarrinho();
-
-    } else {
-
-        codigo.value = code;
-        alert("Produto não cadastrado. Preencha abaixo para salvar.");
-
-    }
-}
-
-/* ---------------- BOTÕES ---------------- */
-
-document.getElementById("startButton").onclick = iniciarScanner;
-document.getElementById("stopButton").onclick  = pararScanner;
-
+document.getElementById("startButton").onclick=iniciarScanner;
+document.getElementById("stopButton").onclick=pararScanner;
 </script>
 
 </body>
