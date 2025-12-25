@@ -44,7 +44,6 @@ button{
     font-size:16px;
     border-radius:12px;
     margin-top:8px;
-    cursor:pointer;
 }
 .btnStart{ background:#2e6bff; color:white; }
 .btnStop{ background:#6b6b6b; color:white; }
@@ -126,7 +125,6 @@ tr:nth-child(even){
     padding-top:10px;
 }
 
-/* área de produtos recolhível */
 #areaProdutosConteudo{
     display:none;
 }
@@ -134,8 +132,6 @@ tr:nth-child(even){
     background:#ffb703;
     color:#000;
 }
-
-/* botão excluir alinhado */
 .excluirBtn{
     background:#e53935;
     color:white;
@@ -143,8 +139,6 @@ tr:nth-child(even){
     border-radius:8px;
     padding:6px 10px;
     cursor:pointer;
-    width:100%;
-    box-sizing:border-box;
 }
 </style>
 </head>
@@ -275,7 +269,7 @@ function excluirProduto(i){
     atualizarTabela();
 }
 
-/* ---------- SALVAR PRODUTO + LIMPAR CAMPOS ---------- */
+/* ---------- SALVAR PRODUTO + LIMPAR ---------- */
 function salvarProduto(){
 
     let p={
@@ -294,7 +288,6 @@ function salvarProduto(){
 
     alert("Produto salvo");
 
-    /* limpa automaticamente */
     codigo.value="";
     nome.value="";
     valor.value="";
@@ -346,11 +339,12 @@ const totalEl=document.getElementById("total");
 /* ---------- BEEP ---------- */
 const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
-/* ---------- SCANNER MAIS PRECISO ---------- */
+/* ---------- SCANNER ---------- */
 let lendo=false;
-let historicoLeituras=[];
+let buffer = [];
 
 function iniciarScanner(){
+
     if(lendo) return;
     lendo=true;
 
@@ -362,51 +356,55 @@ function iniciarScanner(){
             target:document.querySelector("#camera"),
             constraints:{ facingMode:"environment" }
         },
-        locator:{
-            patchSize:"medium",
-            halfSample:false
-        },
-        frequency:10,
-        numOfWorkers:2,
-        decoder:{ readers:["ean_reader","ean_13_reader","code_128_reader"] }
+        decoder:{ readers:[
+            "ean_reader",
+            "ean_13_reader",
+            "ean_8_reader",
+            "code_128_reader"
+        ]}
     },err=>{
-        if(err){ alert("Erro ao iniciar a câmera"); lendo=false; return;}
+        if(err){
+            alert("Erro ao iniciar a câmera");
+            lendo=false;
+            return;
+        }
         Quagga.start();
     });
 
-    historicoLeituras=[];
+    buffer = [];
 
     Quagga.offDetected();
-    Quagga.onDetected(res=>{
-        if(!res.codeResult?.code) return;
+    Quagga.onDetected(dados=>{
 
-        let code=res.codeResult.code.trim();
+        if(!dados.codeResult?.code) return;
 
-        /* acumula e confirma para dar mais precisão */
-        historicoLeituras.push(code);
-        if(historicoLeituras.length>8) historicoLeituras.shift();
+        let code = dados.codeResult.code.trim();
 
-        let ultimos = historicoLeituras.slice(-5);
+        buffer.push(code);
+        if(buffer.length>5) buffer.shift();
 
-        if(!(ultimos.every(v=>v===ultimos[0]))) return;
+        /* valida 3 iguais seguidas */
+        let l = buffer.length;
+        if(l<3) return;
+
+        if(!(buffer[l-1]===buffer[l-2] && buffer[l-2]===buffer[l-3])) return;
+
+        buffer=[];
 
         detected.innerText=code;
 
         beep.currentTime=0;
         beep.play().catch(()=>{});
 
-        historicoLeituras=[];
-
-        let produto=produtos.find(p=>p.codigo==code);
+        let produto = produtos.find(p=>p.codigo==code);
 
         if(produto){
 
-            let qtd=prompt(
-                "Produto encontrado:\n\n"+
-                "📌 "+produto.nome+"\n\n"+
+            let qtd = prompt(
+                "Produto encontrado:\n\n" +
+                "📌 " + produto.nome + "\n\n" +
                 "Informe a quantidade:"
             );
-
             if(!qtd) return;
 
             carrinho.push({
@@ -429,7 +427,7 @@ function iniciarScanner(){
 function pararScanner(){
     try{Quagga.stop();}catch(e){}
     lendo=false;
-    historicoLeituras=[];
+    buffer=[];
 }
 
 document.getElementById("startButton").onclick=iniciarScanner;
