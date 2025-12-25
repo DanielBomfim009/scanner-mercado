@@ -5,7 +5,7 @@
 <title>Compras do mês</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+<script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
 
 <style>
 body{
@@ -55,6 +55,18 @@ button{
     border-radius:18px;
     margin-top:10px;
     overflow:hidden;
+    position:relative;
+}
+
+/* ESSENCIAL PARA A CÂMERA FUNCIONAR BEM */
+#camera video,
+#camera canvas{
+    width:100% !important;
+    height:100% !important;
+    object-fit:cover;
+    position:absolute;
+    top:0;
+    left:0;
 }
 
 input, select{
@@ -128,6 +140,7 @@ tr:nth-child(even){
 
     <h1 style="text-align:center">🛒 Compras do mês 🛍️</h1>
 
+    <!-- SCANNER -->
     <div class="box">
         <button class="btnStart" id="startButton">📸 Abrir câmera</button>
         <button class="btnStop" id="stopButton">⏹️ Parar</button>
@@ -137,6 +150,7 @@ tr:nth-child(even){
         <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
     </div>
 
+    <!-- PRODUTOS -->
     <div class="box">
         <h2>📦 Produtos cadastrados</h2>
 
@@ -153,6 +167,7 @@ tr:nth-child(even){
         </table>
     </div>
 
+    <!-- EDIÇÃO -->
     <div class="box">
         <h2>✏️ Edição de produto</h2>
 
@@ -176,8 +191,10 @@ tr:nth-child(even){
 
 </div>
 
+<!-- ÍCONE DO CARRINHO -->
 <div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️</div>
 
+<!-- MODAL -->
 <div id="modalCarrinho" class="modal">
   <div class="modal-content">
     <h2>Carrinho</h2>
@@ -202,6 +219,7 @@ tr:nth-child(even){
 let produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
 let carrinho = [];
 
+/* ---------- TABELA ---------- */
 function atualizarTabela(){
     const tb=document.querySelector("#produtosTable tbody");
     tb.innerHTML="";
@@ -213,6 +231,7 @@ function atualizarTabela(){
 }
 atualizarTabela();
 
+/* ---------- SALVAR PRODUTO ---------- */
 function salvarProduto(){
     let p={
         codigo:codigo.value,
@@ -220,14 +239,18 @@ function salvarProduto(){
         tipo:tipo.value,
         valor:Number(valor.value)
     };
+
     produtos = produtos.filter(x=>x.codigo!==p.codigo);
     produtos.push(p);
+
     localStorage.setItem("produtos",JSON.stringify(produtos));
+
     atualizarTabela();
+
     alert("Produto salvo");
 }
 
-/* Carrinho */
+/* ---------- CARRINHO ---------- */
 function abrirCarrinho(){
     modalCarrinho.style.display="block";
     atualizarCarrinho();
@@ -240,8 +263,8 @@ function removerItem(i){
     atualizarCarrinho();
 }
 function atualizarCarrinho(){
-    let tabela = document.getElementById("tabelaCarrinho");
-    tabela.innerHTML = `
+    let tabela=document.getElementById("tabelaCarrinho");
+    tabela.innerHTML=`
         <tr>
             <th>Código</th>
             <th>Nome</th>
@@ -250,10 +273,12 @@ function atualizarCarrinho(){
             <th></th>
         </tr>`;
     let total=0;
+
     carrinho.forEach((x,i)=>{
-        let sub = x.valor*x.qtd;
-        total += sub;
-        tabela.innerHTML += `
+        let sub=x.valor*x.qtd;
+        total+=sub;
+
+        tabela.innerHTML+=`
         <tr>
             <td>${x.codigo}</td>
             <td>${x.nome}</td>
@@ -262,114 +287,61 @@ function atualizarCarrinho(){
             <td><button onclick="removerItem(${i})">Excluir</button></td>
         </tr>`;
     });
-    document.getElementById("total").innerText = "Total: R$ " + total.toFixed(2);
+
+    totalEl.innerText="Total: R$ "+total.toFixed(2);
 }
 
-/* ---------- SOM DE LEITURA (com fallback) ---------- */
-let beep = null;
-try{
-    beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
-}catch(e){}
+const totalEl=document.getElementById("total");
 
-function tocarBeep(){
-    if(beep){
-        beep.currentTime = 0;
-        beep.play().catch(()=>{});
-        return;
-    }
-    /* fallback */
-    try{
-        const ctx = new (window.AudioContext||window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        osc.type="square";
-        osc.frequency.value=1200;
-        osc.connect(ctx.destination);
-        osc.start();
-        setTimeout(()=>osc.stop(),120);
-    }catch(e){}
-}
+/* ---------- BEEP ---------- */
+const beep=new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
 
-/* ---------- SCANNER CORRIGIDO ---------- */
-let scannerAtivo=false;
+/* ---------- SCANNER (BASE DO QUE FUNCIONAVA) ---------- */
+let lendo=false;
 let ultimoCodigo=null;
 let timeoutLeitura=null;
 
 function iniciarScanner(){
+    if(lendo) return;
+    lendo=true;
 
-    if(scannerAtivo) return;
-    scannerAtivo=true;
-
-    try{Quagga.stop();}catch(e){}
+    document.getElementById("camera").style.display="block";
 
     Quagga.init({
         inputStream:{
-            name:"Live",
             type:"LiveStream",
-            target: document.querySelector("#camera"),
-            constraints:{
-                facingMode:"environment",
-                focusMode:"continuous",
-                width:{ideal:1280},
-                height:{ideal:720}
-            }
+            target:document.querySelector("#camera"),
+            constraints:{ facingMode:"environment" }
         },
-        locator:{
-            patchSize:"large",
-            halfSample:true
-        },
-        locate:true,
-        numOfWorkers:0, /* mobile mais estável */
-        decoder:{
-            readers:[
-                "ean_reader",
-                "ean_13_reader",
-                "ean_8_reader",
-                "upc_reader",
-                "upc_e_reader",
-                "code_128_reader",
-                "code_39_reader"
-            ]
-        }
-    }, function(err){
+        decoder:{ readers:["ean_reader","ean_8_reader","code_128_reader"] }
+    },err=>{
         if(err){
-            alert("Erro ao iniciar câmera: " + err);
-            scannerAtivo=false;
+            alert("Erro ao iniciar câmera");
+            lendo=false;
             return;
         }
         Quagga.start();
     });
 
-    Quagga.offDetected && Quagga.offDetected();
+    Quagga.offDetected();
+    Quagga.onDetected(data=>{
+        if(!data.codeResult?.code) return;
 
-    Quagga.onDetected(function(result){
-
-        if(!result || !result.codeResult || !result.codeResult.code) return;
-
-        let code = result.codeResult.code.trim();
-
-        /* simples verificação de confiança */
-        if(result.codeResult.decodedCodes){
-            const erros = result.codeResult.decodedCodes
-               .filter(x=>x.error!==undefined)
-               .map(x=>x.error);
-            const mediaErro = erros.reduce((a,b)=>a+b,0)/erros.length;
-            if(mediaErro>0.15) return; /* ignora leitura ruim */
-        }
+        let code=data.codeResult.code.trim();
 
         if(code===ultimoCodigo) return;
-
         ultimoCodigo=code;
         detected.innerText=code;
 
-        tocarBeep();
+        beep.play().catch(()=>{});
 
         clearTimeout(timeoutLeitura);
         timeoutLeitura=setTimeout(()=>ultimoCodigo=null,1400);
 
-        let produto = produtos.find(p=>p.codigo==code);
+        let produto=produtos.find(p=>p.codigo==code);
 
         if(produto){
-            let qtd = prompt("Quantidade?");
+            let qtd=prompt("Quantidade?");
             if(!qtd) return;
 
             carrinho.push({
@@ -380,6 +352,7 @@ function iniciarScanner(){
             });
 
             atualizarCarrinho();
+            abrirCarrinho();
 
         }else{
             codigo.value=code;
@@ -390,11 +363,11 @@ function iniciarScanner(){
 
 function pararScanner(){
     try{Quagga.stop();}catch(e){}
-    scannerAtivo=false;
-    ultimoCodigo=null;
-    document.getElementById("camera").innerHTML="";
+    lendo=false;
+    document.getElementById("camera").style.display="none";
 }
 
+/* BOTÕES */
 document.getElementById("startButton").onclick=iniciarScanner;
 document.getElementById("stopButton").onclick=pararScanner;
 </script>
