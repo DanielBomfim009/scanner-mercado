@@ -58,6 +58,7 @@ button{
     position:relative;
 }
 
+/* ESSENCIAL PARA A CÂMERA FUNCIONAR BEM */
 #camera video,
 #camera canvas{
     width:100% !important;
@@ -139,6 +140,7 @@ tr:nth-child(even){
 
     <h1 style="text-align:center">🛒 Compras do mês 🛍️</h1>
 
+    <!-- SCANNER -->
     <div class="box">
         <button class="btnStart" id="startButton">📸 Abrir câmera</button>
         <button class="btnStop" id="stopButton">⏹️ Parar</button>
@@ -148,6 +150,7 @@ tr:nth-child(even){
         <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
     </div>
 
+    <!-- PRODUTOS -->
     <div class="box">
         <h2>📦 Produtos cadastrados</h2>
 
@@ -164,6 +167,7 @@ tr:nth-child(even){
         </table>
     </div>
 
+    <!-- EDIÇÃO -->
     <div class="box">
         <h2>✏️ Edição de produto</h2>
 
@@ -187,8 +191,10 @@ tr:nth-child(even){
 
 </div>
 
+<!-- ÍCONE DO CARRINHO -->
 <div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️</div>
 
+<!-- MODAL -->
 <div id="modalCarrinho" class="modal">
   <div class="modal-content">
     <h2>Carrinho</h2>
@@ -213,6 +219,7 @@ tr:nth-child(even){
 let produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
 let carrinho = [];
 
+/* ---------- TABELA ---------- */
 function atualizarTabela(){
     const tb=document.querySelector("#produtosTable tbody");
     tb.innerHTML="";
@@ -224,6 +231,7 @@ function atualizarTabela(){
 }
 atualizarTabela();
 
+/* ---------- SALVAR PRODUTO ---------- */
 function salvarProduto(){
     let p={
         codigo:codigo.value,
@@ -242,6 +250,7 @@ function salvarProduto(){
     alert("Produto salvo");
 }
 
+/* ---------- CARRINHO ---------- */
 function abrirCarrinho(){
     modalCarrinho.style.display="block";
     atualizarCarrinho();
@@ -253,7 +262,6 @@ function removerItem(i){
     carrinho.splice(i,1);
     atualizarCarrinho();
 }
-
 function atualizarCarrinho(){
     let tabela=document.getElementById("tabelaCarrinho");
     tabela.innerHTML=`
@@ -288,118 +296,82 @@ const totalEl=document.getElementById("total");
 /* ---------- BEEP ---------- */
 const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
-/* ---------- CORREÇÃO DA CÂMERA ---------- */
+/* ---------- SCANNER CORRIGIDO + PRECISO ---------- */
 let lendo=false;
 let historicoLeituras=[];
-let streamAtivo=null;
 
-async function garantirPermissaoCamera(){
-    try{
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        return devices.some(d=>d.kind==="videoinput");
-    }catch(e){
-        return false;
-    }
-}
-
-async function iniciarScanner(){
+function iniciarScanner(){
 
     if(lendo) return;
-
-    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-        alert("Seu navegador não suporta acesso à câmera.");
-        return;
-    }
-
-    const temCamera = await garantirPermissaoCamera();
-    if(!temCamera){
-        alert("Nenhuma câmera encontrada ou permissão negada.");
-    }
-
     lendo=true;
 
-    // encerra stream anterior
-    if(streamAtivo){
-        streamAtivo.getTracks().forEach(t=>t.stop());
-        streamAtivo=null;
-    }
+    document.getElementById("camera").style.display="block";
 
-    Quagga.stop();
+    try{ Quagga.stop(); }catch(e){}
 
     Quagga.init({
         inputStream:{
             type:"LiveStream",
             target:document.querySelector("#camera"),
             constraints:{
-                facingMode:{ ideal:"environment" },
-                width:{ ideal:1280 },
-                height:{ ideal:720 }
+                facingMode:"environment",
+                width:{ideal:1280},
+                height:{ideal:720}
             }
         },
-        locator:{ patchSize:"x-large", halfSample:false },
+        locator:{
+            patchSize:"medium",
+            halfSample:false
+        },
         locate:true,
-        numOfWorkers:0,
         decoder:{
-            readers:["ean_reader","ean_13_reader","ean_8_reader","code_128_reader"]
+            readers:["ean_reader","ean_8_reader","code_128_reader"]
         }
-    },async err=>{
+    },function(err){
+
         if(err){
-            console.error(err);
-            alert("Erro ao iniciar a câmera: " + err.message);
+            console.log(err);
+            alert("Erro ao iniciar a câmera");
             lendo=false;
             return;
         }
 
-        // força playsinline em iPhone
-        const video = document.querySelector("#camera video");
+        Quagga.start();
+
+        // iOS correção playsinline
+        const video=document.querySelector("#camera video");
         if(video){
             video.setAttribute("playsinline", true);
-            video.setAttribute("muted", true);
-            video.setAttribute("autoplay", true);
         }
-
-        // guarda stream para parar depois
-        try{
-            streamAtivo = Quagga._streams?.live?.stream;
-        }catch(e){}
-
-        Quagga.start();
     });
 
     historicoLeituras=[];
 
     Quagga.offDetected();
-    Quagga.onDetected(res=>{
 
-        if(!res.codeResult?.code) return;
+    Quagga.onDetected(function(res){
 
-        if(res.codeResult.decodedCodes){
-            let erros = res.codeResult.decodedCodes
-                .filter(x=>x.error!==undefined)
-                .map(x=>x.error);
+        if(!res.codeResult || !res.codeResult.code) return;
 
-            let media = erros.reduce((a,b)=>a+b,0)/erros.length;
+        let code=res.codeResult.code.trim();
 
-            if(media>0.10) return;
-        }
-
-        let code = res.codeResult.code.trim();
-
+        // histórico para validar precisão
         historicoLeituras.push(code);
+
         if(historicoLeituras.length>5)
             historicoLeituras.shift();
 
-        let ultimos3 = historicoLeituras.slice(-3);
+        // precisa 3 leituras seguidas iguais
+        let a=historicoLeituras.slice(-3);
 
-        if(!(ultimos3[0]===ultimos3[1] && ultimos3[1]===ultimos3[2]))
-            return;
+        if(!(a[0]===a[1] && a[1]===a[2])) return;
 
-        detected.innerText = code;
+        detected.innerText=code;
+
+        historicoLeituras=[];
 
         beep.currentTime=0;
         beep.play().catch(()=>{});
-
-        historicoLeituras=[];
 
         let produto=produtos.find(p=>p.codigo==code);
 
@@ -425,16 +397,15 @@ async function iniciarScanner(){
 }
 
 function pararScanner(){
-    try{Quagga.stop();}catch(e){}
-    if(streamAtivo){
-        streamAtivo.getTracks().forEach(t=>t.stop());
-    }
+    try{ Quagga.stop(); }catch(e){}
     lendo=false;
     historicoLeituras=[];
+    document.getElementById("camera").style.display="none";
 }
 
-document.getElementById("startButton").onclick=iniciarScanner;
-document.getElementById("stopButton").onclick=pararScanner;
+/* BOTÕES */
+document.getElementById("startButton").addEventListener("click", iniciarScanner);
+document.getElementById("stopButton").addEventListener("click", pararScanner);
 </script>
 
 </body>
