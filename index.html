@@ -58,7 +58,6 @@ button{
     position:relative;
 }
 
-/* ESSENCIAL PARA A CÂMERA FUNCIONAR BEM */
 #camera video,
 #camera canvas{
     width:100% !important;
@@ -214,7 +213,6 @@ tr:nth-child(even){
 let produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
 let carrinho = [];
 
-/* ---------- TABELA ---------- */
 function atualizarTabela(){
     const tb=document.querySelector("#produtosTable tbody");
     tb.innerHTML="";
@@ -226,7 +224,6 @@ function atualizarTabela(){
 }
 atualizarTabela();
 
-/* ---------- SALVAR PRODUTO ---------- */
 function salvarProduto(){
     let p={
         codigo:codigo.value,
@@ -245,7 +242,6 @@ function salvarProduto(){
     alert("Produto salvo");
 }
 
-/* ---------- CARRINHO ---------- */
 function abrirCarrinho(){
     modalCarrinho.style.display="block";
     atualizarCarrinho();
@@ -257,6 +253,7 @@ function removerItem(i){
     carrinho.splice(i,1);
     atualizarCarrinho();
 }
+
 function atualizarCarrinho(){
     let tabela=document.getElementById("tabelaCarrinho");
     tabela.innerHTML=`
@@ -291,41 +288,81 @@ const totalEl=document.getElementById("total");
 /* ---------- BEEP ---------- */
 const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
-/* ---------- SCANNER COM PRECISÃO ALTA ---------- */
+/* ---------- CORREÇÃO DA CÂMERA ---------- */
 let lendo=false;
 let historicoLeituras=[];
+let streamAtivo=null;
 
-function iniciarScanner(){
+async function garantirPermissaoCamera(){
+    try{
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        return devices.some(d=>d.kind==="videoinput");
+    }catch(e){
+        return false;
+    }
+}
+
+async function iniciarScanner(){
 
     if(lendo) return;
+
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+        alert("Seu navegador não suporta acesso à câmera.");
+        return;
+    }
+
+    const temCamera = await garantirPermissaoCamera();
+    if(!temCamera){
+        alert("Nenhuma câmera encontrada ou permissão negada.");
+    }
+
     lendo=true;
+
+    // encerra stream anterior
+    if(streamAtivo){
+        streamAtivo.getTracks().forEach(t=>t.stop());
+        streamAtivo=null;
+    }
+
+    Quagga.stop();
 
     Quagga.init({
         inputStream:{
             type:"LiveStream",
             target:document.querySelector("#camera"),
             constraints:{
-                facingMode:"environment",
-                focusMode:"continuous",
-                width:{ideal:1280},
-                height:{ideal:720}
+                facingMode:{ ideal:"environment" },
+                width:{ ideal:1280 },
+                height:{ ideal:720 }
             }
         },
-        locator:{
-            patchSize:"x-large",
-            halfSample:false
-        },
+        locator:{ patchSize:"x-large", halfSample:false },
         locate:true,
         numOfWorkers:0,
         decoder:{
             readers:["ean_reader","ean_13_reader","ean_8_reader","code_128_reader"]
         }
-    },err=>{
+    },async err=>{
         if(err){
-            alert("Erro ao iniciar câmera");
+            console.error(err);
+            alert("Erro ao iniciar a câmera: " + err.message);
             lendo=false;
             return;
         }
+
+        // força playsinline em iPhone
+        const video = document.querySelector("#camera video");
+        if(video){
+            video.setAttribute("playsinline", true);
+            video.setAttribute("muted", true);
+            video.setAttribute("autoplay", true);
+        }
+
+        // guarda stream para parar depois
+        try{
+            streamAtivo = Quagga._streams?.live?.stream;
+        }catch(e){}
+
         Quagga.start();
     });
 
@@ -336,7 +373,6 @@ function iniciarScanner(){
 
         if(!res.codeResult?.code) return;
 
-        /* confiança do código */
         if(res.codeResult.decodedCodes){
             let erros = res.codeResult.decodedCodes
                 .filter(x=>x.error!==undefined)
@@ -344,17 +380,15 @@ function iniciarScanner(){
 
             let media = erros.reduce((a,b)=>a+b,0)/erros.length;
 
-            if(media>0.10) return; // exige melhor precisão
+            if(media>0.10) return;
         }
 
         let code = res.codeResult.code.trim();
 
         historicoLeituras.push(code);
-
         if(historicoLeituras.length>5)
             historicoLeituras.shift();
 
-        /* exige 3 leituras iguais seguidas */
         let ultimos3 = historicoLeituras.slice(-3);
 
         if(!(ultimos3[0]===ultimos3[1] && ultimos3[1]===ultimos3[2]))
@@ -392,11 +426,13 @@ function iniciarScanner(){
 
 function pararScanner(){
     try{Quagga.stop();}catch(e){}
+    if(streamAtivo){
+        streamAtivo.getTracks().forEach(t=>t.stop());
+    }
     lendo=false;
     historicoLeituras=[];
 }
 
-/* BOTÕES */
 document.getElementById("startButton").onclick=iniciarScanner;
 document.getElementById("stopButton").onclick=pararScanner;
 </script>
