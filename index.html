@@ -1,174 +1,404 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema com Scanner</title>
-
-<!-- seus estilos normais podem ficar aqui -->
-<link rel="stylesheet" href="styles.css">
-
-<style>
-/* área do scanner */
-#camera-area{
-    width: 100%;
-    max-width: 420px;
-    margin: 10px auto;
-}
-#interactive video{
-    width: 100%;
-    border-radius: 14px;
-}
-#resultado{
-    font-size: 20px;
-    text-align: center;
-    margin-top: 10px;
-}
-</style>
+<title>Compras do mês</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
 
+<style>
+body{
+    background:#eef3ff;
+    font-family: Arial;
+    margin:0;
+}
+.container{
+    max-width:900px;
+    margin:auto;
+    padding:12px;
+}
+.logo{
+    text-align:center;
+    margin-top:10px;
+}
+.logo img{
+    width:160px;
+    height:160px;
+    object-fit:cover;
+    border-radius:50%;
+    border:5px solid #ffffff;
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
+}
+.box{
+    background:white;
+    border-radius:18px;
+    padding:16px;
+    margin-top:15px;
+    box-shadow:0 0 15px #00000010;
+}
+button{
+    width:100%;
+    padding:14px;
+    border:none;
+    font-size:16px;
+    border-radius:12px;
+    margin-top:8px;
+}
+.btnStart{ background:#2e6bff; color:white; }
+.btnStop{ background:#6b6b6b; color:white; }
+
+#camera{
+    width:100%;
+    height:260px;
+    background:black;
+    border-radius:18px;
+    margin-top:10px;
+    overflow:hidden;
+    position:relative;
+}
+
+/* ESSENCIAL PARA A CÂMERA FUNCIONAR BEM */
+#camera video,
+#camera canvas{
+    width:100% !important;
+    height:100% !important;
+    object-fit:cover;
+    position:absolute;
+    top:0;
+    left:0;
+}
+
+input, select{
+    width:100%;
+    padding:12px;
+    border-radius:12px;
+    border:1px solid #ccc;
+    box-sizing:border-box;
+    margin-top:6px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+td,th{
+    padding:10px;
+}
+tr:nth-child(even){
+    background:#f5f5f5;
+}
+
+#carrinhoIcone{
+    position:fixed;
+    right:18px;
+    bottom:18px;
+    width:70px;
+    height:70px;
+    border-radius:50%;
+    background:#2e6bff;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:28px;
+    box-shadow:0 8px 20px rgba(0,0,0,.35);
+    cursor:pointer;
+}
+
+.modal{
+    position:fixed;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,.6);
+    display:none;
+}
+.modal-content{
+    background:white;
+    width:92%;
+    margin:40px auto;
+    padding:12px;
+    border-radius:18px;
+}
+.total{
+    text-align:right;
+    font-weight:bold;
+    padding-top:10px;
+}
+</style>
 </head>
 
 <body>
 
-<header>
-    <h1>Meu Sistema</h1>
-</header>
+<div class="container">
 
-<nav>
-    <!-- seu menu normal continua aqui -->
-</nav>
-
-<main>
-
-<section>
-    <h2>Leitor de Código de Barras</h2>
-
-    <div id="camera-area">
-        <div id="interactive" class="viewport"></div>
+    <div class="logo">
+        <img src="logo.jpg">
     </div>
 
-    <p id="resultado">Aponte a câmera para o código de barras</p>
+    <h1 style="text-align:center">🛒 Compras do mês 🛍️</h1>
 
-    <button onclick="abrirCamera()">Abrir câmera</button>
-    <button onclick="fecharCamera()">Fechar câmera</button>
+    <div class="box">
+        <button class="btnStart" id="startButton">📸 Abrir câmera</button>
+        <button class="btnStop" id="stopButton">⏹️ Parar</button>
 
-    <audio id="beep">
-        <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
-    </audio>
+        <div id="camera"></div>
 
-</section>
+        <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
+    </div>
 
-<section>
-    <!-- resto do seu layout, tabelas, formulários, etc -->
-</section>
+    <div class="box">
+        <h2>📦 Produtos cadastrados</h2>
 
-</main>
+        <table id="produtosTable">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nome</th>
+                    <th>Tipo</th>
+                    <th>Preço</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
-<footer>
-    <p>Sistema 2025</p>
-</footer>
+    <div class="box">
+        <h2>✏️ Edição de produto</h2>
+
+        <label>Código</label>
+        <input id="codigo">
+
+        <label>Nome</label>
+        <input id="nome">
+
+        <label>Tipo</label>
+        <select id="tipo">
+            <option>Unidade (UN)</option>
+            <option>Peso (KG)</option>
+        </select>
+
+        <label>Valor</label>
+        <input id="valor" type="number" step="0.01">
+
+        <button onclick="salvarProduto()">Salvar</button>
+    </div>
+
+</div>
+
+<div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️</div>
+
+<div id="modalCarrinho" class="modal">
+  <div class="modal-content">
+    <h2>Carrinho</h2>
+
+    <table id="tabelaCarrinho">
+        <tr>
+            <th>Código</th>
+            <th>Nome</th>
+            <th>Qtd</th>
+            <th>Subtotal</th>
+            <th></th>
+        </tr>
+    </table>
+
+    <p id="total" class="total">Total: R$ 0,00</p>
+
+    <button onclick="fecharCarrinho()">Fechar</button>
+  </div>
+</div>
 
 <script>
+let produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
+let carrinho = [];
 
-let ultimoCodigo = null;
-let confirmacoes = 0;
+/* ---------- TABELA ---------- */
+function atualizarTabela(){
+    const tb=document.querySelector("#produtosTable tbody");
+    tb.innerHTML="";
+    produtos.forEach(p=>{
+        let tr=document.createElement("tr");
+        tr.innerHTML=`<td>${p.codigo}</td><td>${p.nome}</td><td>${p.tipo}</td><td>${p.valor}</td>`;
+        tb.appendChild(tr);
+    });
+}
+atualizarTabela();
 
-// =============== ABRIR CÂMERA ===============
-function abrirCamera(){
+/* ---------- SALVAR PRODUTO ---------- */
+function salvarProduto(){
+    let p={
+        codigo:codigo.value,
+        nome:nome.value,
+        tipo:tipo.value,
+        valor:Number(valor.value)
+    };
 
-    navigator.mediaDevices.getUserMedia({video:true}).then(()=>{
+    produtos = produtos.filter(x=>x.codigo!==p.codigo);
+    produtos.push(p);
 
-        Quagga.init({
-            inputStream:{
-                name:"Live",
-                type:"LiveStream",
-                target: document.querySelector('#interactive'),
-                constraints:{
-                    facingMode: "environment"
-                }
-            },
-            decoder:{
-                readers:[
-                    "ean_reader",
-                    "ean_8_reader",
-                    "code_128_reader",
-                    "code_39_reader"
-                ]
-            },
-            locate:true
-        }, function(err){
-            if(err){
-                console.log(err);
-                return;
+    localStorage.setItem("produtos",JSON.stringify(produtos));
+
+    atualizarTabela();
+
+    alert("Produto salvo");
+}
+
+/* ---------- CARRINHO ---------- */
+function abrirCarrinho(){
+    modalCarrinho.style.display="block";
+    atualizarCarrinho();
+}
+function fecharCarrinho(){
+    modalCarrinho.style.display="none";
+}
+function removerItem(i){
+    carrinho.splice(i,1);
+    atualizarCarrinho();
+}
+function atualizarCarrinho(){
+    let tabela=document.getElementById("tabelaCarrinho");
+    tabela.innerHTML=`
+        <tr>
+            <th>Código</th>
+            <th>Nome</th>
+            <th>Qtd</th>
+            <th>Subtotal</th>
+            <th></th>
+        </tr>`;
+    let total=0;
+
+    carrinho.forEach((x,i)=>{
+        let sub=x.valor*x.qtd;
+        total+=sub;
+
+        tabela.innerHTML+=`
+        <tr>
+            <td>${x.codigo}</td>
+            <td>${x.nome}</td>
+            <td>${x.qtd}</td>
+            <td>R$ ${sub.toFixed(2)}</td>
+            <td><button onclick="removerItem(${i})">Excluir</button></td>
+        </tr>`;
+    });
+
+    totalEl.innerText="Total: R$ "+total.toFixed(2);
+}
+
+const totalEl=document.getElementById("total");
+
+/* ---------- BEEP ---------- */
+const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+
+/* ---------- SCANNER COM PRECISÃO ALTA ---------- */
+let lendo=false;
+let historicoLeituras=[];
+
+function iniciarScanner(){
+
+    if(lendo) return;
+    lendo=true;
+
+    Quagga.init({
+        inputStream:{
+            type:"LiveStream",
+            target:document.querySelector("#camera"),
+            constraints:{
+                facingMode:"environment",
+                focusMode:"continuous",
+                width:{ideal:1280},
+                height:{ideal:720}
             }
-            Quagga.start();
-        });
+        },
+        locator:{
+            patchSize:"x-large",
+            halfSample:false
+        },
+        locate:true,
+        numOfWorkers:0,
+        decoder:{
+            readers:["ean_reader","ean_13_reader","ean_8_reader","code_128_reader"]
+        }
+    },err=>{
+        if(err){
+            alert("Erro ao iniciar câmera");
+            lendo=false;
+            return;
+        }
+        Quagga.start();
+    });
 
-        // --------- DETECÇÃO COM PRECISÃO REFORÇADA -------
-        Quagga.onDetected(function(result){
+    historicoLeituras=[];
 
-            let codigo = result.codeResult.code;
+    Quagga.offDetected();
+    Quagga.onDetected(res=>{
 
-            // calcula erro médio dos segmentos
-            let erros = result.codeResult.decodedCodes
-                .map(c=>c.error)
-                .filter(e=>e!==undefined);
+        if(!res.codeResult?.code) return;
 
-            let mediaErro = erros.reduce((a,b)=>a+b,0) / erros.length;
+        /* confiança do código */
+        if(res.codeResult.decodedCodes){
+            let erros = res.codeResult.decodedCodes
+                .filter(x=>x.error!==undefined)
+                .map(x=>x.error);
 
-            // exige boa qualidade
-            if(mediaErro > 0.08){
-                return;
-            }
+            let media = erros.reduce((a,b)=>a+b,0)/erros.length;
 
-            // exige códigos repetidos iguais
-            if(codigo === ultimoCodigo){
-                confirmacoes++;
-            } else {
-                ultimoCodigo = codigo;
-                confirmacoes = 1;
-            }
+            if(media>0.10) return; // exige melhor precisão
+        }
 
-            // só aceita com 3 confirmações consecutivas
-            if(confirmacoes >= 3){
+        let code = res.codeResult.code.trim();
 
-                document.getElementById("resultado").innerText =
-                "Código detectado com sucesso: " + codigo;
+        historicoLeituras.push(code);
 
-                document.getElementById("beep").play();
+        if(historicoLeituras.length>5)
+            historicoLeituras.shift();
 
-                // aqui entra sua lógica:
-                // ➜ consulta banco
-                // ➜ se existir pergunta quantidade
-                // ➜ se não existir vai para cadastro
+        /* exige 3 leituras iguais seguidas */
+        let ultimos3 = historicoLeituras.slice(-3);
 
-                // pausa para não duplicar leitura
-                confirmacoes = 0;
-                ultimoCodigo = null;
+        if(!(ultimos3[0]===ultimos3[1] && ultimos3[1]===ultimos3[2]))
+            return;
 
-                Quagga.pause();
+        detected.innerText = code;
 
-                setTimeout(()=>{
-                    Quagga.start();
-                }, 1500);
-            }
+        beep.currentTime=0;
+        beep.play().catch(()=>{});
 
-        });
+        historicoLeituras=[];
 
-    }).catch(()=>{
-        alert("Permita o acesso à câmera no navegador.");
+        let produto=produtos.find(p=>p.codigo==code);
+
+        if(produto){
+            let qtd=prompt("Quantidade?");
+            if(!qtd) return;
+
+            carrinho.push({
+                codigo:code,
+                nome:produto.nome,
+                valor:Number(produto.valor),
+                qtd:Number(qtd)
+            });
+
+            atualizarCarrinho();
+            abrirCarrinho();
+
+        }else{
+            codigo.value=code;
+            alert("Produto não cadastrado. Preencha abaixo.");
+        }
     });
 }
 
-// =============== FECHAR ===============
-function fecharCamera(){
-    Quagga.stop();
-    document.getElementById("resultado").innerText = "Câmera desligada";
+function pararScanner(){
+    try{Quagga.stop();}catch(e){}
+    lendo=false;
+    historicoLeituras=[];
 }
 
+/* BOTÕES */
+document.getElementById("startButton").onclick=iniciarScanner;
+document.getElementById("stopButton").onclick=pararScanner;
 </script>
 
 </body>
