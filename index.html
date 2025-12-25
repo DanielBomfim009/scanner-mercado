@@ -125,13 +125,20 @@ tr:nth-child(even){
     padding-top:10px;
 }
 
-/* 👉 tabela de produtos minimizável */
 #areaProdutosConteudo{
     display:none;
 }
 .toggleBtn{
     background:#ffb703;
     color:#000;
+}
+.excluirBtn{
+    background:#e53935;
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:6px 10px;
+    cursor:pointer;
 }
 </style>
 </head>
@@ -156,7 +163,7 @@ tr:nth-child(even){
         <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
     </div>
 
-    <!-- PRODUTOS COM COLAPSE -->
+    <!-- PRODUTOS -->
     <div class="box">
         <h2>📦 Produtos cadastrados</h2>
 
@@ -171,6 +178,7 @@ tr:nth-child(even){
                         <th>Nome</th>
                         <th>Tipo</th>
                         <th>Preço</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -239,13 +247,27 @@ function toggleProdutos(){
 function atualizarTabela(){
     const tb=document.querySelector("#produtosTable tbody");
     tb.innerHTML="";
-    produtos.forEach(p=>{
+    produtos.forEach((p,i)=>{
         let tr=document.createElement("tr");
-        tr.innerHTML=`<td>${p.codigo}</td><td>${p.nome}</td><td>${p.tipo}</td><td>${p.valor}</td>`;
+        tr.innerHTML=`
+            <td>${p.codigo}</td>
+            <td>${p.nome}</td>
+            <td>${p.tipo}</td>
+            <td>${p.valor}</td>
+            <td><button class="excluirBtn" onclick="excluirProduto(${i})">Excluir</button></td>
+        `;
         tb.appendChild(tr);
     });
 }
 atualizarTabela();
+
+/* ---------- EXCLUIR PRODUTO ---------- */
+function excluirProduto(i){
+    if(!confirm("Deseja realmente excluir este produto?")) return;
+    produtos.splice(i,1);
+    localStorage.setItem("produtos",JSON.stringify(produtos));
+    atualizarTabela();
+}
 
 /* ---------- SALVAR PRODUTO + LIMPAR CAMPOS ---------- */
 function salvarProduto(){
@@ -266,7 +288,6 @@ function salvarProduto(){
 
     alert("Produto salvo");
 
-    /* 👉 limpa os campos automaticamente */
     codigo.value="";
     nome.value="";
     valor.value="";
@@ -313,13 +334,12 @@ function atualizarCarrinho(){
 
     totalEl.innerText="Total: R$ "+total.toFixed(2);
 }
-
 const totalEl=document.getElementById("total");
 
 /* ---------- BEEP ---------- */
 const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
-/* ---------- SCANNER (mantido como estava funcionando) ---------- */
+/* ---------- SCANNER ---------- */
 let lendo=false;
 let historicoLeituras=[];
 
@@ -365,7 +385,14 @@ function iniciarScanner(){
         let produto=produtos.find(p=>p.codigo==code);
 
         if(produto){
-            let qtd=prompt("Quantidade?");
+
+            /* 👉 agora mostra o NOME na pergunta */
+            let qtd=prompt(
+                "Produto encontrado:\n\n" +
+                "📌 " + produto.nome + "\n\n" +
+                "Informe a quantidade:"
+            );
+
             if(!qtd) return;
 
             carrinho.push({
