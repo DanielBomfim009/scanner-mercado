@@ -5,7 +5,8 @@
 <title>Compras do mês</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
+<!-- ZXING precisa -->
+<script src="https://unpkg.com/@zxing/library@latest"></script>
 
 <style>
 body{
@@ -57,40 +58,40 @@ button{
     overflow:hidden;
     position:relative;
 }
-#camera video,
-#camera canvas{
-    width:100% !important;
-    height:100% !important;
+
+/* vídeo dentro do container */
+#camera video{
+    width:100%;
+    height:100%;
     object-fit:cover;
-    position:absolute;
-    top:0;
-    left:0;
+}
+
+/* retângulo scan */
+#roi{
+  position:absolute;
+  top:30%;
+  left:10%;
+  width:80%;
+  height:35%;
+  border:3px solid #00ff00;
+  border-radius:10px;
+  box-shadow:0 0 12px #00ff00 inset;
 }
 
 /* linha animada */
 #scanLine{
-    position:absolute;
-    top:0;
-    left:0;
-    width:100%;
-    height:2px;
-    background:red;
-    box-shadow:0 0 10px red,0 0 20px #ff0000;
-    animation:scanMove 2.4s linear infinite;
-    pointer-events:none;
-    z-index:5;
+  position:absolute;
+  left:10%;
+  width:80%;
+  height:2px;
+  background:red;
+  box-shadow:0 0 10px red;
+  animation: scan 2s linear infinite;
 }
 
-/* canvas congelado não bloqueia cliques */
-#freezeCanvas{
-    z-index:4;
-    pointer-events:none;
-}
-
-@keyframes scanMove{
-    0%{ top:0px; }
-    50%{ top:240px; }
-    100%{ top:0px; }
+@keyframes scan{
+  0%{ top:32%; }
+  100%{ top:63%; }
 }
 
 input, select{
@@ -158,6 +159,7 @@ tr:nth-child(even){
     background:#ffb703;
     color:#000;
 }
+
 </style>
 </head>
 
@@ -171,20 +173,25 @@ tr:nth-child(even){
 
     <h1 style="text-align:center">🛒 Compras do mês 🛍️</h1>
 
+    <!-- SCANNER -->
     <div class="box">
+
         <button class="btnStart" id="startButton">📸 Abrir câmera</button>
         <button class="btnStop" id="stopButton">⏹️ Parar</button>
 
         <div id="camera">
-            <canvas id="freezeCanvas"></canvas>
+            <video id="video" playsinline></video>
+            <div id="roi"></div>
             <div id="scanLine"></div>
         </div>
 
         <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
     </div>
 
+    <!-- lista produtos -->
     <div class="box">
         <h2>📦 Produtos cadastrados</h2>
+
         <button class="toggleBtn" onclick="toggleProdutos()">Mostrar / Ocultar</button>
 
         <div id="areaProdutosConteudo">
@@ -202,6 +209,7 @@ tr:nth-child(even){
         </div>
     </div>
 
+    <!-- cadastro -->
     <div class="box">
         <h2>✏️ Edição de produto</h2>
 
@@ -248,40 +256,40 @@ tr:nth-child(even){
 </div>
 
 <script>
-var produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
-var carrinho = [];
-var lendo=false;
-var historicoLeituras=[];
-var congelado=false;
+/* ---------------------- DADOS ----------------------- */
+
+let produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
+let carrinho = [];
 
 /* minimizar lista */
 function toggleProdutos(){
-    var div=document.getElementById("areaProdutosConteudo");
-    div.style.display=(div.style.display==="none"||div.style.display==="")?"block":"none";
+    let div = document.getElementById("areaProdutosConteudo");
+    div.style.display = (div.style.display==="none"||div.style.display==="") ? "block" : "none";
 }
 
 /* tabela */
 function atualizarTabela(){
-    var tb=document.querySelector("#produtosTable tbody");
+    const tb=document.querySelector("#produtosTable tbody");
     tb.innerHTML="";
-    produtos.forEach(function(p){
-        var tr=document.createElement("tr");
-        tr.innerHTML="<td>"+p.codigo+"</td><td>"+p.nome+"</td><td>"+p.tipo+"</td><td>"+p.valor+"</td>";
+    produtos.forEach(p=>{
+        let tr=document.createElement("tr");
+        tr.innerHTML=`<td>${p.codigo}</td><td>${p.nome}</td><td>${p.tipo}</td><td>${p.valor}</td>`;
         tb.appendChild(tr);
     });
 }
 atualizarTabela();
 
-/* salvar */
+/* salvar produto */
 function salvarProduto(){
-    var p={
+
+    let p={
         codigo:codigo.value,
         nome:nome.value,
         tipo:tipo.value,
         valor:Number(valor.value)
     };
 
-    produtos = produtos.filter(function(x){ return x.codigo!==p.codigo; });
+    produtos = produtos.filter(x=>x.codigo!==p.codigo);
     produtos.push(p);
 
     localStorage.setItem("produtos",JSON.stringify(produtos));
@@ -296,7 +304,8 @@ function salvarProduto(){
     tipo.selectedIndex=0;
 }
 
-/* carrinho */
+/* ---------------------- CARRINHO ----------------------- */
+
 function abrirCarrinho(){
     modalCarrinho.style.display="block";
     atualizarCarrinho();
@@ -309,148 +318,131 @@ function removerItem(i){
     atualizarCarrinho();
 }
 function atualizarCarrinho(){
-    var tabela=document.getElementById("tabelaCarrinho");
-    tabela.innerHTML="<tr><th>Código</th><th>Nome</th><th>Qtd</th><th>Subtotal</th><th></th></tr>";
-    var total=0;
+    let tabela=document.getElementById("tabelaCarrinho");
+    tabela.innerHTML=`
+        <tr>
+            <th>Código</th>
+            <th>Nome</th>
+            <th>Qtd</th>
+            <th>Subtotal</th>
+            <th></th>
+        </tr>`;
+    let total=0;
 
-    carrinho.forEach(function(x,i){
-        var sub=x.valor*x.qtd;
+    carrinho.forEach((x,i)=>{
+        let sub=x.valor*x.qtd;
         total+=sub;
 
-        tabela.innerHTML+=
-        "<tr>"+
-        "<td>"+x.codigo+"</td>"+
-        "<td>"+x.nome+"</td>"+
-        "<td>"+x.qtd+"</td>"+
-        "<td>R$ "+sub.toFixed(2)+"</td>"+
-        "<td><button onclick='removerItem("+i+")'>Excluir</button></td>"+
-        "</tr>";
+        tabela.innerHTML+=`
+        <tr>
+            <td>${x.codigo}</td>
+            <td>${x.nome}</td>
+            <td>${x.qtd}</td>
+            <td>R$ ${sub.toFixed(2)}</td>
+            <td><button onclick="removerItem(${i})">Excluir</button></td>
+        </tr>`;
     });
 
-    document.getElementById("total").innerText="Total: R$ "+total.toFixed(2);
+    totalEl.innerText="Total: R$ "+total.toFixed(2);
 }
 
-/* beep */
-var beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+const totalEl=document.getElementById("total");
 
-/* congelar imagem */
-function congelarFrame(){
-    var canvas=document.getElementById("freezeCanvas");
-    var video=document.querySelector("#camera video");
-    if(!video) return;
+/* ---------------------- SCANNER ZXING PRECISO ----------------------- */
 
-    var ctx=canvas.getContext("2d");
-    canvas.width=video.videoWidth;
-    canvas.height=video.videoHeight;
-    ctx.drawImage(video,0,0,canvas.width,canvas.height);
+let stream = null;
+let reader = null;
+let buffer = [];
+const repeticoes = 3;
 
-    canvas.style.display="block";
-    congelado=true;
-}
-function limparCongelamento(){
-    var canvas=document.getElementById("freezeCanvas");
-    canvas.style.display="none";
-    congelado=false;
+function validarEAN13(code){
+  if(!/^[0-9]{13}$/.test(code)) return false;
+  let sum = 0;
+  for(let i=0;i<12;i++){
+    sum += parseInt(code[i]) * (i%2===0?1:3);
+  }
+  let check = (10 - (sum % 10)) % 10;
+  return check === parseInt(code[12]);
 }
 
-/* scanner */
-function iniciarScanner(){
-    if(lendo) return;
-    lendo=true;
-    limparCongelamento();
+async function iniciarScanner(){
 
-    try{ Quagga.stop(); }catch(e){}
+  const video = document.getElementById("video");
 
-    Quagga.init({
-        inputStream:{
-            name:"Live",
-            type:"LiveStream",
-            target:document.querySelector("#camera"),
-            constraints:{
-                facingMode:"environment",
-                width:{ideal:1280},
-                height:{ideal:720}
-            }
-        },
-        locator:{ patchSize:"medium", halfSample:true },
-        locate:true,
-        decoder:{
-            readers:[
-                "ean_reader",
-                "ean_13_reader",
-                "ean_8_reader",
-                "code_128_reader",
-                "upc_reader",
-                "upc_e_reader"
-            ]
-        }
-    },function(err){
-        if(err){
-            alert("Erro ao iniciar a câmera");
-            lendo=false;
-            return;
-        }
-        Quagga.start();
-    });
+  stream = await navigator.mediaDevices.getUserMedia({
+    video:{
+      facingMode:"environment",
+      width:{ideal:1920},
+      height:{ideal:1080}
+    }
+  });
 
-    historicoLeituras=[];
+  video.srcObject = stream;
+  await video.play();
 
-    Quagga.offDetected();
-    Quagga.onDetected(function(res){
+  reader = new ZXing.BrowserMultiFormatReader();
 
-        if(congelado) return;
-        if(!res.codeResult || !res.codeResult.code) return;
+  reader.decodeFromVideoElementContinuously(video,(res,err)=>{
 
-        var code=res.codeResult.code.trim();
+    if(!res) return;
 
-        historicoLeituras.push(code);
-        if(historicoLeituras.length>6) historicoLeituras.shift();
+    const code = res.text;
 
-        var u=historicoLeituras.slice(-3);
-        if(!(u[0]===u[1] && u[1]===u[2])) return;
+    detected.innerText = code;
 
-        historicoLeituras=[];
+    if(!validarEAN13(code)){
+        buffer=[];
+        return;
+    }
 
-        document.getElementById("detected").innerText=code;
+    buffer.push(code);
+    if(buffer.length>repeticoes) buffer.shift();
 
-        beep.currentTime=0;
-        beep.play().catch(function(){});
+    if(
+      buffer.length===repeticoes &&
+      buffer.every(v=>v===code)
+    ){
 
-        congelarFrame();
-        try{Quagga.stop();}catch(e){}
+      // preencher campo código
+      codigo.value = code;
 
-        var produto = produtos.find(function(p){ return p.codigo==code; });
+      // beep
+      new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg").play();
 
-        if(produto){
-            var qtd = prompt("Produto: "+produto.nome+"\n\nQuantidade?");
-            if(!qtd) return;
+      buffer=[];
 
-            carrinho.push({
-                codigo:code,
-                nome:produto.nome,
-                valor:Number(produto.valor),
-                qtd:Number(qtd)
-            });
+      // verifica se já existe
+      const produto = produtos.find(p=>p.codigo==code);
 
-            atualizarCarrinho();
-            abrirCarrinho();
-        } else {
-            codigo.value=code;
-            alert("Produto não cadastrado. Preencha abaixo.");
-        }
-    });
+      if(produto){
+        let qtd = prompt("Produto: "+produto.nome+"\nQuantidade:");
+        if(!qtd) return;
+
+        carrinho.push({
+          codigo:code,
+          nome:produto.nome,
+          valor:Number(produto.valor),
+          qtd:Number(qtd)
+        });
+
+        atualizarCarrinho();
+        abrirCarrinho();
+      } else {
+        alert("Produto não cadastrado — preencha abaixo.");
+      }
+    }
+  });
 }
 
 function pararScanner(){
-    try{Quagga.stop();}catch(e){}
-    lendo=false;
-    historicoLeituras=[];
-    limparCongelamento();
+    if(reader) reader.reset();
+    if(stream) stream.getTracks().forEach(t=>t.stop());
+    buffer=[];
 }
 
-/* BOTÕES */
 document.getElementById("startButton").onclick=iniciarScanner;
 document.getElementById("stopButton").onclick=pararScanner;
+
 </script>
 
 </body>
