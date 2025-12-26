@@ -67,7 +67,7 @@ button{
     left:0;
 }
 
-/* linha neon do scanner */
+/* linha animada */
 #scanLine{
     position:absolute;
     top:0;
@@ -75,8 +75,15 @@ button{
     width:100%;
     height:2px;
     background:red;
-    box-shadow:0 0 12px red, 0 0 24px #ff0000;
+    box-shadow:0 0 10px red,0 0 20px #ff0000;
     animation:scanMove 2.4s linear infinite;
+    pointer-events:none;
+    z-index:5;
+}
+
+/* canvas congelado não bloqueia cliques */
+#freezeCanvas{
+    z-index:4;
     pointer-events:none;
 }
 
@@ -144,7 +151,6 @@ tr:nth-child(even){
     padding-top:10px;
 }
 
-/* tabela minimizável */
 #areaProdutosConteudo{
     display:none;
 }
@@ -165,7 +171,6 @@ tr:nth-child(even){
 
     <h1 style="text-align:center">🛒 Compras do mês 🛍️</h1>
 
-    <!-- SCANNER -->
     <div class="box">
         <button class="btnStart" id="startButton">📸 Abrir câmera</button>
         <button class="btnStop" id="stopButton">⏹️ Parar</button>
@@ -178,10 +183,8 @@ tr:nth-child(even){
         <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
     </div>
 
-    <!-- lista produtos -->
     <div class="box">
         <h2>📦 Produtos cadastrados</h2>
-
         <button class="toggleBtn" onclick="toggleProdutos()">Mostrar / Ocultar</button>
 
         <div id="areaProdutosConteudo">
@@ -199,7 +202,6 @@ tr:nth-child(even){
         </div>
     </div>
 
-    <!-- cadastro -->
     <div class="box">
         <h2>✏️ Edição de produto</h2>
 
@@ -246,22 +248,25 @@ tr:nth-child(even){
 </div>
 
 <script>
-let produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
-let carrinho = [];
+var produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
+var carrinho = [];
+var lendo=false;
+var historicoLeituras=[];
+var congelado=false;
 
 /* minimizar lista */
 function toggleProdutos(){
-    let div = document.getElementById("areaProdutosConteudo");
-    div.style.display = (div.style.display==="none"||div.style.display==="") ? "block" : "none";
+    var div=document.getElementById("areaProdutosConteudo");
+    div.style.display=(div.style.display==="none"||div.style.display==="")?"block":"none";
 }
 
 /* tabela */
 function atualizarTabela(){
-    const tb=document.querySelector("#produtosTable tbody");
+    var tb=document.querySelector("#produtosTable tbody");
     tb.innerHTML="";
-    produtos.forEach(p=>{
-        let tr=document.createElement("tr");
-        tr.innerHTML=\`<td>\${p.codigo}</td><td>\${p.nome}</td><td>\${p.tipo}</td><td>\${p.valor}</td>\`;
+    produtos.forEach(function(p){
+        var tr=document.createElement("tr");
+        tr.innerHTML="<td>"+p.codigo+"</td><td>"+p.nome+"</td><td>"+p.tipo+"</td><td>"+p.valor+"</td>";
         tb.appendChild(tr);
     });
 }
@@ -269,14 +274,14 @@ atualizarTabela();
 
 /* salvar */
 function salvarProduto(){
-    let p={
+    var p={
         codigo:codigo.value,
         nome:nome.value,
         tipo:tipo.value,
         valor:Number(valor.value)
     };
 
-    produtos = produtos.filter(x=>x.codigo!==p.codigo);
+    produtos = produtos.filter(function(x){ return x.codigo!==p.codigo; });
     produtos.push(p);
 
     localStorage.setItem("produtos",JSON.stringify(produtos));
@@ -304,69 +309,51 @@ function removerItem(i){
     atualizarCarrinho();
 }
 function atualizarCarrinho(){
-    let tabela=document.getElementById("tabelaCarrinho");
-    tabela.innerHTML=`
-        <tr>
-            <th>Código</th>
-            <th>Nome</th>
-            <th>Qtd</th>
-            <th>Subtotal</th>
-            <th></th>
-        </tr>`;
-    let total=0;
+    var tabela=document.getElementById("tabelaCarrinho");
+    tabela.innerHTML="<tr><th>Código</th><th>Nome</th><th>Qtd</th><th>Subtotal</th><th></th></tr>";
+    var total=0;
 
-    carrinho.forEach((x,i)=>{
-        let sub=x.valor*x.qtd;
+    carrinho.forEach(function(x,i){
+        var sub=x.valor*x.qtd;
         total+=sub;
 
-        tabela.innerHTML+=\`
-        <tr>
-            <td>\${x.codigo}</td>
-            <td>\${x.nome}</td>
-            <td>\${x.qtd}</td>
-            <td>R$ \${sub.toFixed(2)}</td>
-            <td><button onclick="removerItem(\${i})">Excluir</button></td>
-        </tr>\`;
+        tabela.innerHTML+=
+        "<tr>"+
+        "<td>"+x.codigo+"</td>"+
+        "<td>"+x.nome+"</td>"+
+        "<td>"+x.qtd+"</td>"+
+        "<td>R$ "+sub.toFixed(2)+"</td>"+
+        "<td><button onclick='removerItem("+i+")'>Excluir</button></td>"+
+        "</tr>";
     });
 
-    totalEl.innerText="Total: R$ "+total.toFixed(2);
+    document.getElementById("total").innerText="Total: R$ "+total.toFixed(2);
 }
 
-const totalEl=document.getElementById("total");
-
 /* beep */
-const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+var beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
-/* SCANNER */
-let lendo=false;
-let historicoLeituras=[];
-let videoTrack=null;
-let congelado=false;
-
-/* congela imagem */
+/* congelar imagem */
 function congelarFrame(){
-    const canvas=document.getElementById("freezeCanvas");
-    const video=document.querySelector("#camera video");
-
+    var canvas=document.getElementById("freezeCanvas");
+    var video=document.querySelector("#camera video");
     if(!video) return;
 
-    const ctx=canvas.getContext("2d");
+    var ctx=canvas.getContext("2d");
     canvas.width=video.videoWidth;
     canvas.height=video.videoHeight;
-
     ctx.drawImage(video,0,0,canvas.width,canvas.height);
 
     canvas.style.display="block";
     congelado=true;
 }
-
-/* limpa congelamento */
 function limparCongelamento(){
-    const canvas=document.getElementById("freezeCanvas");
+    var canvas=document.getElementById("freezeCanvas");
     canvas.style.display="none";
     congelado=false;
 }
 
+/* scanner */
 function iniciarScanner(){
     if(lendo) return;
     lendo=true;
@@ -385,10 +372,7 @@ function iniciarScanner(){
                 height:{ideal:720}
             }
         },
-        locator:{
-            patchSize:"medium",
-            halfSample:true
-        },
+        locator:{ patchSize:"medium", halfSample:true },
         locate:true,
         decoder:{
             readers:[
@@ -400,54 +384,45 @@ function iniciarScanner(){
                 "upc_e_reader"
             ]
         }
-    },err=>{
+    },function(err){
         if(err){
             alert("Erro ao iniciar a câmera");
             lendo=false;
             return;
         }
         Quagga.start();
-
-        /* pega track p/ pausa */
-        let stream=Quagga._cameraAccess?.stream;
-        if(stream){
-            videoTrack=stream.getVideoTracks()[0];
-        }
     });
 
     historicoLeituras=[];
 
     Quagga.offDetected();
-    Quagga.onDetected(res=>{
+    Quagga.onDetected(function(res){
 
         if(congelado) return;
-        if(!res.codeResult?.code) return;
+        if(!res.codeResult || !res.codeResult.code) return;
 
-        let code=res.codeResult.code.trim();
+        var code=res.codeResult.code.trim();
 
-        /* valida 3 vezes iguais */
         historicoLeituras.push(code);
         if(historicoLeituras.length>6) historicoLeituras.shift();
 
-        let ultimas = historicoLeituras.slice(-3);
-        if(!(ultimas[0]===ultimas[1] && ultimas[2]===ultimas[1])) return;
+        var u=historicoLeituras.slice(-3);
+        if(!(u[0]===u[1] && u[1]===u[2])) return;
 
         historicoLeituras=[];
 
-        detected.innerText=code;
+        document.getElementById("detected").innerText=code;
 
         beep.currentTime=0;
-        beep.play().catch(()=>{});
+        beep.play().catch(function(){});
 
-        /* congela imagem da câmera */
         congelarFrame();
         try{Quagga.stop();}catch(e){}
 
-        let produto = produtos.find(p=>p.codigo==code);
+        var produto = produtos.find(function(p){ return p.codigo==code; });
 
         if(produto){
-
-            let qtd = prompt("Produto: " + produto.nome + "\n\nQuantidade?");
+            var qtd = prompt("Produto: "+produto.nome+"\n\nQuantidade?");
             if(!qtd) return;
 
             carrinho.push({
@@ -459,7 +434,6 @@ function iniciarScanner(){
 
             atualizarCarrinho();
             abrirCarrinho();
-
         } else {
             codigo.value=code;
             alert("Produto não cadastrado. Preencha abaixo.");
@@ -474,6 +448,7 @@ function pararScanner(){
     limparCongelamento();
 }
 
+/* BOTÕES */
 document.getElementById("startButton").onclick=iniciarScanner;
 document.getElementById("stopButton").onclick=pararScanner;
 </script>
