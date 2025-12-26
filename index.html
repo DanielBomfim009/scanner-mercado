@@ -61,57 +61,65 @@ tr:nth-child(even){background:#f5f5f5;}
 .btn-trash:hover{transform:scale(1.15);}
 .removendo{animation:remover .3s forwards;}
 @keyframes remover{to{opacity:0;transform:translateX(-40px);}}
+
+#cadastroSuspenso{
+  position:fixed;bottom:10px;left:50%;transform:translateX(-50%);
+  width:90%;background:white;padding:16px;border-radius:18px;box-shadow:0 5px 20px rgba(0,0,0,.3);
+  display:none; z-index:1000;
+}
 </style>
 </head>
 
 <body>
 
 <div class="container">
-<div class="logo"><img src="logo.jpg"></div>
-<h1 style="text-align:center">🛒 Compras do mês 🛍️</h1>
+  <div class="logo"><img src="logo.jpg"></div>
+  <h1 style="text-align:center">🛒 Compras do mês 🛍️</h1>
 
-<div class="box">
-<button class="btnStart" id="startButton">📸 Abrir câmera</button>
-<button class="btnStop" id="stopButton">⏹️ Parar</button>
-<div id="camera">
-  <video id="video" playsinline></video>
-  <div class="scan-line"></div>
-</div>
-<p><strong>Código detectado:</strong> <span id="detected">—</span></p>
-<p id="nomeDetectado" class="produtoDetectado"></p>
-</div>
+  <div class="box">
+    <button class="btnStart" id="startButton">📸 Abrir câmera</button>
+    <button class="btnStop" id="stopButton">⏹️ Parar</button>
+    <div id="camera">
+      <video id="video" playsinline></video>
+      <div class="scan-line"></div>
+    </div>
+    <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
+    <p id="nomeDetectado" class="produtoDetectado"></p>
+  </div>
 
-<div class="box">
-<h2>📦 Produtos cadastrados</h2>
-<button class="toggleBtn" onclick="toggleProdutos()">Mostrar / Ocultar</button>
-<div id="areaProdutosConteudo">
-<table id="produtosTable">
-<thead><tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Preço</th><th></th></tr></thead>
-<tbody></tbody>
-</table>
-</div>
-</div>
-
-<div class="box">
-<h2>✏️ Edição de produto</h2>
-<label>Código</label><input id="codigo">
-<label>Nome</label><input id="nome">
-<label>Tipo</label><select id="tipo"><option>Unidade (UN)</option><option>Peso (KG)</option></select>
-<label>Valor</label><input id="valor" type="number" step="0.01">
-<button onclick="salvarProduto()">Salvar</button>
-</div>
+  <div class="box">
+    <h2>📦 Produtos cadastrados</h2>
+    <button class="toggleBtn" onclick="toggleProdutos()">Mostrar / Ocultar</button>
+    <div id="areaProdutosConteudo">
+      <table id="produtosTable">
+        <thead><tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Preço</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 <div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️</div>
 
 <div id="modalCarrinho" class="modal">
-<div class="modal-content">
-<h2>Carrinho</h2>
-<table id="tabelaCarrinho"></table>
-<p id="total" class="total">Total: R$ 0,00</p>
-<button onclick="finalizarCompra()" class="btnStart">Finalizar compra</button>
-<button onclick="fecharCarrinho()">Fechar</button>
+  <div class="modal-content">
+    <h2>Carrinho</h2>
+    <table id="tabelaCarrinho"></table>
+    <p id="total" class="total">Total: R$ 0,00</p>
+    <button onclick="finalizarCompra()" class="btnStart">Finalizar compra</button>
+    <button onclick="fecharCarrinho()">Fechar</button>
+  </div>
 </div>
+
+<!-- Área suspensa de cadastro -->
+<div id="cadastroSuspenso" class="box">
+  <h2>✏️ Cadastrar Produto</h2>
+  <label>Código</label><input id="codigoSuspenso">
+  <label>Nome</label><input id="nomeSuspenso">
+  <label>Tipo</label>
+  <select id="tipoSuspenso"><option>Unidade (UN)</option><option>Peso (KG)</option></select>
+  <label>Valor</label><input id="valorSuspenso" type="number" step="0.01">
+  <button id="salvarSuspenso">Salvar Produto</button>
 </div>
 
 <script>
@@ -128,6 +136,13 @@ let reader=null, stream=null;
 let scannerAtivo=false;
 let estadoScanner="DESLIGADO";
 const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+
+const cadastroSuspenso = document.getElementById("cadastroSuspenso");
+const codigoSuspenso = document.getElementById("codigoSuspenso");
+const nomeSuspenso = document.getElementById("nomeSuspenso");
+const tipoSuspenso = document.getElementById("tipoSuspenso");
+const valorSuspenso = document.getElementById("valorSuspenso");
+const salvarSuspenso = document.getElementById("salvarSuspenso");
 
 function toggleProdutos(){
   areaProdutosConteudo.style.display =
@@ -158,38 +173,7 @@ function excluirProduto(i){
   }
 }
 
-function salvarProduto(){
-  produtos = produtos.filter(p=>p.codigo!==codigo.value);
-
-  const novo={
-    codigo:codigo.value.trim(),
-    nome:nome.value,
-    tipo:tipo.value,
-    valor:Number(valor.value)
-  };
-
-  produtos.push(novo);
-  localStorage.setItem("produtos",JSON.stringify(produtos));
-  atualizarTabela();
-
-  const qtd = Number(prompt("Quantidade para o carrinho:"));
-  if(qtd>0){
-    carrinho.push({...novo,qtd});
-    localStorage.setItem("carrinho",JSON.stringify(carrinho));
-    atualizarCarrinho();
-    abrirCarrinho();
-  }
-
-  codigo.value="";
-  nome.value="";
-  valor.value="";
-  tipo.value="Unidade (UN)";
-
-  estadoScanner="LIVRE";
-  iniciarScanner();
-}
-
-function abrirCarrinho(){modalCarrinho.style.display="block";atualizarCarrinho();}
+function abrirCarrinho(){modalCarrinho.style.display="block"; atualizarCarrinho();}
 function fecharCarrinho(){modalCarrinho.style.display="none";}
 
 function removerItem(i){
@@ -256,13 +240,14 @@ async function iniciarScanner(){
       beep.currentTime=0;
       beep.play();
 
-      pararScanner();
+      const codigoLido = res.text.trim();
+      detected.innerText = codigoLido;
 
-      detected.innerText=res.text;
-      const prod=produtos.find(p=>p.codigo===res.text);
+      const prod = produtos.find(p=>p.codigo===codigoLido);
 
       if(prod){
-        nomeDetectado.innerText=prod.nome;
+        nomeDetectado.innerText = prod.nome;
+        estadoScanner="BLOQUEADO"; // pausa scanner
         const qtd = Number(prompt("Quantidade:"));
         if(qtd>0){
           carrinho.push({...prod,qtd});
@@ -270,13 +255,14 @@ async function iniciarScanner(){
           atualizarCarrinho();
           abrirCarrinho();
         }
+        estadoScanner="ATIVO"; // retoma scanner
       } else {
+        // Produto não cadastrado -> mostrar cadastro suspenso
         nomeDetectado.innerText="Produto não cadastrado";
-        codigo.value=res.text;
+        cadastroSuspenso.style.display="block";
+        codigoSuspenso.value=codigoLido;
+        estadoScanner="BLOQUEADO"; // pausa scanner até salvar
       }
-
-      estadoScanner="ATIVO";
-      iniciarScanner();
     });
   } catch(e){
     alert("Não foi possível abrir a câmera: "+e.message);
@@ -292,6 +278,36 @@ function pararScanner(){
   if(reader){reader.reset(); reader=null;}
   if(stream){stream.getTracks().forEach(t=>t.stop()); stream=null;}
   video.srcObject=null;
+}
+
+// Salvar produto no cadastro suspenso
+salvarSuspenso.onclick = function(){
+  const novo={
+    codigo: codigoSuspenso.value.trim(),
+    nome: nomeSuspenso.value,
+    tipo: tipoSuspenso.value,
+    valor: Number(valorSuspenso.value)
+  };
+  produtos = produtos.filter(p=>p.codigo!==novo.codigo);
+  produtos.push(novo);
+  localStorage.setItem("produtos",JSON.stringify(produtos));
+  atualizarTabela();
+
+  cadastroSuspenso.style.display="none";
+  nomeSuspenso.value="";
+  valorSuspenso.value="";
+  tipoSuspenso.value="Unidade (UN)";
+
+  // Perguntar quantidade para carrinho
+  const qtd = Number(prompt("Quantidade para o carrinho:"));
+  if(qtd>0){
+    carrinho.push({...novo,qtd});
+    localStorage.setItem("carrinho",JSON.stringify(carrinho));
+    atualizarCarrinho();
+    abrirCarrinho();
+  }
+
+  estadoScanner="ATIVO";
 }
 
 startButton.onclick=iniciarScanner;
