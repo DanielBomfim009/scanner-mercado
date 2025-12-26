@@ -125,20 +125,13 @@ tr:nth-child(even){
     padding-top:10px;
 }
 
+/* tabela minimizável */
 #areaProdutosConteudo{
     display:none;
 }
 .toggleBtn{
     background:#ffb703;
     color:#000;
-}
-.excluirBtn{
-    background:#e53935;
-    color:white;
-    border:none;
-    border-radius:8px;
-    padding:6px 10px;
-    cursor:pointer;
 }
 </style>
 </head>
@@ -163,14 +156,13 @@ tr:nth-child(even){
         <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
     </div>
 
-    <!-- PRODUTOS -->
+    <!-- lista produtos -->
     <div class="box">
         <h2>📦 Produtos cadastrados</h2>
 
         <button class="toggleBtn" onclick="toggleProdutos()">Mostrar / Ocultar</button>
 
         <div id="areaProdutosConteudo">
-
             <table id="produtosTable">
                 <thead>
                     <tr>
@@ -178,16 +170,14 @@ tr:nth-child(even){
                         <th>Nome</th>
                         <th>Tipo</th>
                         <th>Preço</th>
-                        <th></th>
                     </tr>
                 </thead>
                 <tbody></tbody>
             </table>
-
         </div>
     </div>
 
-    <!-- EDIÇÃO -->
+    <!-- cadastro -->
     <div class="box">
         <h2>✏️ Edição de produto</h2>
 
@@ -237,39 +227,25 @@ tr:nth-child(even){
 let produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
 let carrinho = [];
 
-/* -------- MOSTRAR / ESCONDER PRODUTOS ---------- */
+/* minimizar lista */
 function toggleProdutos(){
     let div = document.getElementById("areaProdutosConteudo");
     div.style.display = (div.style.display==="none"||div.style.display==="") ? "block" : "none";
 }
 
-/* ---------- TABELA ---------- */
+/* tabela */
 function atualizarTabela(){
     const tb=document.querySelector("#produtosTable tbody");
     tb.innerHTML="";
-    produtos.forEach((p,i)=>{
+    produtos.forEach(p=>{
         let tr=document.createElement("tr");
-        tr.innerHTML=`
-            <td>${p.codigo}</td>
-            <td>${p.nome}</td>
-            <td>${p.tipo}</td>
-            <td>${p.valor}</td>
-            <td><button class="excluirBtn" onclick="excluirProduto(${i})">Excluir</button></td>
-        `;
+        tr.innerHTML=`<td>${p.codigo}</td><td>${p.nome}</td><td>${p.tipo}</td><td>${p.valor}</td>`;
         tb.appendChild(tr);
     });
 }
 atualizarTabela();
 
-/* ---------- EXCLUIR PRODUTO ---------- */
-function excluirProduto(i){
-    if(!confirm("Deseja realmente excluir este produto?")) return;
-    produtos.splice(i,1);
-    localStorage.setItem("produtos",JSON.stringify(produtos));
-    atualizarTabela();
-}
-
-/* ---------- SALVAR PRODUTO + LIMPAR ---------- */
+/* salvar */
 function salvarProduto(){
 
     let p={
@@ -294,7 +270,7 @@ function salvarProduto(){
     tipo.selectedIndex=0;
 }
 
-/* ---------- CARRINHO ---------- */
+/* carrinho */
 function abrirCarrinho(){
     modalCarrinho.style.display="block";
     atualizarCarrinho();
@@ -334,17 +310,17 @@ function atualizarCarrinho(){
 
     totalEl.innerText="Total: R$ "+total.toFixed(2);
 }
+
 const totalEl=document.getElementById("total");
 
-/* ---------- BEEP ---------- */
+/* beep */
 const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
-/* ---------- SCANNER ---------- */
+/* SCANNER */
 let lendo=false;
-let buffer = [];
+let historicoLeituras=[];
 
 function iniciarScanner(){
-
     if(lendo) return;
     lendo=true;
 
@@ -352,16 +328,31 @@ function iniciarScanner(){
 
     Quagga.init({
         inputStream:{
+            name:"Live",
             type:"LiveStream",
             target:document.querySelector("#camera"),
-            constraints:{ facingMode:"environment" }
+            constraints:{
+                facingMode:"environment",
+                width:{ideal:1280},
+                height:{ideal:720},
+                focusMode:"continuous"
+            }
         },
-        decoder:{ readers:[
-            "ean_reader",
-            "ean_13_reader",
-            "ean_8_reader",
-            "code_128_reader"
-        ]}
+        locator:{
+            patchSize:"medium",
+            halfSample:true
+        },
+        locate:true,
+        decoder:{
+            readers:[
+                "ean_reader",
+                "ean_13_reader",
+                "ean_8_reader",
+                "code_128_reader",
+                "upc_reader",
+                "upc_e_reader"
+            ]
+        }
     },err=>{
         if(err){
             alert("Erro ao iniciar a câmera");
@@ -371,25 +362,24 @@ function iniciarScanner(){
         Quagga.start();
     });
 
-    buffer = [];
+    historicoLeituras=[];
 
     Quagga.offDetected();
-    Quagga.onDetected(dados=>{
+    Quagga.onDetected(res=>{
 
-        if(!dados.codeResult?.code) return;
+        if(!res.codeResult?.code) return;
 
-        let code = dados.codeResult.code.trim();
+        let code=res.codeResult.code.trim();
 
-        buffer.push(code);
-        if(buffer.length>5) buffer.shift();
+        /* valida 3 vezes iguais */
+        historicoLeituras.push(code);
+        if(historicoLeituras.length>6) historicoLeituras.shift();
 
-        /* valida 3 iguais seguidas */
-        let l = buffer.length;
-        if(l<3) return;
+        let ultimas = historicoLeituras.slice(-3);
 
-        if(!(buffer[l-1]===buffer[l-2] && buffer[l-2]===buffer[l-3])) return;
+        if(!(ultimas[0]===ultimas[1] && ultimas[1]===ultimas[2])) return;
 
-        buffer=[];
+        historicoLeituras=[];
 
         detected.innerText=code;
 
@@ -400,11 +390,7 @@ function iniciarScanner(){
 
         if(produto){
 
-            let qtd = prompt(
-                "Produto encontrado:\n\n" +
-                "📌 " + produto.nome + "\n\n" +
-                "Informe a quantidade:"
-            );
+            let qtd = prompt("Produto: " + produto.nome + "\n\nQuantidade?");
             if(!qtd) return;
 
             carrinho.push({
@@ -427,7 +413,7 @@ function iniciarScanner(){
 function pararScanner(){
     try{Quagga.stop();}catch(e){}
     lendo=false;
-    buffer=[];
+    historicoLeituras=[];
 }
 
 document.getElementById("startButton").onclick=iniciarScanner;
