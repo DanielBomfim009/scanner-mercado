@@ -5,7 +5,7 @@
 <title>Compras do mês</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<script src="https://unpkg.com/@zxing/library@latest"></script>
+<script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
 
 <style>
 body{
@@ -57,27 +57,94 @@ button{
     overflow:hidden;
     position:relative;
 }
-#camera video{
-    width:100%;
-    height:100%;
+#camera video,
+#camera canvas{
+    width:100% !important;
+    height:100% !important;
     object-fit:cover;
+    position:absolute;
+    top:0;
+    left:0;
 }
 
-/* linha vermelha neon animada */
-.scan-line{
+/* linha neon do scanner */
+#scanLine{
     position:absolute;
+    top:0;
+    left:0;
     width:100%;
     height:2px;
     background:red;
-    box-shadow:0 0 8px red;
-    animation:scan 2s linear infinite;
-}
-@keyframes scan{
-    0%{ top:10%; }
-    100%{ top:90%; }
+    box-shadow:0 0 12px red, 0 0 24px #ff0000;
+    animation:scanMove 2.4s linear infinite;
+    pointer-events:none;
 }
 
-/* lista minimizável */
+@keyframes scanMove{
+    0%{ top:0px; }
+    50%{ top:240px; }
+    100%{ top:0px; }
+}
+
+input, select{
+    width:100%;
+    padding:12px;
+    border-radius:12px;
+    border:1px solid #ccc;
+    box-sizing:border-box;
+    margin-top:6px;
+}
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+td,th{
+    padding:10px;
+}
+tr:nth-child(even){
+    background:#f5f5f5;
+}
+
+#carrinhoIcone{
+    position:fixed;
+    right:18px;
+    bottom:18px;
+    width:70px;
+    height:70px;
+    border-radius:50%;
+    background:#2e6bff;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:28px;
+    box-shadow:0 8px 20px rgba(0,0,0,.35);
+    cursor:pointer;
+}
+
+.modal{
+    position:fixed;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,.6);
+    display:none;
+}
+.modal-content{
+    background:white;
+    width:92%;
+    margin:40px auto;
+    padding:12px;
+    border-radius:18px;
+}
+.total{
+    text-align:right;
+    font-weight:bold;
+    padding-top:10px;
+}
+
+/* tabela minimizável */
 #areaProdutosConteudo{
     display:none;
 }
@@ -104,8 +171,8 @@ button{
         <button class="btnStop" id="stopButton">⏹️ Parar</button>
 
         <div id="camera">
-            <video id="video" playsinline></video>
-            <div id="scanLine" class="scan-line" style="display:none"></div>
+            <canvas id="freezeCanvas"></canvas>
+            <div id="scanLine"></div>
         </div>
 
         <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
@@ -156,9 +223,29 @@ button{
 
 </div>
 
-<script>
-/* ---------------- DADOS ---------------- */
+<div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️</div>
 
+<div id="modalCarrinho" class="modal">
+  <div class="modal-content">
+    <h2>Carrinho</h2>
+
+    <table id="tabelaCarrinho">
+        <tr>
+            <th>Código</th>
+            <th>Nome</th>
+            <th>Qtd</th>
+            <th>Subtotal</th>
+            <th></th>
+        </tr>
+    </table>
+
+    <p id="total" class="total">Total: R$ 0,00</p>
+
+    <button onclick="fecharCarrinho()">Fechar</button>
+  </div>
+</div>
+
+<script>
 let produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
 let carrinho = [];
 
@@ -174,15 +261,14 @@ function atualizarTabela(){
     tb.innerHTML="";
     produtos.forEach(p=>{
         let tr=document.createElement("tr");
-        tr.innerHTML=`<td>${p.codigo}</td><td>${p.nome}</td><td>${p.tipo}</td><td>${p.valor}</td>`;
+        tr.innerHTML=\`<td>\${p.codigo}</td><td>\${p.nome}</td><td>\${p.tipo}</td><td>\${p.valor}</td>\`;
         tb.appendChild(tr);
     });
 }
 atualizarTabela();
 
-/* salvar produto */
+/* salvar */
 function salvarProduto(){
-
     let p={
         codigo:codigo.value,
         nome:nome.value,
@@ -199,100 +285,193 @@ function salvarProduto(){
 
     alert("Produto salvo");
 
-    /* limpar campos */
     codigo.value="";
     nome.value="";
     valor.value="";
     tipo.selectedIndex=0;
 }
 
-/* -------------- SCANNER PRECISO --------------- */
-
-let stream=null;
-let reader=null;
-let buffer=[];
-const repeticoes=3;
-
-/* valida EAN-13 real */
-function validarEAN13(code){
-  if(!/^[0-9]{13}$/.test(code)) return false;
-  let sum = 0;
-  for(let i=0;i<12;i++){
-    sum += parseInt(code[i]) * (i%2===0?1:3);
-  }
-  let check = (10 - (sum % 10)) % 10;
-  return check === parseInt(code[12]);
+/* carrinho */
+function abrirCarrinho(){
+    modalCarrinho.style.display="block";
+    atualizarCarrinho();
 }
+function fecharCarrinho(){
+    modalCarrinho.style.display="none";
+}
+function removerItem(i){
+    carrinho.splice(i,1);
+    atualizarCarrinho();
+}
+function atualizarCarrinho(){
+    let tabela=document.getElementById("tabelaCarrinho");
+    tabela.innerHTML=`
+        <tr>
+            <th>Código</th>
+            <th>Nome</th>
+            <th>Qtd</th>
+            <th>Subtotal</th>
+            <th></th>
+        </tr>`;
+    let total=0;
 
-async function iniciarScanner(){
+    carrinho.forEach((x,i)=>{
+        let sub=x.valor*x.qtd;
+        total+=sub;
 
-    document.getElementById("scanLine").style.display="block";
-
-    reader = new ZXing.BrowserMultiFormatReader();
-
-    stream = await navigator.mediaDevices.getUserMedia({
-        video:{ facingMode:"environment" }
+        tabela.innerHTML+=\`
+        <tr>
+            <td>\${x.codigo}</td>
+            <td>\${x.nome}</td>
+            <td>\${x.qtd}</td>
+            <td>R$ \${sub.toFixed(2)}</td>
+            <td><button onclick="removerItem(\${i})">Excluir</button></td>
+        </tr>\`;
     });
 
-    const video = document.getElementById("video");
-    video.srcObject = stream;
-    await video.play();
+    totalEl.innerText="Total: R$ "+total.toFixed(2);
+}
 
-    reader.decodeFromVideoElementContinuously(video,(result,err)=>{
+const totalEl=document.getElementById("total");
 
-        if(!result) return;
+/* beep */
+const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
-        let code=result.text;
-        detected.innerText=code;
+/* SCANNER */
+let lendo=false;
+let historicoLeituras=[];
+let videoTrack=null;
+let congelado=false;
 
-        if(!validarEAN13(code)){
-            buffer=[];
+/* congela imagem */
+function congelarFrame(){
+    const canvas=document.getElementById("freezeCanvas");
+    const video=document.querySelector("#camera video");
+
+    if(!video) return;
+
+    const ctx=canvas.getContext("2d");
+    canvas.width=video.videoWidth;
+    canvas.height=video.videoHeight;
+
+    ctx.drawImage(video,0,0,canvas.width,canvas.height);
+
+    canvas.style.display="block";
+    congelado=true;
+}
+
+/* limpa congelamento */
+function limparCongelamento(){
+    const canvas=document.getElementById("freezeCanvas");
+    canvas.style.display="none";
+    congelado=false;
+}
+
+function iniciarScanner(){
+    if(lendo) return;
+    lendo=true;
+    limparCongelamento();
+
+    try{ Quagga.stop(); }catch(e){}
+
+    Quagga.init({
+        inputStream:{
+            name:"Live",
+            type:"LiveStream",
+            target:document.querySelector("#camera"),
+            constraints:{
+                facingMode:"environment",
+                width:{ideal:1280},
+                height:{ideal:720}
+            }
+        },
+        locator:{
+            patchSize:"medium",
+            halfSample:true
+        },
+        locate:true,
+        decoder:{
+            readers:[
+                "ean_reader",
+                "ean_13_reader",
+                "ean_8_reader",
+                "code_128_reader",
+                "upc_reader",
+                "upc_e_reader"
+            ]
+        }
+    },err=>{
+        if(err){
+            alert("Erro ao iniciar a câmera");
+            lendo=false;
             return;
         }
+        Quagga.start();
 
-        buffer.push(code);
-        if(buffer.length>repeticoes) buffer.shift();
+        /* pega track p/ pausa */
+        let stream=Quagga._cameraAccess?.stream;
+        if(stream){
+            videoTrack=stream.getVideoTracks()[0];
+        }
+    });
 
-        if(buffer.length===repeticoes && buffer.every(v=>v===buffer[0])){
+    historicoLeituras=[];
 
-            /* congela imagem */
-            video.pause();
+    Quagga.offDetected();
+    Quagga.onDetected(res=>{
 
-            new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg").play();
+        if(congelado) return;
+        if(!res.codeResult?.code) return;
 
-            const confirmado = code;
-            buffer=[];
+        let code=res.codeResult.code.trim();
 
-            codigo.value = confirmado;
+        /* valida 3 vezes iguais */
+        historicoLeituras.push(code);
+        if(historicoLeituras.length>6) historicoLeituras.shift();
 
-            let prod = produtos.find(p=>p.codigo===confirmado);
+        let ultimas = historicoLeituras.slice(-3);
+        if(!(ultimas[0]===ultimas[1] && ultimas[2]===ultimas[1])) return;
 
-            if(prod){
+        historicoLeituras=[];
 
-                let qtd = prompt("Produto encontrado:\n"+prod.nome+"\n\nQuantidade?");
-                if(qtd){
-                    carrinho.push({
-                        codigo:confirmado,
-                        nome:prod.nome,
-                        valor:Number(prod.valor),
-                        qtd:Number(qtd)
-                    });
-                }
+        detected.innerText=code;
 
-            } else {
-                alert("Produto não cadastrado — já coloquei o código no formulário.");
-            }
+        beep.currentTime=0;
+        beep.play().catch(()=>{});
+
+        /* congela imagem da câmera */
+        congelarFrame();
+        try{Quagga.stop();}catch(e){}
+
+        let produto = produtos.find(p=>p.codigo==code);
+
+        if(produto){
+
+            let qtd = prompt("Produto: " + produto.nome + "\n\nQuantidade?");
+            if(!qtd) return;
+
+            carrinho.push({
+                codigo:code,
+                nome:produto.nome,
+                valor:Number(produto.valor),
+                qtd:Number(qtd)
+            });
+
+            atualizarCarrinho();
+            abrirCarrinho();
+
+        } else {
+            codigo.value=code;
+            alert("Produto não cadastrado. Preencha abaixo.");
         }
     });
 }
 
 function pararScanner(){
-
-    document.getElementById("scanLine").style.display="none";
-
-    if(reader) reader.reset();
-    if(stream) stream.getTracks().forEach(t=>t.stop());
-    buffer=[];
+    try{Quagga.stop();}catch(e){}
+    lendo=false;
+    historicoLeituras=[];
+    limparCongelamento();
 }
 
 document.getElementById("startButton").onclick=iniciarScanner;
