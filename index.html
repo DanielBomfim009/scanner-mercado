@@ -42,6 +42,11 @@ tr:nth-child(even){background:#f5f5f5;}
 .modal-content{background:white;width:92%;margin:40px auto;padding:12px;border-radius:18px;}
 .total{text-align:right;font-weight:bold;padding-top:10px;}
 
+#areaProdutosConteudo{display:none;}
+.toggleBtn{background:#ffb703;color:#000;}
+
+.produtoDetectado{text-align:center;font-weight:bold;color:#2e6bff;margin-top:6px;}
+
 .subtotal{
   background:#e6edff;
   color:#1a3cff;
@@ -54,6 +59,9 @@ tr:nth-child(even){background:#f5f5f5;}
   background:none;border:none;font-size:20px;cursor:pointer;color:#ff3b3b;
 }
 .btn-trash:hover{transform:scale(1.15);}
+
+.removendo{animation:remover .3s forwards;}
+@keyframes remover{to{opacity:0;transform:translateX(-40px);}}
 </style>
 </head>
 
@@ -66,106 +74,60 @@ tr:nth-child(even){background:#f5f5f5;}
 <div class="box">
 <button class="btnStart" id="startButton">📸 Abrir câmera</button>
 <button class="btnStop" id="stopButton">⏹️ Parar</button>
-
 <div id="camera">
   <video id="video" playsinline></video>
   <div class="scan-line"></div>
 </div>
-
 <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
-</div>
-
-</div>
-
-<div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️</div>
-
-<div id="modalCarrinho" class="modal">
-<div class="modal-content">
-<h2>Carrinho</h2>
-<table id="tabelaCarrinho"></table>
-<p id="total" class="total">Total: R$ 0,00</p>
-<button onclick="fecharCarrinho()">Fechar</button>
-</div>
+<p id="nomeDetectado" class="produtoDetectado"></p>
 </div>
 
 <script>
-let produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
-let carrinho = JSON.parse(localStorage.getItem("carrinho")||"[]");
+let produtos=JSON.parse(localStorage.getItem("produtos")||"[]");
+let carrinho=JSON.parse(localStorage.getItem("carrinho")||"[]");
 
-let stream = null;
-let reader = null;
-let buffer = [];
-let scannerAtivo = false;
+let stream=null,reader=null;
+let buffer=[];
+let leituraFinalizada=false;
 
-const repeticoes = 3;
-const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
-
-function abrirCarrinho(){
-  modalCarrinho.style.display="block";
-  atualizarCarrinho();
-}
-function fecharCarrinho(){
-  modalCarrinho.style.display="none";
-}
-
-function atualizarCarrinho(){
-  let total=0;
-  tabelaCarrinho.innerHTML=`<tr><th>Código</th><th>Nome</th><th>Qtd</th><th>Subtotal</th><th></th></tr>`;
-  carrinho.forEach((x,i)=>{
-    let sub=x.valor*x.qtd; total+=sub;
-    tabelaCarrinho.innerHTML+=`
-    <tr>
-      <td>${x.codigo}</td>
-      <td>${x.nome}</td>
-      <td>${x.qtd}</td>
-      <td><span class="subtotal">R$ ${sub.toFixed(2)}</span></td>
-      <td><button class="btn-trash" onclick="carrinho.splice(${i},1);localStorage.setItem('carrinho',JSON.stringify(carrinho));atualizarCarrinho()">🗑️</button></td>
-    </tr>`;
-  });
-  total.innerText="Total: R$ "+total.toFixed(2);
-}
+const repeticoes=3;
+const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
 async function iniciarScanner(){
-  if(scannerAtivo) return;
+  if(stream) return;
 
-  scannerAtivo = true;
-  buffer = [];
+  leituraFinalizada=false;
+  buffer=[];
 
-  const video = document.getElementById("video");
-
-  stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
-  video.srcObject = stream;
+  const video=document.getElementById("video");
+  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+  video.srcObject=stream;
   await video.play();
 
-  reader = new ZXing.BrowserMultiFormatReader();
+  reader=new ZXing.BrowserMultiFormatReader();
 
   reader.decodeFromVideoElementContinuously(video,(res)=>{
-    if(!res || !scannerAtivo) return;
+    if(!res || leituraFinalizada) return;
 
-    const code = res.text.trim();
-    detected.innerText = code;
+    const code=res.text.trim();
+    detected.innerText=code;
 
     buffer.push(code);
-    if(buffer.length > repeticoes) buffer.shift();
+    if(buffer.length>repeticoes) buffer.shift();
 
-    if(buffer.length === repeticoes && buffer.every(v=>v===code)){
-      scannerAtivo = false;
-      buffer = [];
-
-      beep.currentTime = 0;
-      beep.play();
-
+    if(buffer.length===repeticoes && buffer.every(v=>v===code)){
+      leituraFinalizada=true;
+      beep.currentTime=0; beep.play();
       pararScanner();
 
-      const produto = produtos.find(p=>p.codigo===code);
+      const produto=produtos.find(p=>p.codigo===code);
+      nomeDetectado.innerText=produto?produto.nome:"";
 
       if(produto){
-        const qtd = prompt("Quantidade:");
+        const qtd=prompt("Quantidade:");
         if(qtd){
           carrinho.push({codigo:code,nome:produto.nome,valor:produto.valor,qtd:Number(qtd)});
           localStorage.setItem("carrinho",JSON.stringify(carrinho));
-          atualizarCarrinho();
-          abrirCarrinho();
         }
       }else{
         alert("Produto não cadastrado");
@@ -177,11 +139,11 @@ async function iniciarScanner(){
 function pararScanner(){
   if(reader){
     reader.reset();
-    reader = null;
+    reader=null;
   }
   if(stream){
     stream.getTracks().forEach(t=>t.stop());
-    stream = null;
+    stream=null;
   }
 }
 
