@@ -2,116 +2,109 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Scanner EAN-13 com validação</title>
+<title>Scanner simples compatível</title>
 
-<script type="module">
-import {
-  BrowserMultiFormatReader,
-  BarcodeFormat,
-  DecodeHintType
-} from "https://cdn.jsdelivr.net/npm/@zxing/browser@latest/+esm";
-
-let reader = null;
-let scanning = false;
-let lastCodes = [];
-const requiredMatches = 3;
-
-function isValidEAN13(code) {
-    if (!/^[0-9]{13}$/.test(code)) return false;
-
-    let sum = 0;
-    for (let i = 0; i < 12; i++) {
-        sum += parseInt(code[i]) * (i % 2 === 0 ? 1 : 3);
-    }
-    let check = (10 - (sum % 10)) % 10;
-    return check === parseInt(code[12]);
+<style>
+video{
+  width:100%;
+  max-width:420px;
+  border:2px solid #444;
+  border-radius:8px;
 }
-
-async function startScanner() {
-    if (scanning) return;
-
-    const video = document.getElementById("preview");
-    document.getElementById("status").innerText = "Solicitando permissão da câmera...";
-
-    try {
-        // abre a câmera primeiro (necessário no Android)
-        await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-
-        const hints = new Map();
-        hints.set(DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.EAN_13]);
-
-        reader = new BrowserMultiFormatReader(hints);
-
-        reader.decodeFromVideoDevice(null, video, (result, err) => {
-            if (result) {
-                const code = result.text;
-                document.getElementById("lido").innerText = "Lido: " + code;
-
-                if (!isValidEAN13(code)) {
-                    document.getElementById("status").innerText =
-                      "⚠️ Código rejeitado (checksum inválido)";
-                    lastCodes = [];
-                    return;
-                }
-
-                lastCodes.push(code);
-                if (lastCodes.length > requiredMatches) lastCodes.shift();
-
-                document.getElementById("status").innerText =
-                    "Confirmando: " + lastCodes.join(" | ");
-
-                if (
-                    lastCodes.length === requiredMatches &&
-                    lastCodes.every(v => v === lastCodes[0])
-                ) {
-                    document.getElementById("confirmado").innerText =
-                        "✔ Código confirmado: " + code;
-
-                    lastCodes = [];
-
-                    // beep
-                    const beep = new Audio(
-                      "https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"
-                    );
-                    beep.play();
-                }
-            }
-        });
-
-        scanning = true;
-        document.getElementById("status").innerText = "📷 Câmera ligada, aponte para o código de barras";
-
-    } catch (e) {
-        document.getElementById("status").innerText =
-          "❌ Erro ao abrir câmera: " + e.message;
-    }
-}
-
-function stopScanner() {
-    if (reader) {
-        reader.reset();
-        reader = null;
-    }
-    scanning = false;
-    lastCodes = [];
-    document.getElementById("status").innerText = "Scanner parado";
-}
-</script>
+</style>
 
 </head>
-
 <body>
 
-<h2>Scanner com validação tripla EAN-13</h2>
+<h2>Scanner com validação tripla</h2>
 
-<video id="preview" width="100%" style="max-width:400px;"></video>
+<video id="video" playsinline></video>
 
+<p id="msg" style="color:red"></p>
 <p id="lido"></p>
-<p id="status"></p>
-<h3 id="confirmado" style="color:green;"></h3>
+<p id="confirmado" style="color:green;font-weight:bold"></p>
 
-<button onclick="startScanner()">📷 Iniciar câmera</button>
-<button onclick="stopScanner()">🛑 Parar</button>
+<button onclick="iniciar()">📷 Iniciar câmera</button>
+<button onclick="parar()">🛑 Parar</button>
+
+<script src="https://unpkg.com/@zxing/library@latest"></script>
+
+<script>
+let codeReader = null;
+let stream = null;
+let buffer = [];
+const repeticoes = 3;
+
+function validarEAN13(code){
+  if(!/^[0-9]{13}$/.test(code)) return false;
+  let sum = 0;
+  for(let i=0;i<12;i++){
+    sum += parseInt(code[i]) * (i%2===0?1:3);
+  }
+  let check = (10 - (sum % 10)) % 10;
+  return check === parseInt(code[12]);
+}
+
+async function iniciar(){
+  document.getElementById("msg").innerText = "Solicitando câmera...";
+
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode:"environment" }
+    });
+
+    document.getElementById("video").srcObject = stream;
+    document.getElementById("video").play();
+
+    codeReader = new ZXing.BrowserMultiFormatReader();
+
+    codeReader.decodeFromVideoDevice(null, "video", (resultado, err)=>{
+      if(resultado){
+        const code = resultado.text;
+        document.getElementById("lido").innerText = "Lido: " + code;
+
+        if(!validarEAN13(code)){
+          document.getElementById("msg").innerText = "⚠️ Código rejeitado (checksum inválido)";
+          buffer = [];
+          return;
+        }
+
+        buffer.push(code);
+        if(buffer.length > repeticoes) buffer.shift();
+
+        if(
+          buffer.length === repeticoes &&
+          buffer.every(v => v === buffer[0])
+        ){
+          document.getElementById("confirmado").innerText =
+            "✔ Confirmado: " + code;
+
+          buffer = [];
+
+          // beep
+          new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg").play();
+        }
+      }
+    });
+
+    document.getElementById("msg").innerText = "Câmera iniciada ✔";
+
+  }catch(e){
+    document.getElementById("msg").innerText =
+      "❌ ERRO: " + e.name + " — " + e.message;
+  }
+}
+
+function parar(){
+  if(codeReader){
+    codeReader.reset();
+  }
+  if(stream){
+    stream.getTracks().forEach(t=>t.stop());
+  }
+  document.getElementById("msg").innerText = "Scanner parado";
+}
+</script>
 
 </body>
 </html>
