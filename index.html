@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>Compras do mês</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <script src="https://unpkg.com/@zxing/library@latest"></script>
 
 <style>
@@ -17,32 +16,15 @@ button{width:100%;padding:14px;border:none;font-size:16px;border-radius:12px;mar
 .btnStart{background:#2e6bff;color:white;}
 .btnStop{background:#6b6b6b;color:white;}
 
-#camera{
-  width:100%;
-  height:260px;
-  background:black;
-  border-radius:18px;
-  margin-top:10px;
-  overflow:hidden;
-  position:relative;
-}
+#camera{width:100%;height:260px;background:black;border-radius:18px;margin-top:10px;overflow:hidden;position:relative;}
 #camera video{width:100%;height:100%;object-fit:cover;}
 
-/* 🔴 LINHA NEON */
 .scan-line{
-  position:absolute;
-  left:0;
-  right:0;
-  height:2px;
-  background:red;
-  box-shadow:0 0 10px red,0 0 20px red;
+  position:absolute;left:0;right:0;height:2px;
+  background:red;box-shadow:0 0 10px red,0 0 20px red;
   animation:scan 2s linear infinite;
 }
-@keyframes scan{
-  0%{top:10%;}
-  50%{top:90%;}
-  100%{top:10%;}
-}
+@keyframes scan{0%{top:10%}50%{top:90%}100%{top:10%}}
 
 input,select{width:100%;padding:12px;border-radius:12px;border:1px solid #ccc;margin-top:6px;}
 table{width:100%;border-collapse:collapse;}
@@ -63,31 +45,23 @@ tr:nth-child(even){background:#f5f5f5;}
 #areaProdutosConteudo{display:none;}
 .toggleBtn{background:#ffb703;color:#000;}
 
-.produtoDetectado{
-  text-align:center;
-  font-weight:bold;
-  color:#2e6bff;
-  margin-top:6px;
-}
+.produtoDetectado{text-align:center;font-weight:bold;color:#2e6bff;margin-top:6px;}
 </style>
 </head>
 
 <body>
 
 <div class="container">
-
 <div class="logo"><img src="logo.jpg"></div>
 <h1 style="text-align:center">🛒 Compras do mês 🛍️</h1>
 
 <div class="box">
 <button class="btnStart" id="startButton">📸 Abrir câmera</button>
 <button class="btnStop" id="stopButton">⏹️ Parar</button>
-
 <div id="camera">
   <video id="video" playsinline></video>
   <div class="scan-line"></div>
 </div>
-
 <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
 <p id="nomeDetectado" class="produtoDetectado"></p>
 </div>
@@ -95,12 +69,9 @@ tr:nth-child(even){background:#f5f5f5;}
 <div class="box">
 <h2>📦 Produtos cadastrados</h2>
 <button class="toggleBtn" onclick="toggleProdutos()">Mostrar / Ocultar</button>
-
 <div id="areaProdutosConteudo">
 <table id="produtosTable">
-<thead>
-<tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Preço</th><th></th></tr>
-</thead>
+<thead><tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Preço</th><th></th></tr></thead>
 <tbody></tbody>
 </table>
 </div>
@@ -115,7 +86,6 @@ tr:nth-child(even){background:#f5f5f5;}
 <label>Valor</label><input id="valor" type="number" step="0.01">
 <button onclick="salvarProduto()">Salvar</button>
 </div>
-
 </div>
 
 <div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️</div>
@@ -124,7 +94,7 @@ tr:nth-child(even){background:#f5f5f5;}
 <div class="modal-content">
 <h2>Carrinho</h2>
 <table id="tabelaCarrinho">
-<tr><th>Código</th><th>Nome</th><th>Qtd</th><th>Subtotal</th><th></th></tr>
+<tr><th>Código</th><th>Nome</th><th>Qtd/Peso</th><th>Subtotal</th><th></th></tr>
 </table>
 <p id="total" class="total">Total: R$ 0,00</p>
 <button onclick="fecharCarrinho()">Fechar</button>
@@ -133,11 +103,15 @@ tr:nth-child(even){background:#f5f5f5;}
 
 <script>
 let produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
-let carrinho = [];
+let carrinho = JSON.parse(localStorage.getItem("carrinho")||"[]");
 
 let stream=null, reader=null, buffer=[], processando=false;
 const repeticoes=3;
 const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+
+function salvarCarrinho(){
+  localStorage.setItem("carrinho",JSON.stringify(carrinho));
+}
 
 function toggleProdutos(){
   areaProdutosConteudo.style.display =
@@ -150,10 +124,7 @@ function atualizarTabela(){
   produtos.forEach((p,i)=>{
     tb.innerHTML+=`
     <tr>
-      <td>${p.codigo}</td>
-      <td>${p.nome}</td>
-      <td>${p.tipo}</td>
-      <td>${p.valor}</td>
+      <td>${p.codigo}</td><td>${p.nome}</td><td>${p.tipo}</td><td>${p.valor}</td>
       <td><button onclick="excluirProduto(${i})">❌</button></td>
     </tr>`;
   });
@@ -182,17 +153,16 @@ function salvarProduto(){
 
 function abrirCarrinho(){modalCarrinho.style.display="block";atualizarCarrinho();}
 function fecharCarrinho(){modalCarrinho.style.display="none";}
-function removerItem(i){carrinho.splice(i,1);atualizarCarrinho();}
+function removerItem(i){carrinho.splice(i,1);salvarCarrinho();atualizarCarrinho();}
 
 function atualizarCarrinho(){
   let total=0;
-  tabelaCarrinho.innerHTML=`<tr><th>Código</th><th>Nome</th><th>Qtd</th><th>Subtotal</th><th></th></tr>`;
+  tabelaCarrinho.innerHTML=`<tr><th>Código</th><th>Nome</th><th>Qtd/Peso</th><th>Subtotal</th><th></th></tr>`;
   carrinho.forEach((x,i)=>{
     let sub=x.valor*x.qtd; total+=sub;
     tabelaCarrinho.innerHTML+=`
     <tr>
-      <td>${x.codigo}</td>
-      <td>${x.nome}</td>
+      <td>${x.codigo}</td><td>${x.nome}</td>
       <td>${x.qtd}</td>
       <td>R$ ${sub.toFixed(2)}</td>
       <td><button onclick="removerItem(${i})">Excluir</button></td>
@@ -200,6 +170,7 @@ function atualizarCarrinho(){
   });
   total.innerText="Total: R$ "+total.toFixed(2);
 }
+atualizarCarrinho();
 
 function validarEAN13(code){
   if(!/^[0-9]{13}$/.test(code)) return false;
@@ -211,44 +182,45 @@ function validarEAN13(code){
 async function iniciarScanner(){
   if(processando) return;
   pararScanner();
-
   const video=document.getElementById("video");
   stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
   video.srcObject=stream;
-
-  await new Promise(r=>{
-    video.onloadedmetadata=()=>video.play().then(r);
-  });
+  await new Promise(r=>video.onloadedmetadata=()=>video.play().then(r));
 
   reader=new ZXing.BrowserMultiFormatReader();
   buffer=[];
 
   reader.decodeFromVideoElementContinuously(video,(res)=>{
     if(!res||processando) return;
-
     const code=res.text.trim();
     detected.innerText=code;
-
     if(!validarEAN13(code)){buffer=[];return;}
 
     buffer.push(code);
     if(buffer.length>repeticoes) buffer.shift();
 
     if(buffer.length===repeticoes && buffer.every(v=>v===code)){
-      processando=true;
-      buffer=[];
+      processando=true; buffer=[];
       codigo.value=code;
       beep.currentTime=0; beep.play();
       pararScanner();
 
       const produto=produtos.find(p=>p.codigo==code);
-      nomeDetectado.innerText = produto ? produto.nome : "";
+      nomeDetectado.innerText=produto?produto.nome:"";
 
       if(produto){
-        let qtd=prompt("Produto: "+produto.nome+"\nQuantidade:");
+        let qtd = prompt(produto.tipo==="Peso (KG)"?"Informe o peso (KG):":"Quantidade:");
         if(qtd){
-          carrinho.push({codigo:code,nome:produto.nome,valor:produto.valor,qtd:Number(qtd)});
-          atualizarCarrinho(); abrirCarrinho();
+          carrinho.push({
+            codigo:code,
+            nome:produto.nome,
+            valor:produto.valor,
+            qtd:Number(qtd),
+            data:new Date().toISOString().slice(0,10)
+          });
+          salvarCarrinho();
+          atualizarCarrinho();
+          abrirCarrinho();
         }
         processando=false; iniciarScanner();
       }else{
