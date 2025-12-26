@@ -1,13 +1,11 @@
-Aparentemente meu código não está completo, o código a seguir é o meu original e próximo é com Scam funcionando da maneira que precisa 
-
-Meu código original: <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <title>Compras do mês</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
+<script src="https://unpkg.com/@zxing/library@latest"></script>
 
 <style>
 body{
@@ -59,75 +57,27 @@ button{
     overflow:hidden;
     position:relative;
 }
-#camera video,
-#camera canvas{
-    width:100% !important;
-    height:100% !important;
-    object-fit:cover;
-    position:absolute;
-    top:0;
-    left:0;
-}
-
-input, select{
-    width:100%;
-    padding:12px;
-    border-radius:12px;
-    border:1px solid #ccc;
-    box-sizing:border-box;
-    margin-top:6px;
-}
-table{
-    width:100%;
-    border-collapse:collapse;
-}
-td,th{
-    padding:10px;
-}
-tr:nth-child(even){
-    background:#f5f5f5;
-}
-
-#carrinhoIcone{
-    position:fixed;
-    right:18px;
-    bottom:18px;
-    width:70px;
-    height:70px;
-    border-radius:50%;
-    background:#2e6bff;
-    color:white;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:28px;
-    box-shadow:0 8px 20px rgba(0,0,0,.35);
-    cursor:pointer;
-}
-
-.modal{
-    position:fixed;
-    left:0;
-    top:0;
+#camera video{
     width:100%;
     height:100%;
-    background:rgba(0,0,0,.6);
-    display:none;
-}
-.modal-content{
-    background:white;
-    width:92%;
-    margin:40px auto;
-    padding:12px;
-    border-radius:18px;
-}
-.total{
-    text-align:right;
-    font-weight:bold;
-    padding-top:10px;
+    object-fit:cover;
 }
 
-/* tabela minimizável */
+/* linha vermelha neon animada */
+.scan-line{
+    position:absolute;
+    width:100%;
+    height:2px;
+    background:red;
+    box-shadow:0 0 8px red;
+    animation:scan 2s linear infinite;
+}
+@keyframes scan{
+    0%{ top:10%; }
+    100%{ top:90%; }
+}
+
+/* lista minimizável */
 #areaProdutosConteudo{
     display:none;
 }
@@ -153,7 +103,10 @@ tr:nth-child(even){
         <button class="btnStart" id="startButton">📸 Abrir câmera</button>
         <button class="btnStop" id="stopButton">⏹️ Parar</button>
 
-        <div id="camera"></div>
+        <div id="camera">
+            <video id="video" playsinline></video>
+            <div id="scanLine" class="scan-line" style="display:none"></div>
+        </div>
 
         <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
     </div>
@@ -203,29 +156,9 @@ tr:nth-child(even){
 
 </div>
 
-<div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️</div>
-
-<div id="modalCarrinho" class="modal">
-  <div class="modal-content">
-    <h2>Carrinho</h2>
-
-    <table id="tabelaCarrinho">
-        <tr>
-            <th>Código</th>
-            <th>Nome</th>
-            <th>Qtd</th>
-            <th>Subtotal</th>
-            <th></th>
-        </tr>
-    </table>
-
-    <p id="total" class="total">Total: R$ 0,00</p>
-
-    <button onclick="fecharCarrinho()">Fechar</button>
-  </div>
-</div>
-
 <script>
+/* ---------------- DADOS ---------------- */
+
 let produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
 let carrinho = [];
 
@@ -247,7 +180,7 @@ function atualizarTabela(){
 }
 atualizarTabela();
 
-/* salvar */
+/* salvar produto */
 function salvarProduto(){
 
     let p={
@@ -266,223 +199,21 @@ function salvarProduto(){
 
     alert("Produto salvo");
 
+    /* limpar campos */
     codigo.value="";
     nome.value="";
     valor.value="";
     tipo.selectedIndex=0;
 }
 
-/* carrinho */
-function abrirCarrinho(){
-    modalCarrinho.style.display="block";
-    atualizarCarrinho();
-}
-function fecharCarrinho(){
-    modalCarrinho.style.display="none";
-}
-function removerItem(i){
-    carrinho.splice(i,1);
-    atualizarCarrinho();
-}
-function atualizarCarrinho(){
-    let tabela=document.getElementById("tabelaCarrinho");
-    tabela.innerHTML=`
-        <tr>
-            <th>Código</th>
-            <th>Nome</th>
-            <th>Qtd</th>
-            <th>Subtotal</th>
-            <th></th>
-        </tr>`;
-    let total=0;
+/* -------------- SCANNER PRECISO --------------- */
 
-    carrinho.forEach((x,i)=>{
-        let sub=x.valor*x.qtd;
-        total+=sub;
+let stream=null;
+let reader=null;
+let buffer=[];
+const repeticoes=3;
 
-        tabela.innerHTML+=`
-        <tr>
-            <td>${x.codigo}</td>
-            <td>${x.nome}</td>
-            <td>${x.qtd}</td>
-            <td>R$ ${sub.toFixed(2)}</td>
-            <td><button onclick="removerItem(${i})">Excluir</button></td>
-        </tr>`;
-    });
-
-    totalEl.innerText="Total: R$ "+total.toFixed(2);
-}
-
-const totalEl=document.getElementById("total");
-
-/* beep */
-const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
-
-/* SCANNER */
-let lendo=false;
-let historicoLeituras=[];
-
-function iniciarScanner(){
-    if(lendo) return;
-    lendo=true;
-
-    try{ Quagga.stop(); }catch(e){}
-
-    Quagga.init({
-        inputStream:{
-            name:"Live",
-            type:"LiveStream",
-            target:document.querySelector("#camera"),
-            constraints:{
-                facingMode:"environment",
-                width:{ideal:1280},
-                height:{ideal:720},
-                focusMode:"continuous"
-            }
-        },
-        locator:{
-            patchSize:"medium",
-            halfSample:true
-        },
-        locate:true,
-        decoder:{
-            readers:[
-                "ean_reader",
-                "ean_13_reader",
-                "ean_8_reader",
-                "code_128_reader",
-                "upc_reader",
-                "upc_e_reader"
-            ]
-        }
-    },err=>{
-        if(err){
-            alert("Erro ao iniciar a câmera");
-            lendo=false;
-            return;
-        }
-        Quagga.start();
-    });
-
-    historicoLeituras=[];
-
-    Quagga.offDetected();
-    Quagga.onDetected(res=>{
-
-        if(!res.codeResult?.code) return;
-
-        let code=res.codeResult.code.trim();
-
-        /* valida 3 vezes iguais */
-        historicoLeituras.push(code);
-        if(historicoLeituras.length>6) historicoLeituras.shift();
-
-        let ultimas = historicoLeituras.slice(-3);
-
-        if(!(ultimas[0]===ultimas[1] && ultimas[1]===ultimas[2])) return;
-
-        historicoLeituras=[];
-
-        detected.innerText=code;
-
-        beep.currentTime=0;
-        beep.play().catch(()=>{});
-
-        let produto = produtos.find(p=>p.codigo==code);
-
-        if(produto){
-
-            let qtd = prompt("Produto: " + produto.nome + "\n\nQuantidade?");
-            if(!qtd) return;
-
-            carrinho.push({
-                codigo:code,
-                nome:produto.nome,
-                valor:Number(produto.valor),
-                qtd:Number(qtd)
-            });
-
-            atualizarCarrinho();
-            abrirCarrinho();
-
-        } else {
-            codigo.value=code;
-            alert("Produto não cadastrado. Preencha abaixo.");
-        }
-    });
-}
-
-function pararScanner(){
-    try{Quagga.stop();}catch(e){}
-    lendo=false;
-    historicoLeituras=[];
-}
-
-document.getElementById("startButton").onclick=iniciarScanner;
-document.getElementById("stopButton").onclick=pararScanner;
-</script>
-
-</body>
-</html>
-
-Código com Scam funcionando com precisão:
-
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<title>Scanner com validação precisa</title>
-
-<style>
-video{
-  width:100%;
-  max-width:450px;
-  border:2px solid #444;
-  border-radius:10px;
-}
-
-#area{
-  position:relative;
-  display:inline-block;
-}
-
-#roi{
-  position:absolute;
-  top:35%;
-  left:15%;
-  width:70%;
-  height:30%;
-  border:3px solid lime;
-  border-radius:8px;
-  box-shadow:0 0 10px #0f0 inset;
-}
-</style>
-
-</head>
-<body>
-
-<h2>Scanner com validação tripla</h2>
-
-<div id="area">
-  <video id="video" playsinline></video>
-  <div id="roi"></div>
-</div>
-
-<p id="msg" style="color:red"></p>
-<p id="lido"></p>
-<p id="confirmado" style="color:green;font-weight:bold"></p>
-
-<button onclick="iniciar()">📷 Iniciar câmera</button>
-<button onclick="parar()">🛑 Parar</button>
-
-<script src="https://unpkg.com/@zxing/library@latest"></script>
-
-<script>
-let codeReader = null;
-let stream = null;
-let buffer = [];
-const repeticoes = 3;
-
+/* valida EAN-13 real */
 function validarEAN13(code){
   if(!/^[0-9]{13}$/.test(code)) return false;
   let sum = 0;
@@ -493,78 +224,79 @@ function validarEAN13(code){
   return check === parseInt(code[12]);
 }
 
-async function iniciar(){
-  document.getElementById("msg").innerText = "Solicitando câmera...";
+async function iniciarScanner(){
 
-  try{
+    document.getElementById("scanLine").style.display="block";
+
+    reader = new ZXing.BrowserMultiFormatReader();
 
     stream = await navigator.mediaDevices.getUserMedia({
-      video:{
-        facingMode:"environment",
-        width:{ ideal:1920 },
-        height:{ ideal:1080 },
-        focusMode:"continuous"
-      }
+        video:{ facingMode:"environment" }
     });
 
     const video = document.getElementById("video");
     video.srcObject = stream;
     await video.play();
 
-    codeReader = new ZXing.BrowserMultiFormatReader();
+    reader.decodeFromVideoElementContinuously(video,(result,err)=>{
 
-    // 👇 força somente EAN-13
-    const hints = new Map();
-    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.EAN_13]);
+        if(!result) return;
 
-    codeReader = new ZXing.BrowserMultiFormatReader(hints);
-
-    codeReader.decodeFromVideoElementContinuously(video, (resultado, err)=>{
-
-      if(resultado){
-
-        const code = resultado.text;
-
-        document.getElementById("lido").innerText = "Lido: " + code;
+        let code=result.text;
+        detected.innerText=code;
 
         if(!validarEAN13(code)){
-          document.getElementById("msg").innerText =
-            "⚠️ Código rejeitado (checksum inválido)";
-          buffer = [];
-          return;
+            buffer=[];
+            return;
         }
 
         buffer.push(code);
-        if(buffer.length > repeticoes) buffer.shift();
+        if(buffer.length>repeticoes) buffer.shift();
 
-        if(
-          buffer.length === repeticoes &&
-          buffer.every(v => v === buffer[0])
-        ){
-          document.getElementById("confirmado").innerText =
-            "✔ Confirmado com precisão: " + code;
+        if(buffer.length===repeticoes && buffer.every(v=>v===buffer[0])){
 
-          buffer = [];
+            /* congela imagem */
+            video.pause();
 
-          new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg").play();
+            new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg").play();
+
+            const confirmado = code;
+            buffer=[];
+
+            codigo.value = confirmado;
+
+            let prod = produtos.find(p=>p.codigo===confirmado);
+
+            if(prod){
+
+                let qtd = prompt("Produto encontrado:\n"+prod.nome+"\n\nQuantidade?");
+                if(qtd){
+                    carrinho.push({
+                        codigo:confirmado,
+                        nome:prod.nome,
+                        valor:Number(prod.valor),
+                        qtd:Number(qtd)
+                    });
+                }
+
+            } else {
+                alert("Produto não cadastrado — já coloquei o código no formulário.");
+            }
         }
-      }
     });
-
-    document.getElementById("msg").innerText =
-      "Aponte o código DENTRO do retângulo verde ✔";
-
-  }catch(e){
-    document.getElementById("msg").innerText =
-      "❌ ERRO: " + e.name + " — " + e.message;
-  }
 }
 
-function parar(){
-  if(codeReader) codeReader.reset();
-  if(stream) stream.getTracks().forEach(t=>t.stop());
-  document.getElementById("msg").innerText = "Scanner parado";
+function pararScanner(){
+
+    document.getElementById("scanLine").style.display="none";
+
+    if(reader) reader.reset();
+    if(stream) stream.getTracks().forEach(t=>t.stop());
+    buffer=[];
 }
+
+document.getElementById("startButton").onclick=iniciarScanner;
+document.getElementById("stopButton").onclick=pararScanner;
 </script>
 
 </body>
