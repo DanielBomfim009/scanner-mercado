@@ -155,7 +155,6 @@ function salvarProduto(){
   localStorage.setItem("produtos",JSON.stringify(produtos));
   atualizarTabela();
   alert("Produto salvo");
-  iniciarScanner();
 }
 
 function abrirCarrinho(){modalCarrinho.style.display="block";atualizarCarrinho();}
@@ -174,71 +173,4 @@ function removerItem(i){
 function atualizarCarrinho(){
   let total=0;
   tabelaCarrinho.innerHTML=`<tr><th>Código</th><th>Nome</th><th>Qtd</th><th>Subtotal</th><th></th></tr>`;
-  carrinho.forEach((x,i)=>{
-    let sub=x.valor*x.qtd; total+=sub;
-    tabelaCarrinho.innerHTML+=`
-    <tr id="row${i}">
-      <td>${x.codigo}</td><td>${x.nome}</td><td>${x.qtd}</td>
-      <td><span class="subtotal">R$ ${sub.toFixed(2)}</span></td>
-      <td><button class="btn-trash" onclick="removerItem(${i})">🗑️</button></td>
-    </tr>`;
-  });
-  total.innerText="Total: R$ "+total.toFixed(2);
-}
-atualizarCarrinho();
-
-async function iniciarScanner(){
-  if(stream) return;
-  processando=false;
-
-  const video=document.getElementById("video");
-  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
-  video.srcObject=stream;
-  await video.play();
-
-  reader=new ZXing.BrowserMultiFormatReader();
-  buffer=[];
-
-  reader.decodeFromVideoElementContinuously(video,(res)=>{
-    if(!res||processando) return;
-    const code=res.text.trim();
-    detected.innerText=code;
-    buffer.push(code);
-    if(buffer.length>repeticoes) buffer.shift();
-
-    if(buffer.length===repeticoes && buffer.every(v=>v===code)){
-      processando=true;
-      buffer=[];
-      beep.currentTime=0; beep.play();
-      pararScanner();
-
-      const produto=produtos.find(p=>p.codigo==code);
-      codigo.value=code;
-      nomeDetectado.innerText=produto?produto.nome:"";
-
-      if(produto){
-        let qtd=prompt("Quantidade:");
-        if(qtd){
-          carrinho.push({codigo:code,nome:produto.nome,valor:produto.valor,qtd:Number(qtd)});
-          localStorage.setItem("carrinho",JSON.stringify(carrinho));
-          atualizarCarrinho();
-          abrirCarrinho();
-        }
-      }else alert("Produto não cadastrado");
-
-      processando=false;
-    }
-  });
-}
-
-function pararScanner(){
-  if(reader){reader.reset();reader=null;}
-  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
-}
-
-startButton.onclick=iniciarScanner;
-stopButton.onclick=pararScanner;
-</script>
-
-</body>
-</html>
+  carrinho.forEach((x,i
