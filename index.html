@@ -46,6 +46,21 @@ tr:nth-child(even){background:#f5f5f5;}
 .toggleBtn{background:#ffb703;color:#000;}
 
 .produtoDetectado{text-align:center;font-weight:bold;color:#2e6bff;margin-top:6px;}
+
+.subtotal{
+  background:#e6edff;
+  color:#1a3cff;
+  padding:4px 8px;
+  border-radius:6px;
+  font-weight:bold;
+}
+
+.btn-trash{
+  background:none;border:none;font-size:20px;cursor:pointer;color:#ff3b3b;
+}
+.btn-trash:hover{transform:scale(1.15);}
+.removendo{animation:remover .3s forwards;}
+@keyframes remover{to{opacity:0;transform:translateX(-40px);}}
 </style>
 </head>
 
@@ -81,8 +96,7 @@ tr:nth-child(even){background:#f5f5f5;}
 <h2>✏️ Edição de produto</h2>
 <label>Código</label><input id="codigo">
 <label>Nome</label><input id="nome">
-<label>Tipo</label>
-<select id="tipo"><option>Unidade (UN)</option><option>Peso (KG)</option></select>
+<label>Tipo</label><select id="tipo"><option>Unidade (UN)</option><option>Peso (KG)</option></select>
 <label>Valor</label><input id="valor" type="number" step="0.01">
 <button onclick="salvarProduto()">Salvar</button>
 </div>
@@ -111,7 +125,8 @@ let produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
 let carrinho = JSON.parse(localStorage.getItem("carrinho")||"[]");
 
 let reader=null, stream=null;
-let estadoScanner = "LIVRE";
+let scannerAtivo=false;
+let estadoScanner="DESLIGADO";
 const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
 function toggleProdutos(){
@@ -177,17 +192,36 @@ function salvarProduto(){
 function abrirCarrinho(){modalCarrinho.style.display="block";atualizarCarrinho();}
 function fecharCarrinho(){modalCarrinho.style.display="none";}
 
+function removerItem(i){
+  const row=document.getElementById("row"+i);
+  if(row){
+    row.classList.add("removendo");
+    setTimeout(()=>{
+      carrinho.splice(i,1);
+      localStorage.setItem("carrinho",JSON.stringify(carrinho));
+      atualizarCarrinho();
+    },300);
+  }
+}
+
 function atualizarCarrinho(){
   let soma=0;
-  tabelaCarrinho.innerHTML=`<tr><th>Nome</th><th>Qtd</th><th>Subtotal</th></tr>`;
-  carrinho.forEach(x=>{
+  tabelaCarrinho.innerHTML=`
+    <tr>
+      <th>Nome</th>
+      <th>Qtd</th>
+      <th>Subtotal</th>
+      <th></th>
+    </tr>`;
+  carrinho.forEach((x,i)=>{
     let sub=x.valor*x.qtd;
     soma+=sub;
     tabelaCarrinho.innerHTML+=`
-    <tr>
+    <tr id="row${i}">
       <td>${x.nome}</td>
       <td>${x.qtd}</td>
       <td>R$ ${sub.toFixed(2)}</td>
+      <td><button class="btn-trash" onclick="removerItem(${i})">🗑️</button></td>
     </tr>`;
   });
   total.innerText="Total: R$ "+soma.toFixed(2);
@@ -204,46 +238,60 @@ function finalizarCompra(){
 }
 
 async function iniciarScanner(){
-  if(estadoScanner!=="LIVRE") return;
-  estadoScanner="PROCESSANDO";
+  if(scannerAtivo) return;
+  scannerAtivo=true;
+  estadoScanner="ATIVO";
 
-  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
-  video.srcObject=stream;
-  await video.play();
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video:{facingMode:"environment"} });
+    video.srcObject = stream;
+    await new Promise(r => video.onloadedmetadata = r);
+    await video.play();
 
-  reader=new ZXing.BrowserMultiFormatReader();
-  reader.decodeFromVideoElementContinuously(video,(res)=>{
-    if(!res || estadoScanner!=="PROCESSANDO") return;
+    reader = new ZXing.BrowserMultiFormatReader();
+    reader.decodeFromVideoElementContinuously(video,(res)=>{
+      if(!res || estadoScanner!=="ATIVO") return;
 
-    estadoScanner="BLOQUEADO";
-    beep.play();
-    pararScanner();
+      estadoScanner="PROCESSANDO";
+      beep.currentTime=0;
+      beep.play();
 
-    detected.innerText=res.text;
-    const prod=produtos.find(p=>p.codigo===res.text);
+      pararScanner();
 
-    if(prod){
-      nomeDetectado.innerText=prod.nome;
-      const qtd=Number(prompt("Quantidade:"));
-      if(qtd>0){
-        carrinho.push({...prod,qtd});
-        localStorage.setItem("carrinho",JSON.stringify(carrinho));
-        atualizarCarrinho();
-        abrirCarrinho();
+      detected.innerText=res.text;
+      const prod=produtos.find(p=>p.codigo===res.text);
+
+      if(prod){
+        nomeDetectado.innerText=prod.nome;
+        const qtd = Number(prompt("Quantidade:"));
+        if(qtd>0){
+          carrinho.push({...prod,qtd});
+          localStorage.setItem("carrinho",JSON.stringify(carrinho));
+          atualizarCarrinho();
+          abrirCarrinho();
+        }
+      } else {
+        nomeDetectado.innerText="Produto não cadastrado";
+        codigo.value=res.text;
       }
-    }else{
-      nomeDetectado.innerText="Produto não cadastrado";
-      codigo.value=res.text;
-    }
 
-    estadoScanner="LIVRE";
-    iniciarScanner();
-  });
+      estadoScanner="ATIVO";
+      iniciarScanner();
+    });
+  } catch(e){
+    alert("Não foi possível abrir a câmera: "+e.message);
+    scannerAtivo=false;
+    estadoScanner="DESLIGADO";
+  }
 }
 
 function pararScanner(){
-  if(reader){reader.reset();reader=null;}
-  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+  estadoScanner="DESLIGADO";
+  scannerAtivo=false;
+
+  if(reader){reader.reset(); reader=null;}
+  if(stream){stream.getTracks().forEach(t=>t.stop()); stream=null;}
+  video.srcObject=null;
 }
 
 startButton.onclick=iniciarScanner;
