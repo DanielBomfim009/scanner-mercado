@@ -42,24 +42,14 @@ tr:nth-child(even){background:#f5f5f5;}
 .modal-content{background:white;width:92%;margin:40px auto;padding:12px;border-radius:18px;}
 .total{text-align:right;font-weight:bold;padding-top:10px;}
 
-#areaProdutosConteudo{display:none;}
-.toggleBtn{background:#ffb703;color:#000;}
-
-.produtoDetectado{text-align:center;font-weight:bold;color:#2e6bff;margin-top:6px;}
-
 .subtotal{
-  background:#e6edff;
-  color:#1a3cff;
-  padding:4px 8px;
-  border-radius:6px;
-  font-weight:bold;
+  background:#e6edff;color:#1a3cff;
+  padding:4px 8px;border-radius:6px;font-weight:bold;
 }
 
 .btn-trash{
   background:none;border:none;font-size:20px;cursor:pointer;color:#ff3b3b;
 }
-.btn-trash:hover{transform:scale(1.15);}
-
 .removendo{animation:remover .3s forwards;}
 @keyframes remover{to{opacity:0;transform:translateX(-40px);}}
 </style>
@@ -74,23 +64,14 @@ tr:nth-child(even){background:#f5f5f5;}
 <div class="box">
 <button class="btnStart" id="startButton">📸 Abrir câmera</button>
 <button class="btnStop" id="stopButton">⏹️ Parar</button>
+
 <div id="camera">
   <video id="video" playsinline></video>
   <div class="scan-line"></div>
 </div>
-<p><strong>Código detectado:</strong> <span id="detected">—</span></p>
-<p id="nomeDetectado" class="produtoDetectado"></p>
-</div>
 
-<div class="box">
-<h2>📦 Produtos cadastrados</h2>
-<button class="toggleBtn" onclick="toggleProdutos()">Mostrar / Ocultar</button>
-<div id="areaProdutosConteudo">
-<table id="produtosTable">
-<thead><tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Preço</th><th></th></tr></thead>
-<tbody></tbody>
-</table>
-</div>
+<p><strong>Código detectado:</strong> <span id="detected">—</span></p>
+<p id="nomeDetectado" style="text-align:center;font-weight:bold;color:#2e6bff"></p>
 </div>
 
 <div class="box">
@@ -98,7 +79,10 @@ tr:nth-child(even){background:#f5f5f5;}
 <label>Código</label><input id="codigo">
 <label>Nome</label><input id="nome">
 <label>Tipo</label>
-<select id="tipo"><option>Unidade (UN)</option><option>Peso (KG)</option></select>
+<select id="tipo">
+<option>Unidade (UN)</option>
+<option>Peso (KG)</option>
+</select>
 <label>Valor</label><input id="valor" type="number" step="0.01">
 <button onclick="salvarProduto()">Salvar</button>
 </div>
@@ -111,6 +95,7 @@ tr:nth-child(even){background:#f5f5f5;}
 <h2>Carrinho</h2>
 <table id="tabelaCarrinho"></table>
 <p id="total" class="total">Total: R$ 0,00</p>
+<button onclick="finalizarCompra()">Finalizar compra</button>
 <button onclick="fecharCarrinho()">Fechar</button>
 </div>
 </div>
@@ -119,59 +104,9 @@ tr:nth-child(even){background:#f5f5f5;}
 let produtos=JSON.parse(localStorage.getItem("produtos")||"[]");
 let carrinho=JSON.parse(localStorage.getItem("carrinho")||"[]");
 
-let stream=null, reader=null, buffer=[], processando=false;
+let stream=null,reader=null,buffer=[],processando=false;
 const repeticoes=3;
 const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
-
-function toggleProdutos(){
-  areaProdutosConteudo.style.display =
-    areaProdutosConteudo.style.display==="block" ? "none" : "block";
-}
-
-function atualizarTabela(){
-  const tb=document.querySelector("#produtosTable tbody");
-  tb.innerHTML="";
-  produtos.forEach((p,i)=>{
-    tb.innerHTML+=`
-      <tr>
-        <td>${p.codigo}</td>
-        <td>${p.nome}</td>
-        <td>${p.tipo}</td>
-        <td>${p.valor}</td>
-        <td><button onclick="excluirProduto(${i})">❌</button></td>
-      </tr>`;
-  });
-}
-atualizarTabela();
-
-function excluirProduto(i){
-  if(confirm("Excluir produto?")){
-    produtos.splice(i,1);
-    localStorage.setItem("produtos",JSON.stringify(produtos));
-    atualizarTabela();
-  }
-}
-
-function salvarProduto(){
-  produtos=produtos.filter(x=>x.codigo!==codigo.value);
-  produtos.push({codigo:codigo.value,nome:nome.value,tipo:tipo.value,valor:Number(valor.value)});
-  localStorage.setItem("produtos",JSON.stringify(produtos));
-  atualizarTabela();
-  alert("Produto salvo");
-}
-
-function abrirCarrinho(){modalCarrinho.style.display="block";atualizarCarrinho();}
-function fecharCarrinho(){modalCarrinho.style.display="none";}
-
-function removerItem(i){
-  const row=document.getElementById("row"+i);
-  row.classList.add("removendo");
-  setTimeout(()=>{
-    carrinho.splice(i,1);
-    localStorage.setItem("carrinho",JSON.stringify(carrinho));
-    atualizarCarrinho();
-  },300);
-}
 
 function atualizarCarrinho(){
   let total=0;
@@ -179,84 +114,91 @@ function atualizarCarrinho(){
   carrinho.forEach((x,i)=>{
     let sub=x.valor*x.qtd; total+=sub;
     tabelaCarrinho.innerHTML+=`
-      <tr id="row${i}">
-        <td>${x.codigo}</td>
-        <td>${x.nome}</td>
-        <td>${x.qtd}</td>
-        <td><span class="subtotal">R$ ${sub.toFixed(2)}</span></td>
-        <td><button class="btn-trash" onclick="removerItem(${i})">🗑️</button></td>
-      </tr>`;
+    <tr id="row${i}">
+      <td>${x.codigo}</td><td>${x.nome}</td><td>${x.qtd}</td>
+      <td><span class="subtotal">R$ ${sub.toFixed(2)}</span></td>
+      <td><button class="btn-trash" onclick="removerItem(${i})">🗑️</button></td>
+    </tr>`;
   });
-  total.innerText="Total: R$ "+total.toFixed(2);
+  totalEl.innerText="Total: R$ "+total.toFixed(2);
 }
+const totalEl=document.getElementById("total");
 atualizarCarrinho();
 
-/* ===== CORREÇÃO DO LOOP DO SCANNER ===== */
+function salvarProduto(){
+  const p={codigo:codigo.value,nome:nome.value,tipo:tipo.value,valor:Number(valor.value)};
+  produtos=produtos.filter(x=>x.codigo!==p.codigo);
+  produtos.push(p);
+  localStorage.setItem("produtos",JSON.stringify(produtos));
+
+  let qtd=prompt("Quantos deseja adicionar ao carrinho?");
+  if(qtd){
+    carrinho.push({...p,qtd:Number(qtd)});
+    localStorage.setItem("carrinho",JSON.stringify(carrinho));
+    atualizarCarrinho();
+    abrirCarrinho();
+  }
+
+  codigo.value=nome.value=valor.value="";
+  tipo.selectedIndex=0;
+}
+
+function removerItem(i){
+  document.getElementById("row"+i).classList.add("removendo");
+  setTimeout(()=>{
+    carrinho.splice(i,1);
+    localStorage.setItem("carrinho",JSON.stringify(carrinho));
+    atualizarCarrinho();
+  },300);
+}
+
+function finalizarCompra(){
+  if(!confirm("Finalizar compra?")) return;
+  carrinho=[];
+  localStorage.removeItem("carrinho");
+  atualizarCarrinho();
+  fecharCarrinho();
+}
+
+function abrirCarrinho(){modalCarrinho.style.display="block";}
+function fecharCarrinho(){modalCarrinho.style.display="none";}
 
 async function iniciarScanner(){
-  if(stream || processando) return;
-
-  buffer=[];
+  if(processando) return;
   processando=false;
+  buffer=[];
 
-  const video=document.getElementById("video");
   stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
   video.srcObject=stream;
   await video.play();
 
   reader=new ZXing.BrowserMultiFormatReader();
-
   reader.decodeFromVideoElementContinuously(video,(res)=>{
-    if(!res || processando) return;
-
+    if(!res||processando) return;
     const code=res.text.trim();
     detected.innerText=code;
-
     buffer.push(code);
     if(buffer.length>repeticoes) buffer.shift();
 
     if(buffer.length===repeticoes && buffer.every(v=>v===code)){
       processando=true;
-      pararScanner(); // 🚫 PARA DEFINITIVAMENTE
-
-      beep.currentTime=0;
-      beep.play();
-
-      buffer=[];
+      beep.currentTime=0;beep.play();
+      video.pause();
+      pararScanner();
 
       const produto=produtos.find(p=>p.codigo===code);
       codigo.value=code;
-      nomeDetectado.innerText=produto?produto.nome:"";
-
-      if(produto){
-        const qtd=prompt("Quantidade:");
-        if(qtd){
-          carrinho.push({
-            codigo:code,
-            nome:produto.nome,
-            valor:produto.valor,
-            qtd:Number(qtd)
-          });
-          localStorage.setItem("carrinho",JSON.stringify(carrinho));
-          atualizarCarrinho();
-          abrirCarrinho();
-        }
-      }else{
-        alert("Produto não cadastrado");
-      }
+      nomeDetectado.innerText=produto?produto.nome:"Produto não cadastrado";
     }
   });
 }
 
 function pararScanner(){
   if(reader){reader.reset();reader=null;}
-  if(stream){
-    stream.getTracks().forEach(t=>t.stop());
-    stream=null;
-  }
+  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
 }
 
-startButton.onclick=()=>{processando=false; iniciarScanner();}
+startButton.onclick=iniciarScanner;
 stopButton.onclick=pararScanner;
 </script>
 
