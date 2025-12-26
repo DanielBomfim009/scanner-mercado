@@ -197,4 +197,22 @@ function removerItem(i){
 function atualizarCarrinho(){
   let total=0;
   tabelaCarrinho.innerHTML=`<tr><th>Código</th><th>Nome</th><th>Qtd/Peso</th><th>Subtotal</th><th></th></tr>`;
-  carrinho.forEach((
+  carrinho.forEach((x,i)=>{
+    let sub=x.valor*x.qtd; total+=sub;
+    tabelaCarrinho.innerHTML+=`
+    <tr id="row${i}">
+      <td>${x.codigo}</td><td>${x.nome}</td>
+      <td>${x.qtd}</td>
+      <td><span class="subtotal">R$ ${sub.toFixed(2)}</span></td>
+      <td><button class="btn-trash" onclick="removerItem(${i})">🗑️</button></td>
+    </tr>`;
+  });
+  total.innerText="Total: R$ "+total.toFixed(2);
+}
+atualizarCarrinho();
+
+/* scanner permanece igual ao seu */
+</script>
+
+</body>
+</html>
