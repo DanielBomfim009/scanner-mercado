@@ -11,12 +11,11 @@ import {
   DecodeHintType
 } from "https://cdn.jsdelivr.net/npm/@zxing/browser@latest/+esm";
 
-let reader;
-let video;
+let reader = null;
+let scanning = false;
 let lastCodes = [];
 const requiredMatches = 3;
 
-// validação oficial EAN-13
 function isValidEAN13(code) {
     if (!/^[0-9]{13}$/.test(code)) return false;
 
@@ -28,62 +27,82 @@ function isValidEAN13(code) {
     return check === parseInt(code[12]);
 }
 
-function startScanner() {
-    video = document.getElementById("preview");
+async function startScanner() {
+    if (scanning) return;
 
-    const hints = new Map();
-    hints.set(DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.EAN_13]);
+    const video = document.getElementById("preview");
+    document.getElementById("status").innerText = "Solicitando permissão da câmera...";
 
-    reader = new BrowserMultiFormatReader(hints);
+    try {
+        // abre a câmera primeiro (necessário no Android)
+        await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
 
-    reader.decodeFromVideoDevice(null, video, (result, err) => {
-        if (result) {
-            const code = result.text;
+        const hints = new Map();
+        hints.set(DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.EAN_13]);
 
-            document.getElementById("lido").innerText = "Lido: " + code;
+        reader = new BrowserMultiFormatReader(hints);
 
-            // rejeita EAN inválido
-            if (!isValidEAN13(code)) {
+        reader.decodeFromVideoDevice(null, video, (result, err) => {
+            if (result) {
+                const code = result.text;
+                document.getElementById("lido").innerText = "Lido: " + code;
+
+                if (!isValidEAN13(code)) {
+                    document.getElementById("status").innerText =
+                      "⚠️ Código rejeitado (checksum inválido)";
+                    lastCodes = [];
+                    return;
+                }
+
+                lastCodes.push(code);
+                if (lastCodes.length > requiredMatches) lastCodes.shift();
+
                 document.getElementById("status").innerText =
-                  "⚠️ Código rejeitado por checksum";
-                lastCodes = [];
-                return;
+                    "Confirmando: " + lastCodes.join(" | ");
+
+                if (
+                    lastCodes.length === requiredMatches &&
+                    lastCodes.every(v => v === lastCodes[0])
+                ) {
+                    document.getElementById("confirmado").innerText =
+                        "✔ Código confirmado: " + code;
+
+                    lastCodes = [];
+
+                    // beep
+                    const beep = new Audio(
+                      "https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"
+                    );
+                    beep.play();
+                }
             }
+        });
 
-            // guarda leitura
-            lastCodes.push(code);
-            if (lastCodes.length > requiredMatches) lastCodes.shift();
+        scanning = true;
+        document.getElementById("status").innerText = "📷 Câmera ligada, aponte para o código de barras";
 
-            document.getElementById("status").innerText =
-                "Leituras: " + lastCodes.join(" | ");
-
-            // confirma se 3 iguais
-            if (
-                lastCodes.length === requiredMatches &&
-                lastCodes.every(v => v === lastCodes[0])
-            ) {
-                document.getElementById("confirmado").innerText =
-                    "✔ Código confirmado: " + code;
-
-                lastCodes = [];
-            }
-        }
-    });
+    } catch (e) {
+        document.getElementById("status").innerText =
+          "❌ Erro ao abrir câmera: " + e.message;
+    }
 }
 
 function stopScanner() {
-    if (reader) reader.reset();
+    if (reader) {
+        reader.reset();
+        reader = null;
+    }
+    scanning = false;
+    lastCodes = [];
     document.getElementById("status").innerText = "Scanner parado";
 }
-
-window.onload = startScanner;
-
 </script>
+
 </head>
 
 <body>
 
-<h2>Scanner com validação EAN-13</h2>
+<h2>Scanner com validação tripla EAN-13</h2>
 
 <video id="preview" width="100%" style="max-width:400px;"></video>
 
@@ -91,8 +110,8 @@ window.onload = startScanner;
 <p id="status"></p>
 <h3 id="confirmado" style="color:green;"></h3>
 
-<button onclick="startScanner()">Iniciar</button>
-<button onclick="stopScanner()">Parar</button>
+<button onclick="startScanner()">📷 Iniciar câmera</button>
+<button onclick="stopScanner()">🛑 Parar</button>
 
 </body>
 </html>
