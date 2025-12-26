@@ -2,48 +2,76 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Scanner com validação precisa</title>
+<title>Scanner de Código de Barras</title>
 
 <style>
-video{
-  width:100%;
-  max-width:450px;
-  border:2px solid #444;
-  border-radius:10px;
+body{
+  font-family: Arial;
 }
 
+/* vídeo e área */
 #area{
   position:relative;
   display:inline-block;
 }
 
+video, canvas{
+  width:100%;
+  max-width:480px;
+  border:2px solid #444;
+  border-radius:12px;
+}
+
+/* retângulo de leitura */
 #roi{
   position:absolute;
-  top:35%;
-  left:15%;
-  width:70%;
-  height:30%;
-  border:3px solid lime;
+  top:30%;
+  left:10%;
+  width:80%;
+  height:40%;
+  border:3px solid #00ff00;
   border-radius:8px;
-  box-shadow:0 0 10px #0f0 inset;
+  box-shadow:0 0 12px #00ff00 inset;
+  pointer-events:none;
+}
+
+/* linha vermelha neon animada */
+#laser{
+  position:absolute;
+  left:12%;
+  width:76%;
+  height:2px;
+  background:red;
+  box-shadow:0 0 12px red, 0 0 20px #ff0000;
+  animation:scan 2.2s linear infinite;
+  pointer-events:none;
+}
+
+@keyframes scan{
+  0%{ top:32%; }
+  50%{ top:66%; }
+  100%{ top:32%; }
 }
 </style>
-
 </head>
+
 <body>
 
-<h2>Scanner com validação tripla</h2>
+<h2>Scanner com validação precisa</h2>
 
 <div id="area">
   <video id="video" playsinline></video>
+  <canvas id="captura" style="display:none;"></canvas>
+
   <div id="roi"></div>
+  <div id="laser"></div>
 </div>
 
 <p id="msg" style="color:red"></p>
-<p id="lido"></p>
 <p id="confirmado" style="color:green;font-weight:bold"></p>
 
 <button onclick="iniciar()">📷 Iniciar câmera</button>
+<button onclick="continuar()">🔄 Continuar escaneando</button>
 <button onclick="parar()">🛑 Parar</button>
 
 <script src="https://unpkg.com/@zxing/library@latest"></script>
@@ -53,6 +81,7 @@ let codeReader = null;
 let stream = null;
 let buffer = [];
 const repeticoes = 3;
+let congelado = false;
 
 function validarEAN13(code){
   if(!/^[0-9]{13}$/.test(code)) return false;
@@ -65,10 +94,11 @@ function validarEAN13(code){
 }
 
 async function iniciar(){
-  document.getElementById("msg").innerText = "Solicitando câmera...";
+  congelado = false;
+  document.getElementById("captura").style.display = "none";
+  document.getElementById("video").style.display = "block";
 
   try{
-
     stream = await navigator.mediaDevices.getUserMedia({
       video:{
         facingMode:"environment",
@@ -82,59 +112,82 @@ async function iniciar(){
     video.srcObject = stream;
     await video.play();
 
-    codeReader = new ZXing.BrowserMultiFormatReader();
-
-    // 👇 força somente EAN-13
     const hints = new Map();
     hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.EAN_13]);
 
     codeReader = new ZXing.BrowserMultiFormatReader(hints);
 
-    codeReader.decodeFromVideoElementContinuously(video, (resultado, err)=>{
+    codeReader.decodeFromVideoElementContinuously(video,(resultado,err)=>{
+
+      if(congelado) return;
 
       if(resultado){
 
         const code = resultado.text;
 
-        document.getElementById("lido").innerText = "Lido: " + code;
-
         if(!validarEAN13(code)){
-          document.getElementById("msg").innerText =
-            "⚠️ Código rejeitado (checksum inválido)";
           buffer = [];
+          document.getElementById("msg").innerText =
+            "⚠️ código inválido — checksum reprovado";
           return;
         }
 
         buffer.push(code);
-        if(buffer.length > repeticoes) buffer.shift();
+        if(buffer.length>repeticoes) buffer.shift();
 
         if(
-          buffer.length === repeticoes &&
-          buffer.every(v => v === buffer[0])
+          buffer.length===repeticoes &&
+          buffer.every(v=>v===buffer[0])
         ){
-          document.getElementById("confirmado").innerText =
-            "✔ Confirmado com precisão: " + code;
-
-          buffer = [];
-
-          new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg").play();
+          confirmar(code);
         }
       }
     });
 
     document.getElementById("msg").innerText =
-      "Aponte o código DENTRO do retângulo verde ✔";
+      "Aponte o código dentro do retângulo verde";
 
   }catch(e){
     document.getElementById("msg").innerText =
-      "❌ ERRO: " + e.name + " — " + e.message;
+      "Erro: "+e.message;
   }
+}
+
+function confirmar(code){
+
+  congelado = true;
+
+  document.getElementById("confirmado").innerText =
+    "✔ Código confirmado: "+code;
+
+  // congela imagem do vídeo
+  const video = document.getElementById("video");
+  const canvas = document.getElementById("captura");
+  const ctx = canvas.getContext("2d");
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  ctx.drawImage(video,0,0,canvas.width,canvas.height);
+
+  document.getElementById("video").style.display="none";
+  canvas.style.display="block";
+
+  new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg").play();
+}
+
+function continuar(){
+  buffer = [];
+  congelado = false;
+  document.getElementById("confirmado").innerText="";
+  document.getElementById("captura").style.display="none";
+  document.getElementById("video").style.display="block";
 }
 
 function parar(){
   if(codeReader) codeReader.reset();
   if(stream) stream.getTracks().forEach(t=>t.stop());
-  document.getElementById("msg").innerText = "Scanner parado";
+  document.getElementById("msg").innerText="Scanner parado";
 }
 </script>
 
