@@ -47,7 +47,6 @@ tr:nth-child(even){background:#f5f5f5;}
 
 .produtoDetectado{text-align:center;font-weight:bold;color:#2e6bff;margin-top:6px;}
 
-/* 💰 SUBTOTAL DESTACADO */
 .subtotal{
   background:#e6edff;
   color:#1a3cff;
@@ -56,28 +55,13 @@ tr:nth-child(even){background:#f5f5f5;}
   font-weight:bold;
 }
 
-/* 🗑️ LIXEIRA */
-#tabelaCarrinho th:last-child,
-#tabelaCarrinho td:last-child{
-  width:45px;
-  text-align:center;
-}
 .btn-trash{
-  background:none;
-  border:none;
-  font-size:20px;
-  cursor:pointer;
-  color:#ff3b3b;
+  background:none;border:none;font-size:20px;cursor:pointer;color:#ff3b3b;
 }
 .btn-trash:hover{transform:scale(1.15);}
 
-/* 🎬 ANIMAÇÃO REMOVER */
-.removendo{
-  animation: removerLinha .35s forwards;
-}
-@keyframes removerLinha{
-  to{opacity:0;transform:translateX(-40px);}
-}
+.removendo{animation:remover .3s forwards;}
+@keyframes remover{to{opacity:0;transform:translateX(-40px);}}
 </style>
 </head>
 
@@ -132,19 +116,15 @@ tr:nth-child(even){background:#f5f5f5;}
 </div>
 
 <script>
-let produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
-let carrinho = JSON.parse(localStorage.getItem("carrinho")||"[]");
+let produtos=JSON.parse(localStorage.getItem("produtos")||"[]");
+let carrinho=JSON.parse(localStorage.getItem("carrinho")||"[]");
 
-let stream=null, reader=null, buffer=[], processando=false;
+let stream=null,reader=null,buffer=[],processando=false;
 const repeticoes=3;
 const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
-function salvarCarrinho(){
-  localStorage.setItem("carrinho",JSON.stringify(carrinho));
-}
-
 function toggleProdutos(){
-  areaProdutosConteudo.style.display =
+  areaProdutosConteudo.style.display=
   areaProdutosConteudo.style.display==="block"?"none":"block";
 }
 
@@ -170,14 +150,11 @@ function excluirProduto(i){
 }
 
 function salvarProduto(){
-  let p={codigo:codigo.value,nome:nome.value,tipo:tipo.value,valor:Number(valor.value)};
-  produtos=produtos.filter(x=>x.codigo!==p.codigo);
-  produtos.push(p);
+  produtos=produtos.filter(x=>x.codigo!==codigo.value);
+  produtos.push({codigo:codigo.value,nome:nome.value,tipo:tipo.value,valor:Number(valor.value)});
   localStorage.setItem("produtos",JSON.stringify(produtos));
   atualizarTabela();
   alert("Produto salvo");
-  codigo.value=nome.value=valor.value="";
-  tipo.selectedIndex=0;
   iniciarScanner();
 }
 
@@ -189,20 +166,19 @@ function removerItem(i){
   row.classList.add("removendo");
   setTimeout(()=>{
     carrinho.splice(i,1);
-    salvarCarrinho();
+    localStorage.setItem("carrinho",JSON.stringify(carrinho));
     atualizarCarrinho();
   },300);
 }
 
 function atualizarCarrinho(){
   let total=0;
-  tabelaCarrinho.innerHTML=`<tr><th>Código</th><th>Nome</th><th>Qtd/Peso</th><th>Subtotal</th><th></th></tr>`;
+  tabelaCarrinho.innerHTML=`<tr><th>Código</th><th>Nome</th><th>Qtd</th><th>Subtotal</th><th></th></tr>`;
   carrinho.forEach((x,i)=>{
     let sub=x.valor*x.qtd; total+=sub;
     tabelaCarrinho.innerHTML+=`
     <tr id="row${i}">
-      <td>${x.codigo}</td><td>${x.nome}</td>
-      <td>${x.qtd}</td>
+      <td>${x.codigo}</td><td>${x.nome}</td><td>${x.qtd}</td>
       <td><span class="subtotal">R$ ${sub.toFixed(2)}</span></td>
       <td><button class="btn-trash" onclick="removerItem(${i})">🗑️</button></td>
     </tr>`;
@@ -211,7 +187,57 @@ function atualizarCarrinho(){
 }
 atualizarCarrinho();
 
-/* scanner permanece igual ao seu */
+async function iniciarScanner(){
+  if(stream) return;
+  processando=false;
+
+  const video=document.getElementById("video");
+  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+  video.srcObject=stream;
+  await video.play();
+
+  reader=new ZXing.BrowserMultiFormatReader();
+  buffer=[];
+
+  reader.decodeFromVideoElementContinuously(video,(res)=>{
+    if(!res||processando) return;
+    const code=res.text.trim();
+    detected.innerText=code;
+    buffer.push(code);
+    if(buffer.length>repeticoes) buffer.shift();
+
+    if(buffer.length===repeticoes && buffer.every(v=>v===code)){
+      processando=true;
+      buffer=[];
+      beep.currentTime=0; beep.play();
+      pararScanner();
+
+      const produto=produtos.find(p=>p.codigo==code);
+      codigo.value=code;
+      nomeDetectado.innerText=produto?produto.nome:"";
+
+      if(produto){
+        let qtd=prompt("Quantidade:");
+        if(qtd){
+          carrinho.push({codigo:code,nome:produto.nome,valor:produto.valor,qtd:Number(qtd)});
+          localStorage.setItem("carrinho",JSON.stringify(carrinho));
+          atualizarCarrinho();
+          abrirCarrinho();
+        }
+      }else alert("Produto não cadastrado");
+
+      processando=false;
+    }
+  });
+}
+
+function pararScanner(){
+  if(reader){reader.reset();reader=null;}
+  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+}
+
+startButton.onclick=iniciarScanner;
+stopButton.onclick=pararScanner;
 </script>
 
 </body>
