@@ -58,7 +58,6 @@ tr:nth-child(even){background:#f5f5f5;}
 .btn-trash{
   background:none;border:none;font-size:20px;cursor:pointer;color:#ff3b3b;
 }
-.btn-trash:hover{transform:scale(1.15);}
 .removendo{animation:remover .3s forwards;}
 @keyframes remover{to{opacity:0;transform:translateX(-40px);}}
 </style>
@@ -144,24 +143,14 @@ function atualizarTabela(){
 }
 atualizarTabela();
 
-function excluirProduto(i){
-  if(confirm("Excluir produto?")){
-    produtos.splice(i,1);
-    localStorage.setItem("produtos",JSON.stringify(produtos));
-    atualizarTabela();
-  }
-}
-
 function salvarProduto(){
-  produtos = produtos.filter(p=>p.codigo!==codigo.value);
-
+  produtos = produtos.filter(p=>p.codigo!==codigo.value.trim());
   const novo={
-    codigo:codigo.value,
-    nome:nome.value,
+    codigo:codigo.value.trim(),
+    nome:nome.value.trim(),
     tipo:tipo.value,
     valor:Number(valor.value)
   };
-
   produtos.push(novo);
   localStorage.setItem("produtos",JSON.stringify(produtos));
   atualizarTabela();
@@ -180,19 +169,6 @@ function salvarProduto(){
   tipo.value="Unidade (UN)";
 }
 
-function abrirCarrinho(){modalCarrinho.style.display="block";atualizarCarrinho();}
-function fecharCarrinho(){modalCarrinho.style.display="none";}
-
-function removerItem(i){
-  const row=document.getElementById("row"+i);
-  row.classList.add("removendo");
-  setTimeout(()=>{
-    carrinho.splice(i,1);
-    localStorage.setItem("carrinho",JSON.stringify(carrinho));
-    atualizarCarrinho();
-  },300);
-}
-
 function atualizarCarrinho(){
   let soma=0;
   tabelaCarrinho.innerHTML=`<tr><th>Código</th><th>Nome</th><th>Qtd</th><th>Subtotal</th><th></th></tr>`;
@@ -208,20 +184,9 @@ function atualizarCarrinho(){
       <td><button class="btn-trash" onclick="removerItem(${i})">🗑️</button></td>
     </tr>`;
   });
-  document.getElementById("total").innerText="Total: R$ "+soma.toFixed(2);
+  total.innerText="Total: R$ "+soma.toFixed(2);
 }
 atualizarCarrinho();
-
-function finalizarCompra(){
-  if(!carrinho.length) return alert("Carrinho vazio");
-  if(confirm("Finalizar compra?")){
-    carrinho=[];
-    localStorage.setItem("carrinho","[]");
-    atualizarCarrinho();
-    fecharCarrinho();
-    alert("Compra finalizada!");
-  }
-}
 
 async function iniciarScanner(){
   if(stream||processando) return;
@@ -233,15 +198,16 @@ async function iniciarScanner(){
   reader=new ZXing.BrowserMultiFormatReader();
   reader.decodeFromVideoElementContinuously(video,(res)=>{
     if(!res||processando) return;
-    buffer.push(res.text);
+    const code=res.text.trim();
+    buffer.push(code);
     if(buffer.length>repeticoes) buffer.shift();
-    if(buffer.length===repeticoes && buffer.every(v=>v===res.text)){
+    if(buffer.length===repeticoes && buffer.every(v=>v===code)){
       processando=true;
-      pararScanner();
-      video.pause();
       beep.play();
-      const prod=produtos.find(p=>p.codigo===res.text);
+      detected.innerText=code;
+      const prod=produtos.find(p=>p.codigo===code);
       if(prod){
+        nomeDetectado.innerText="Produto: "+prod.nome;
         const qtd=Number(prompt("Quantidade:"));
         if(qtd>0){
           carrinho.push({...prod,qtd});
@@ -249,7 +215,12 @@ async function iniciarScanner(){
           atualizarCarrinho();
           abrirCarrinho();
         }
-      }else alert("Produto não cadastrado");
+      }else{
+        nomeDetectado.innerText="Produto não cadastrado";
+        codigo.value=code;
+        nome.focus();
+      }
+      pararScanner();
     }
   });
 }
@@ -257,6 +228,7 @@ async function iniciarScanner(){
 function pararScanner(){
   if(reader){reader.reset();reader=null;}
   if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+  processando=false;
 }
 
 startButton.onclick=iniciarScanner;
