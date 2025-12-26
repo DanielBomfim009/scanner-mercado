@@ -46,21 +46,6 @@ tr:nth-child(even){background:#f5f5f5;}
 .toggleBtn{background:#ffb703;color:#000;}
 
 .produtoDetectado{text-align:center;font-weight:bold;color:#2e6bff;margin-top:6px;}
-
-.subtotal{
-  background:#e6edff;
-  color:#1a3cff;
-  padding:4px 8px;
-  border-radius:6px;
-  font-weight:bold;
-}
-
-.btn-trash{
-  background:none;border:none;font-size:20px;cursor:pointer;color:#ff3b3b;
-}
-.btn-trash:hover{transform:scale(1.15);}
-.removendo{animation:remover .3s forwards;}
-@keyframes remover{to{opacity:0;transform:translateX(-40px);}}
 </style>
 </head>
 
@@ -83,7 +68,7 @@ tr:nth-child(even){background:#f5f5f5;}
 
 <div class="box">
 <h2>📦 Produtos cadastrados</h2>
-<button class="toggleBtn" id="toggleProdutos">Mostrar / Ocultar</button>
+<button class="toggleBtn" onclick="toggleProdutos()">Mostrar / Ocultar</button>
 <div id="areaProdutosConteudo">
 <table id="produtosTable">
 <thead><tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Preço</th><th></th></tr></thead>
@@ -99,62 +84,46 @@ tr:nth-child(even){background:#f5f5f5;}
 <label>Tipo</label>
 <select id="tipo"><option>Unidade (UN)</option><option>Peso (KG)</option></select>
 <label>Valor</label><input id="valor" type="number" step="0.01">
-<button id="salvarProduto">Salvar</button>
+<button onclick="salvarProduto()">Salvar</button>
 </div>
 </div>
 
-<div id="carrinhoIcone">🛍️</div>
+<div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️</div>
 
 <div id="modalCarrinho" class="modal">
 <div class="modal-content">
 <h2>Carrinho</h2>
 <table id="tabelaCarrinho"></table>
 <p id="total" class="total">Total: R$ 0,00</p>
-<button id="finalizarCompra" class="btnStart">Finalizar compra</button>
-<button id="fecharCarrinho">Fechar</button>
+<button onclick="finalizarCompra()" class="btnStart">Finalizar compra</button>
+<button onclick="fecharCarrinho()">Fechar</button>
 </div>
 </div>
 
 <script>
-/* ===== CAPTURA DE ELEMENTOS ===== */
 const startButton = document.getElementById("startButton");
 const stopButton = document.getElementById("stopButton");
-const toggleProdutosBtn = document.getElementById("toggleProdutos");
-const areaProdutosConteudo = document.getElementById("areaProdutosConteudo");
-const produtosTableBody = document.querySelector("#produtosTable tbody");
-const codigo = document.getElementById("codigo");
-const nome = document.getElementById("nome");
-const tipo = document.getElementById("tipo");
-const valor = document.getElementById("valor");
+const video = document.getElementById("video");
 const detected = document.getElementById("detected");
 const nomeDetectado = document.getElementById("nomeDetectado");
-const carrinhoIcone = document.getElementById("carrinhoIcone");
-const modalCarrinho = document.getElementById("modalCarrinho");
-const tabelaCarrinho = document.getElementById("tabelaCarrinho");
-const totalEl = document.getElementById("total");
-const salvarProdutoBtn = document.getElementById("salvarProduto");
-const finalizarCompraBtn = document.getElementById("finalizarCompra");
-const fecharCarrinhoBtn = document.getElementById("fecharCarrinho");
 
-/* ===== DADOS ===== */
 let produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
 let carrinho = JSON.parse(localStorage.getItem("carrinho")||"[]");
 
-/* ===== ESTADOS ===== */
-let stream=null, reader=null, buffer=[], processando=false, modoCadastro=false;
-const repeticoes=3;
-const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+let reader=null, stream=null;
+let estadoScanner = "LIVRE";
+const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
-/* ===== FUNÇÕES ===== */
 function toggleProdutos(){
   areaProdutosConteudo.style.display =
     areaProdutosConteudo.style.display==="block" ? "none" : "block";
 }
 
 function atualizarTabela(){
-  produtosTableBody.innerHTML="";
+  const tb=document.querySelector("#produtosTable tbody");
+  tb.innerHTML="";
   produtos.forEach((p,i)=>{
-    produtosTableBody.innerHTML+=`
+    tb.innerHTML+=`
     <tr>
       <td>${p.codigo}</td>
       <td>${p.nome}</td>
@@ -164,6 +133,7 @@ function atualizarTabela(){
     </tr>`;
   });
 }
+atualizarTabela();
 
 function excluirProduto(i){
   if(confirm("Excluir produto?")){
@@ -175,7 +145,14 @@ function excluirProduto(i){
 
 function salvarProduto(){
   produtos = produtos.filter(p=>p.codigo!==codigo.value);
-  const novo={codigo:codigo.value.trim(),nome:nome.value.trim(),tipo:tipo.value,valor:Number(valor.value)};
+
+  const novo={
+    codigo:codigo.value.trim(),
+    nome:nome.value,
+    tipo:tipo.value,
+    valor:Number(valor.value)
+  };
+
   produtos.push(novo);
   localStorage.setItem("produtos",JSON.stringify(produtos));
   atualizarTabela();
@@ -188,8 +165,13 @@ function salvarProduto(){
     abrirCarrinho();
   }
 
-  codigo.value=""; nome.value=""; valor.value="";
-  modoCadastro=false;
+  codigo.value="";
+  nome.value="";
+  valor.value="";
+  tipo.value="Unidade (UN)";
+
+  estadoScanner="LIVRE";
+  iniciarScanner();
 }
 
 function abrirCarrinho(){modalCarrinho.style.display="block";atualizarCarrinho();}
@@ -197,74 +179,65 @@ function fecharCarrinho(){modalCarrinho.style.display="none";}
 
 function atualizarCarrinho(){
   let soma=0;
-  tabelaCarrinho.innerHTML=`<tr><th>Código</th><th>Nome</th><th>Qtd</th><th>Subtotal</th><th></th></tr>`;
-  carrinho.forEach((x,i)=>{
-    const sub=x.valor*x.qtd; soma+=sub;
+  tabelaCarrinho.innerHTML=`<tr><th>Nome</th><th>Qtd</th><th>Subtotal</th></tr>`;
+  carrinho.forEach(x=>{
+    let sub=x.valor*x.qtd;
+    soma+=sub;
     tabelaCarrinho.innerHTML+=`
     <tr>
-      <td>${x.codigo}</td>
       <td>${x.nome}</td>
       <td>${x.qtd}</td>
       <td>R$ ${sub.toFixed(2)}</td>
-      <td><button onclick="removerItem(${i})">🗑️</button></td>
     </tr>`;
   });
-  totalEl.innerText="Total: R$ "+soma.toFixed(2);
+  total.innerText="Total: R$ "+soma.toFixed(2);
 }
-
-function removerItem(i){
-  carrinho.splice(i,1);
-  localStorage.setItem("carrinho",JSON.stringify(carrinho));
-  atualizarCarrinho();
-}
+atualizarCarrinho();
 
 function finalizarCompra(){
   if(!carrinho.length) return alert("Carrinho vazio");
-  if(confirm("Finalizar compra?")){
-    carrinho=[];
-    localStorage.setItem("carrinho","[]");
-    atualizarCarrinho();
-    fecharCarrinho();
-    alert("Compra finalizada!");
-  }
+  carrinho=[];
+  localStorage.setItem("carrinho","[]");
+  atualizarCarrinho();
+  fecharCarrinho();
+  alert("Compra finalizada!");
 }
 
-/* ===== SCANNER ===== */
 async function iniciarScanner(){
-  if(stream||processando||modoCadastro) return;
-  buffer=[]; processando=false;
-  const video=document.getElementById("video");
+  if(estadoScanner!=="LIVRE") return;
+  estadoScanner="PROCESSANDO";
+
   stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
   video.srcObject=stream;
   await video.play();
+
   reader=new ZXing.BrowserMultiFormatReader();
   reader.decodeFromVideoElementContinuously(video,(res)=>{
-    if(!res||processando||modoCadastro) return;
-    const code=res.text.trim();
-    detected.innerText=code;
-    buffer.push(code);
-    if(buffer.length>repeticoes) buffer.shift();
-    if(buffer.length===repeticoes && buffer.every(v=>v===code)){
-      processando=true;
-      pararScanner();
-      beep.currentTime=0; beep.play();
-      const prod=produtos.find(p=>p.codigo===code);
-      if(prod){
-        const qtd=Number(prompt("Quantidade:"));
-        if(qtd>0){
-          carrinho.push({...prod,qtd});
-          localStorage.setItem("carrinho",JSON.stringify(carrinho));
-          atualizarCarrinho();
-          abrirCarrinho();
-        }
-        processando=false;
-      }else{
-        codigo.value=code;
-        nomeDetectado.innerText="Produto não cadastrado";
-        modoCadastro=true;
-        nome.focus();
+    if(!res || estadoScanner!=="PROCESSANDO") return;
+
+    estadoScanner="BLOQUEADO";
+    beep.play();
+    pararScanner();
+
+    detected.innerText=res.text;
+    const prod=produtos.find(p=>p.codigo===res.text);
+
+    if(prod){
+      nomeDetectado.innerText=prod.nome;
+      const qtd=Number(prompt("Quantidade:"));
+      if(qtd>0){
+        carrinho.push({...prod,qtd});
+        localStorage.setItem("carrinho",JSON.stringify(carrinho));
+        atualizarCarrinho();
+        abrirCarrinho();
       }
+    }else{
+      nomeDetectado.innerText="Produto não cadastrado";
+      codigo.value=res.text;
     }
+
+    estadoScanner="LIVRE";
+    iniciarScanner();
   });
 }
 
@@ -273,17 +246,8 @@ function pararScanner(){
   if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
 }
 
-/* ===== EVENTOS ===== */
 startButton.onclick=iniciarScanner;
 stopButton.onclick=pararScanner;
-toggleProdutosBtn.onclick=toggleProdutos;
-salvarProdutoBtn.onclick=salvarProduto;
-carrinhoIcone.onclick=abrirCarrinho;
-fecharCarrinhoBtn.onclick=fecharCarrinho;
-finalizarCompraBtn.onclick=finalizarCompra;
-
-atualizarTabela();
-atualizarCarrinho();
 </script>
 
 </body>
