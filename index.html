@@ -99,7 +99,7 @@ tr:nth-child(even){background:#f5f5f5;}
 
   <div class="box">
     <h2>📦 Produtos cadastrados</h2>
-    <button class="toggleBtn" onclick="toggleProdutos()">Mostrar / Ocultar</button>
+    <button class="toggleBtn" id="toggleProdutosBtn">Mostrar / Ocultar</button>
     <div id="areaProdutosConteudo">
       <table id="produtosTable">
         <thead><tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Preço</th><th></th></tr></thead>
@@ -145,6 +145,12 @@ const video = document.getElementById("video");
 const detected = document.getElementById("detected");
 const nomeDetectado = document.getElementById("nomeDetectado");
 const barraInner = document.getElementById("barraValidacaoInner");
+const areaProdutosConteudo = document.getElementById("areaProdutosConteudo");
+
+const tabelaCarrinho = document.getElementById("tabelaCarrinho");
+const total = document.getElementById("total");
+
+const toggleProdutosBtn = document.getElementById("toggleProdutosBtn");
 
 let produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
 let carrinho = JSON.parse(localStorage.getItem("carrinho")||"[]");
@@ -153,6 +159,7 @@ let reader=null, stream=null;
 let scannerAtivo=false;
 const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
+// Cadastro suspenso
 const cadastroSuspenso = document.getElementById("cadastroSuspenso");
 const codigoSuspenso = document.getElementById("codigoSuspenso");
 const nomeSuspenso = document.getElementById("nomeSuspenso");
@@ -164,6 +171,7 @@ function toggleProdutos(){
   areaProdutosConteudo.style.display =
     areaProdutosConteudo.style.display==="block" ? "none" : "block";
 }
+toggleProdutosBtn.onclick = toggleProdutos;
 
 function atualizarTabela(){
   const tb=document.querySelector("#produtosTable tbody");
@@ -237,7 +245,7 @@ function finalizarCompra(){
   alert("Compra finalizada!");
 }
 
-// Scanner funcionando de primeira
+// Scanner funcionando de primeira e barra de validação
 async function iniciarScanner(){
   if(scannerAtivo) return;
   scannerAtivo=true;
@@ -254,4 +262,79 @@ async function iniciarScanner(){
     reader.decodeFromVideoElementContinuously(video,(res)=>{
       if(!res) return;
 
-      const codigo = res.text.t
+      const codigo = res.text.trim();
+      detected.innerText=codigo;
+      barraInner.style.width="50%";
+
+      const prod = produtos.find(p=>p.codigo===codigo);
+      if(prod){
+        nomeDetectado.innerText = prod.nome;
+        barraInner.style.width="100%";
+        beep.currentTime=0; beep.play();
+        setTimeout(()=>{
+          const qtd = Number(prompt(`Produto: ${prod.nome}\nQuantidade:`));
+          if(qtd>0){
+            carrinho.push({...prod,qtd});
+            localStorage.setItem("carrinho",JSON.stringify(carrinho));
+            atualizarCarrinho();
+            abrirCarrinho();
+          }
+          barraInner.style.width="0%";
+        },300);
+      } else {
+        nomeDetectado.innerText="Produto não cadastrado";
+        barraInner.style.width="100%";
+        beep.currentTime=0; beep.play();
+        setTimeout(()=>{
+          cadastroSuspenso.style.display="block";
+          codigoSuspenso.value=codigo;
+          nomeSuspenso.value="";
+          valorSuspenso.value="";
+          tipoSuspenso.value="Unidade (UN)";
+          barraInner.style.width="0%";
+        },300);
+      }
+    });
+
+  } catch(e){
+    alert("Não foi possível abrir a câmera: "+e.message);
+    scannerAtivo=false;
+  }
+}
+
+function pararScanner(){
+  scannerAtivo=false;
+  if(reader){reader.reset(); reader=null;}
+  if(stream){stream.getTracks().forEach(t=>t.stop()); stream=null;}
+  video.srcObject=null;
+}
+
+// Salvar produto do cadastro suspenso
+salvarSuspenso.onclick=function(){
+  const novo={
+    codigo:codigoSuspenso.value.trim(),
+    nome:nomeSuspenso.value,
+    tipo:tipoSuspenso.value,
+    valor:Number(valorSuspenso.value)
+  };
+  produtos = produtos.filter(p=>p.codigo!==novo.codigo);
+  produtos.push(novo);
+  localStorage.setItem("produtos",JSON.stringify(produtos));
+  atualizarTabela();
+
+  cadastroSuspenso.style.display="none";
+
+  const qtd = Number(prompt(`Produto: ${novo.nome}\nQuantidade:`));
+  if(qtd>0){
+    carrinho.push({...novo,qtd});
+    localStorage.setItem("carrinho",JSON.stringify(carrinho));
+    atualizarCarrinho();
+    abrirCarrinho();
+  }
+}
+
+startButton.onclick=iniciarScanner;
+stopButton.onclick=pararScanner;
+</script>
+</body>
+</html>
