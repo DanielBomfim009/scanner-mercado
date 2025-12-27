@@ -9,60 +9,60 @@
 <style>
 :root {
   --primary: #2e6bff;
-  --primary-dark: #1e3aa8;
   --secondary: #ffb703;
-  --background: #eef3ff;
+  --background: #f5f7ff;
   --card-bg: #ffffff;
   --text-dark: #1a1a1a;
   --text-light: #ffffff;
   --danger: #ff3b3b;
+  --success: #28a745;
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Roboto',sans-serif;}
 body{background:var(--background);overflow-x:hidden;}
 .container{max-width:900px;margin:auto;padding:12px;}
-.logo{text-align:center;margin-top:20px;}
-.logo img{width:180px;height:180px;object-fit:contain;border-radius:50%;border:5px solid var(--text-light);box-shadow:0 10px 35px rgba(0,0,0,.35);}
-h1{text-align:center;margin:15px 0;color:var(--primary);}
-p{color:var(--text-dark);}
-.box{background:var(--card-bg);border-radius:18px;padding:20px;margin-top:20px;box-shadow:0 4px 20px rgba(0,0,0,.15);position:relative;transition:0.3s;}
-.box:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,.2);}
+h1,h2{margin:0;}
+.logo{text-align:center;margin-top:30px;}
+.logo img{width:220px;height:220px;object-fit:contain;border-radius:50%;border:5px solid var(--text-light);box-shadow:0 10px 30px rgba(0,0,0,.35);}
+h1{text-align:center;margin:20px 0;color:var(--primary);font-weight:700;}
+.box{background:var(--card-bg);border-radius:18px;padding:20px;margin-top:20px;box-shadow:0 4px 20px rgba(0,0,0,.15);transition:0.3s;}
+.box:hover{box-shadow:0 6px 25px rgba(0,0,0,.25);}
 button{width:100%;padding:14px;border:none;font-size:16px;border-radius:12px;margin-top:10px;cursor:pointer;transition:0.3s;}
-button:hover{opacity:0.9;transform:scale(1.02);}
+button:hover{opacity:0.9;}
 .btnStart{background:var(--primary);color:var(--text-light);}
 .btnStop{background:#6b6b6b;color:var(--text-light);}
 .toggleBtn{background:var(--secondary);color:#000;font-weight:500;}
 
-#camera{width:100%;height:280px;background:#000;border-radius:18px;margin-top:12px;overflow:hidden;position:relative;}
+#camera{width:100%;height:320px;background:#000;border-radius:18px;margin-top:12px;overflow:hidden;position:relative;}
 #camera video{width:100%;height:100%;object-fit:cover;}
-.scan-line{position:absolute;left:0;right:0;height:2px;background:rgba(255,0,0,0.7);box-shadow:0 0 8px red,0 0 15px red;animation:scan 2s linear infinite;}
+.scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,#ff0000,#ffeb3b,#00ff00);box-shadow:0 0 10px #ff0000,0 0 20px #ffeb3b;animation:scan 2s linear infinite;}
 @keyframes scan{0%{top:10%}50%{top:90%}100%{top:10%}}
 
 input,select{width:100%;padding:12px;border-radius:12px;border:1px solid #ccc;margin-top:6px;box-sizing:border-box;font-size:15px;}
 table{width:100%;border-collapse:collapse;margin-top:10px;}
 td,th{padding:10px;text-align:center;}
 tr:nth-child(even){background:#f5f5f5;}
-tr:hover{background:rgba(46,107,255,0.1);}
+th{background:var(--primary);color:white;font-weight:500;}
 
 #carrinhoIcone{
   position:fixed;left:18px;bottom:18px;width:70px;height:70px;border-radius:50%;
   background:var(--primary);color:var(--text-light);
   display:flex;align-items:center;justify-content:center;
-  font-size:28px;box-shadow:0 8px 25px rgba(0,0,0,.35);z-index:999;cursor:pointer;
+  font-size:28px;box-shadow:0 8px 20px rgba(0,0,0,.35);z-index:999;cursor:pointer;
 }
 #carrinhoIcone span{
-  position:absolute;top:-8px;right:-8px;background:red;color:white;width:18px;height:18px;border-radius:50%;
+  position:absolute;top:-8px;right:-8px;background:var(--danger);color:white;width:18px;height:18px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;font-size:12px;
 }
 
 .modal{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.6);display:none;overflow:auto;z-index:1000;}
-.modal-content{background:var(--card-bg);width:92%;max-width:480px;margin:40px auto;padding:20px;border-radius:18px;position:relative;animation:fadeIn 0.4s;}
-.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.modal-content{background:var(--card-bg);width:92%;max-width:500px;margin:60px auto;padding:25px;border-radius:18px;position:relative;animation:fadeIn 0.4s;}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;}
 .modal-body{max-height:400px;overflow-y:auto;}
 .total{text-align:right;font-weight:bold;padding-top:10px;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
 
 #areaProdutosConteudo{display:none;}
-.produtoDetectado{text-align:center;font-weight:bold;color:var(--primary);margin-top:6px;}
+.produtoDetectado{text-align:center;font-weight:bold;color:var(--success);margin-top:6px;}
 .subtotal{background:#e6edff;color:var(--primary);padding:4px 8px;border-radius:6px;font-weight:bold;}
 .btn-trash{background:none;border:none;font-size:20px;cursor:pointer;color:var(--danger);}
 .btn-trash:hover{transform:scale(1.15);}
@@ -71,42 +71,44 @@ tr:hover{background:rgba(46,107,255,0.1);}
 
 #cadastroSuspenso{
   position:fixed;bottom:10px;left:50%;transform:translateX(-50%);
-  width:90%;max-width:400px;background:white;padding:20px;border-radius:18px;
+  width:90%;max-width:420px;background:white;padding:25px;border-radius:18px;
   box-shadow:0 5px 25px rgba(0,0,0,.3);display:none;z-index:1001;
-  max-height:75vh;overflow-y:auto;transition:0.3s;
+  max-height:75vh;overflow-y:auto;
 }
 #cadastroSuspenso label{display:block;margin-top:12px;font-weight:500;color:var(--text-dark);}
 #cadastroSuspenso input,#cadastroSuspenso select{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;margin-top:6px;box-sizing:border-box;font-size:15px;}
-#cadastroSuspenso button{margin-top:14px;background:var(--primary);color:white;border:none;border-radius:12px;padding:12px;font-size:16px;cursor:pointer;transition:0.2s;}
-#cadastroSuspenso button:hover{background:var(--primary-dark);}
+#cadastroSuspenso button{margin-top:14px;background:var(--primary);color:white;border:none;border-radius:12px;padding:12px;font-size:16px;cursor:pointer;}
+#cadastroSuspenso button:hover{background:#1d4ed8;}
 
 #barraValidacao{height:22px;width:100%;background:#ccc;border-radius:12px;margin-top:6px;position:relative;}
-#barraValidacaoInner{height:100%;width:0%;background:linear-gradient(90deg,#2e6bff,#3b82f6);border-radius:12px;transition:width 0.3s ease;text-align:center;color:white;font-weight:bold;line-height:22px;box-shadow:0 0 8px #2e6bff,0 0 12px #3b82f6;}
+#barraValidacaoInner{height:100%;width:0%;background:var(--primary);border-radius:12px;transition:width 0.3s ease;text-align:center;color:white;font-weight:bold;line-height:22px;}
 
+/* Splash */
 #splash{
   position:fixed;top:0;left:0;width:100%;height:100%;
-  background:linear-gradient(135deg,#2e6bff,#3b82f6);
   display:flex;align-items:center;justify-content:center;flex-direction:column;
-  z-index:2000;color:white;transition:0.5s;
+  background:linear-gradient(135deg,var(--primary),#3b82f6);
+  color:white;z-index:2000;transition:0.5s;
 }
-#splash img{width:180px;height:180px;margin-bottom:20px;}
-#splash h1{font-size:36px;margin-bottom:8px;text-shadow:2px 2px 8px rgba(0,0,0,0.3);}
-#splash p{opacity:0.85;font-size:18px;text-align:center;margin:0 20px;text-shadow:1px 1px 4px rgba(0,0,0,0.2);}
+#splash img{width:220px;height:220px;object-fit:contain;margin-bottom:20px;}
+#splash h1{font-size:2.5em;margin-bottom:10px;}
+#splash p{opacity:0.9;font-size:1.2em;text-align:center;max-width:70%;}
 </style>
 </head>
 <body>
+
 <!-- Tela Splash -->
 <div id="splash">
-  <img src="logo.png">
+  <img src="logo.png" alt="Logo">
   <h1>GoL BUY SMART</h1>
   <p>Bem-vindo ao seu app de compras inteligente</p>
 </div>
 
 <div class="container" id="mainApp" style="display:none;">
-  <div class="logo"><img src="logo.png"></div>
+  <div class="logo"><img src="logo.png" alt="Logo"></div>
   <h1>🛒 Compras do mês 🛍️</h1>
 
-  <!-- Scanner Box -->
+  <!-- Scanner -->
   <div class="box">
     <button class="btnStart" id="startButton">📸 Abrir câmera</button>
     <button class="btnStop" id="stopButton">⏹️ Parar</button>
@@ -150,7 +152,7 @@ tr:hover{background:rgba(46,107,255,0.1);}
   </div>
 </div>
 
-<!-- Cadastro suspenso -->
+<!-- Cadastro Suspenso -->
 <div id="cadastroSuspenso" class="box">
   <h2>✏️ Cadastrar Produto</h2>
   <label>Código</label><input id="codigoSuspenso" autofocus>
@@ -162,7 +164,7 @@ tr:hover{background:rgba(46,107,255,0.1);}
 </div>
 
 <script>
-// Elementos
+// Variáveis
 const startButton = document.getElementById("startButton");
 const stopButton = document.getElementById("stopButton");
 const video = document.getElementById("video");
@@ -191,15 +193,12 @@ const tipoSuspenso = document.getElementById("tipoSuspenso");
 const valorSuspenso = document.getElementById("valorSuspenso");
 const salvarSuspenso = document.getElementById("salvarSuspenso");
 
-// Splash
+// Splash animado
 window.onload = ()=>{
   setTimeout(()=>{
     splash.style.opacity=0;
     splash.style.transform='scale(0.9)';
-    setTimeout(()=>{
-      splash.style.display='none';
-      mainApp.style.display='block';
-    },500);
+    setTimeout(()=>{splash.style.display='none'; mainApp.style.display='block';},500);
   },2000);
 };
 
@@ -245,4 +244,14 @@ function pararScanner(){scannerAtivo=false; if(reader){reader.reset();reader=nul
 salvarSuspenso.onclick=function(){
   const novo={codigo:codigoSuspenso.value.trim(),nome:nomeSuspenso.value,tipo:tipoSuspenso.value,valor:Number(valorSuspenso.value)};
   if(!novo.codigo || !novo.nome || !novo.valor){return alert("Preencha todos os campos");}
-  produtos=produtos.filter(p=>p.codigo!==novo.codigo);
+  produtos=produtos.filter(p=>p.codigo!==novo.codigo); produtos.push(novo); localStorage.setItem("produtos",JSON.stringify(produtos)); atualizarTabela();
+  cadastroSuspenso.style.display="none";
+  const qtdInput=prompt(`Produto: ${novo.nome}\nQuantidade:`); const qtd=Number(qtdInput);
+  if(qtd>0){carrinho.push({...novo,qtd}); localStorage.setItem("carrinho",JSON.stringify(carrinho)); atualizarCarrinho(); abrirCarrinho();}
+}
+
+startButton.onclick=iniciarScanner;
+stopButton.onclick=pararScanner;
+</script>
+</body>
+</html>
