@@ -8,19 +8,20 @@
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --primary: #3b7ddd;
+  --primary: #2e6bff;
   --secondary: #ffb703;
   --background: #eef3ff;
   --card-bg: #ffffff;
   --text-dark: #1a1a1a;
   --text-light: #ffffff;
   --danger: #ff3b3b;
+  --splash-bg: #1e40af; /* fundo da tela inicial */
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Roboto',sans-serif;}
 body{background:var(--background);overflow-x:hidden;}
 .container{max-width:900px;margin:auto;padding:12px;}
 .logo{text-align:center;margin-top:20px;}
-.logo img{width:200px;height:200px;object-fit:contain;border-radius:50%;border:5px solid var(--text-light);box-shadow:0 10px 30px rgba(0,0,0,.35);}
+.logo img{width:160px;height:160px;object-fit:contain;border-radius:50%;border:5px solid var(--text-light);box-shadow:0 10px 30px rgba(0,0,0,.35);}
 h1{text-align:center;margin:15px 0;color:var(--primary);}
 .box{background:var(--card-bg);border-radius:18px;padding:20px;margin-top:20px;box-shadow:0 4px 20px rgba(0,0,0,.15);position:relative;transition:0.2s;}
 .box:hover{box-shadow:0 6px 25px rgba(0,0,0,.25);}
@@ -29,17 +30,14 @@ button:hover{opacity:0.9;}
 .btnStart{background:var(--primary);color:var(--text-light);}
 .btnStop{background:#6b6b6b;color:var(--text-light);}
 .toggleBtn{background:var(--secondary);color:#000;font-weight:500;}
-
 #camera{width:100%;height:260px;background:#000;border-radius:18px;margin-top:12px;overflow:hidden;position:relative;}
 #camera video{width:100%;height:100%;object-fit:cover;}
 .scan-line{position:absolute;left:0;right:0;height:2px;background:red;box-shadow:0 0 10px red,0 0 20px red;animation:scan 2s linear infinite;}
 @keyframes scan{0%{top:10%}50%{top:90%}100%{top:10%}}
-
 input,select{width:100%;padding:12px;border-radius:12px;border:1px solid #ccc;margin-top:6px;box-sizing:border-box;font-size:15px;}
-table{width:100%;border-collapse:collapse;margin-top:10px;table-layout:fixed;word-wrap:break-word;}
+table{width:100%;border-collapse:collapse;margin-top:10px;}
 td,th{padding:10px;text-align:center;}
 tr:nth-child(even){background:#f5f5f5;}
-
 #carrinhoIcone{
   position:fixed;left:18px;bottom:18px;width:70px;height:70px;border-radius:50%;
   background:var(--primary);color:var(--text-light);
@@ -50,14 +48,12 @@ tr:nth-child(even){background:#f5f5f5;}
   position:absolute;top:-8px;right:-8px;background:red;color:white;width:18px;height:18px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;font-size:12px;
 }
-
 .modal{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.6);display:none;overflow:auto;z-index:1000;}
 .modal-content{background:var(--card-bg);width:92%;max-width:480px;margin:40px auto;padding:20px;border-radius:18px;position:relative;animation:fadeIn 0.3s;}
 .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
 .modal-body{max-height:400px;overflow-y:auto;}
 .total{text-align:right;font-weight:bold;padding-top:10px;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
-
 #areaProdutosConteudo{display:none;}
 .produtoDetectado{text-align:center;font-weight:bold;color:var(--primary);margin-top:6px;}
 .subtotal{background:#e6edff;color:var(--primary);padding:4px 8px;border-radius:6px;font-weight:bold;}
@@ -65,7 +61,6 @@ tr:nth-child(even){background:#f5f5f5;}
 .btn-trash:hover{transform:scale(1.15);}
 .removendo{animation:remover .3s forwards;}
 @keyframes remover{to{opacity:0;transform:translateX(-40px);}}
-
 #cadastroSuspenso{
   position:fixed;bottom:10px;left:50%;transform:translateX(-50%);
   width:90%;max-width:400px;background:white;padding:20px;border-radius:18px;
@@ -76,24 +71,30 @@ tr:nth-child(even){background:#f5f5f5;}
 #cadastroSuspenso input,#cadastroSuspenso select{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;margin-top:6px;box-sizing:border-box;font-size:15px;}
 #cadastroSuspenso button{margin-top:14px;background:var(--primary);color:white;border:none;border-radius:12px;padding:12px;font-size:16px;cursor:pointer;}
 #cadastroSuspenso button:hover{background:#1d4ed8;}
-
 #barraValidacao{height:22px;width:100%;background:#ccc;border-radius:12px;margin-top:6px;position:relative;}
 #barraValidacaoInner{height:100%;width:0%;background:var(--primary);border-radius:12px;transition:width 0.3s ease;text-align:center;color:white;font-weight:bold;line-height:22px;}
+/* Tela Inicial */
+#splash{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:var(--splash-bg);display:flex;align-items:center;justify-content:center;
+  flex-direction:column;z-index:2000;color:white;transition:0.5s;text-align:center;
+}
+#splash img{width:220px;height:220px;object-fit:contain;margin-bottom:20px;}
+#splash h1{font-size:48px;margin-bottom:12px;}
+#splash p{font-size:20px;opacity:0.85;margin-top:0;}
 </style>
 </head>
 <body>
-
 <!-- Tela Splash -->
-<div id="splash" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#1a1a1a;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:2000;color:white;transition:0.5s;">
-  <img src="logo.png" style="width:250px;height:250px;object-fit:contain;margin-bottom:20px;">
-  <p style="font-size:20px;text-align:center;max-width:300px;line-height:1.4;">Bem-vindo ao seu app de compras inteligente</p>
+<div id="splash">
+  <img src="logo.png">
+  <p>Bem-vindo ao seu app de compras inteligente</p>
 </div>
 
 <div class="container" id="mainApp" style="display:none;">
   <div class="logo"><img src="logo.png"></div>
   <h1>🛒 Compras do mês 🛍️</h1>
 
-  <!-- Scanner Box -->
   <div class="box">
     <button class="btnStart" id="startButton">📸 Abrir câmera</button>
     <button class="btnStop" id="stopButton">⏹️ Parar</button>
@@ -106,11 +107,10 @@ tr:nth-child(even){background:#f5f5f5;}
     <div id="barraValidacao"><div id="barraValidacaoInner">0%</div></div>
   </div>
 
-  <!-- Produtos cadastrados -->
   <div class="box">
     <h2>📦 Produtos cadastrados</h2>
     <button class="toggleBtn" id="toggleProdutosBtn">Mostrar / Ocultar</button>
-    <div id="areaProdutosConteudo" style="max-height:300px;overflow-y:auto;">
+    <div id="areaProdutosConteudo">
       <table id="produtosTable">
         <thead><tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Preço</th><th></th></tr></thead>
         <tbody></tbody>
@@ -119,7 +119,6 @@ tr:nth-child(even){background:#f5f5f5;}
   </div>
 </div>
 
-<!-- Carrinho -->
 <div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️<span id="badge">0</span></div>
 <div id="modalCarrinho" class="modal">
   <div class="modal-content">
@@ -137,7 +136,6 @@ tr:nth-child(even){background:#f5f5f5;}
   </div>
 </div>
 
-<!-- Cadastro suspenso -->
 <div id="cadastroSuspenso" class="box">
   <h2>✏️ Cadastrar Produto</h2>
   <label>Código</label><input id="codigoSuspenso" autofocus>
@@ -176,11 +174,9 @@ const tipoSuspenso = document.getElementById("tipoSuspenso");
 const valorSuspenso = document.getElementById("valorSuspenso");
 const salvarSuspenso = document.getElementById("salvarSuspenso");
 
-// Splash animado
-window.onload = ()=>{setTimeout(()=>{splash.style.opacity=0;splash.style.transform='scale(0.9)';setTimeout(()=>{splash.style.display='none';mainApp.style.display='block';},500);},1500);};
+window.onload = ()=>{setTimeout(()=>{splash.style.opacity=0;splash.style.transform='scale(0.9)';setTimeout(()=>{splash.style.display='none';mainApp.style.display='block';},500);},2000);};
 
 toggleProdutosBtn.onclick = ()=>{areaProdutosConteudo.style.display = areaProdutosConteudo.style.display==="block"?"none":"block";};
-
 function atualizarTabela(){const tb=document.querySelector("#produtosTable tbody");tb.innerHTML="";produtos.forEach((p,i)=>{tb.innerHTML+=`<tr><td>${p.codigo}</td><td>${p.nome}</td><td>${p.tipo}</td><td>R$ ${p.valor.toFixed(2)}</td><td><button onclick="excluirProduto(${i})">❌</button></td></tr>`;});}
 function excluirProduto(i){if(confirm("Excluir produto?")){produtos.splice(i,1);localStorage.setItem("produtos",JSON.stringify(produtos));atualizarTabela();}}
 atualizarTabela();
