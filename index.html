@@ -40,8 +40,8 @@ tr:nth-child(even){background:#f5f5f5;}
 .modal{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.6);display:none;overflow:auto;}
 .modal-content{background:white;width:92%;max-width:480px;margin:20px auto;padding:12px;border-radius:18px;position:relative;}
 .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-.total{text-align:right;font-weight:bold;padding-top:10px;}
 .modal-body{max-height:400px;overflow-y:auto;}
+.total{text-align:right;font-weight:bold;padding-top:10px;}
 
 #areaProdutosConteudo{display:none;}
 .toggleBtn{background:#ffb703;color:#000;}
@@ -67,6 +67,7 @@ tr:nth-child(even){background:#f5f5f5;}
   position:fixed;bottom:10px;left:50%;transform:translateX(-50%);
   width:90%;background:white;padding:16px;border-radius:18px;box-shadow:0 5px 20px rgba(0,0,0,.3);
   display:none; z-index:1000;
+  max-height:70vh; overflow-y:auto;
 }
 
 #barraValidacao{
@@ -78,7 +79,6 @@ tr:nth-child(even){background:#f5f5f5;}
 }
 </style>
 </head>
-
 <body>
 <div class="container">
   <div class="logo"><img src="logo.jpg"></div>
@@ -224,11 +224,12 @@ function finalizarCompra(){
   atualizarCarrinho(); fecharCarrinho(); alert("Compra finalizada!");
 }
 
-// Scanner com barra de progresso e pré-inicialização
+// Scanner com barra de progresso e bloqueio de múltiplos prompts
 async function iniciarScanner(){
   if(scannerAtivo) return;
   scannerAtivo=true;
   detected.innerText="—"; nomeDetectado.innerText=""; barraInner.style.width="0%"; barraInner.innerText="0%";
+
   try{
     if(!stream){
       stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
@@ -245,12 +246,13 @@ async function iniciarScanner(){
 
       const prod = produtos.find(p=>p.codigo===codigo);
 
-      barraInner.style.width="33%"; barraInner.innerText="33%";
+      barraInner.style.width="50%"; barraInner.innerText="50%";
 
       if(prod){
         nomeDetectado.innerText=prod.nome;
         barraInner.style.width="100%"; barraInner.innerText="100%";
         beep.currentTime=0; beep.play();
+        scannerAtivo=false; // bloqueia múltiplos prompts
         setTimeout(()=>{
           const qtd = Number(prompt(`Produto: ${prod.nome}\nQuantidade:`));
           if(qtd>0){carrinho.push({...prod,qtd}); localStorage.setItem("carrinho",JSON.stringify(carrinho)); atualizarCarrinho(); abrirCarrinho();}
@@ -260,6 +262,7 @@ async function iniciarScanner(){
         nomeDetectado.innerText="Produto não cadastrado";
         barraInner.style.width="100%"; barraInner.innerText="100%";
         beep.currentTime=0; beep.play();
+        scannerAtivo=false;
         setTimeout(()=>{
           cadastroSuspenso.style.display="block";
           codigoSuspenso.value=codigo; nomeSuspenso.value=""; valorSuspenso.value=""; tipoSuspenso.value="Unidade (UN)";
