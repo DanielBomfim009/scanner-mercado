@@ -38,9 +38,11 @@ tr:nth-child(even){background:#f5f5f5;}
   font-size:28px;box-shadow:0 8px 20px rgba(0,0,0,.35);cursor:pointer;
 }
 
-.modal{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.6);display:none;}
-.modal-content{background:white;width:92%;margin:40px auto;padding:12px;border-radius:18px;}
+.modal{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.6);display:none;overflow:auto;}
+.modal-content{background:white;width:92%;margin:20px auto;padding:12px;border-radius:18px;position:relative;}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
 .total{text-align:right;font-weight:bold;padding-top:10px;}
+.modal-body{max-height:400px;overflow-y:auto;}
 
 #areaProdutosConteudo{display:none;}
 .toggleBtn{background:#ffb703;color:#000;}
@@ -103,15 +105,21 @@ tr:nth-child(even){background:#f5f5f5;}
 
 <div id="modalCarrinho" class="modal">
   <div class="modal-content">
-    <h2>Carrinho</h2>
-    <table id="tabelaCarrinho"></table>
-    <p id="total" class="total">Total: R$ 0,00</p>
-    <button onclick="finalizarCompra()" class="btnStart">Finalizar compra</button>
-    <button onclick="fecharCarrinho()">Fechar</button>
+    <div class="modal-header">
+      <h2>Carrinho</h2>
+      <div>
+        <button onclick="finalizarCompra()" class="btnStart">Finalizar</button>
+        <button onclick="fecharCarrinho()">Fechar</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <table id="tabelaCarrinho"></table>
+      <p id="total" class="total">Total: R$ 0,00</p>
+    </div>
   </div>
 </div>
 
-<!-- Área suspensa de cadastro -->
+<!-- Cadastro suspenso -->
 <div id="cadastroSuspenso" class="box">
   <h2>✏️ Cadastrar Produto</h2>
   <label>Código</label><input id="codigoSuspenso">
@@ -134,7 +142,8 @@ let carrinho = JSON.parse(localStorage.getItem("carrinho")||"[]");
 
 let reader=null, stream=null;
 let scannerAtivo=false;
-let estadoScanner="DESLIGADO";
+let buffer = [];
+const repeticoes=3;
 const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
 const cadastroSuspenso = document.getElementById("cadastroSuspenso");
@@ -221,12 +230,13 @@ function finalizarCompra(){
   alert("Compra finalizada!");
 }
 
+// Scanner com buffer de 3 leituras
 async function iniciarScanner(){
   if(scannerAtivo) return;
   scannerAtivo=true;
-  estadoScanner="ATIVO";
+  buffer=[];
 
-  try {
+  try{
     stream = await navigator.mediaDevices.getUserMedia({ video:{facingMode:"environment"} });
     video.srcObject = stream;
     await new Promise(r => video.onloadedmetadata = r);
@@ -234,59 +244,60 @@ async function iniciarScanner(){
 
     reader = new ZXing.BrowserMultiFormatReader();
     reader.decodeFromVideoElementContinuously(video,(res)=>{
-      if(!res || estadoScanner!=="ATIVO") return;
+      if(!res) return;
 
-      estadoScanner="PROCESSANDO";
-      beep.currentTime=0;
-      beep.play();
+      buffer.push(res.text.trim());
+      if(buffer.length>repeticoes) buffer.shift();
 
-      const codigoLido = res.text.trim();
-      detected.innerText = codigoLido;
+      // Só processa se o mesmo código foi lido 3x consecutivas
+      if(buffer.length===repeticoes && buffer.every(v=>v===res.text.trim())){
+        buffer=[]; // limpa buffer
+        beep.currentTime=0; beep.play();
 
-      const prod = produtos.find(p=>p.codigo===codigoLido);
+        const codigoLido = res.text.trim();
+        detected.innerText = codigoLido;
 
-      if(prod){
-        nomeDetectado.innerText = prod.nome;
-        estadoScanner="BLOQUEADO"; // pausa scanner
-        const qtd = Number(prompt("Quantidade:"));
-        if(qtd>0){
-          carrinho.push({...prod,qtd});
-          localStorage.setItem("carrinho",JSON.stringify(carrinho));
-          atualizarCarrinho();
-          abrirCarrinho();
+        const prod = produtos.find(p=>p.codigo===codigoLido);
+        if(prod){
+          nomeDetectado.innerText = prod.nome;
+          const qtd = Number(prompt(`Produto: ${prod.nome}\nQuantidade:`));
+          if(qtd>0){
+            carrinho.push({...prod,qtd});
+            localStorage.setItem("carrinho",JSON.stringify(carrinho));
+            atualizarCarrinho();
+            abrirCarrinho();
+          }
+        } else {
+          nomeDetectado.innerText="Produto não cadastrado";
+          cadastroSuspenso.style.display="block";
+          codigoSuspenso.value=codigoLido;
+          nomeSuspenso.value="";
+          valorSuspenso.value="";
+          tipoSuspenso.value="Unidade (UN)";
         }
-        estadoScanner="ATIVO"; // retoma scanner
-      } else {
-        // Produto não cadastrado -> mostrar cadastro suspenso
-        nomeDetectado.innerText="Produto não cadastrado";
-        cadastroSuspenso.style.display="block";
-        codigoSuspenso.value=codigoLido;
-        estadoScanner="BLOQUEADO"; // pausa scanner até salvar
       }
     });
+
   } catch(e){
     alert("Não foi possível abrir a câmera: "+e.message);
     scannerAtivo=false;
-    estadoScanner="DESLIGADO";
   }
 }
 
 function pararScanner(){
-  estadoScanner="DESLIGADO";
   scannerAtivo=false;
-
   if(reader){reader.reset(); reader=null;}
   if(stream){stream.getTracks().forEach(t=>t.stop()); stream=null;}
   video.srcObject=null;
 }
 
-// Salvar produto no cadastro suspenso
-salvarSuspenso.onclick = function(){
+// Salvar produto do cadastro suspenso
+salvarSuspenso.onclick=function(){
   const novo={
-    codigo: codigoSuspenso.value.trim(),
-    nome: nomeSuspenso.value,
-    tipo: tipoSuspenso.value,
-    valor: Number(valorSuspenso.value)
+    codigo:codigoSuspenso.value.trim(),
+    nome:nomeSuspenso.value,
+    tipo:tipoSuspenso.value,
+    valor:Number(valorSuspenso.value)
   };
   produtos = produtos.filter(p=>p.codigo!==novo.codigo);
   produtos.push(novo);
@@ -294,25 +305,19 @@ salvarSuspenso.onclick = function(){
   atualizarTabela();
 
   cadastroSuspenso.style.display="none";
-  nomeSuspenso.value="";
-  valorSuspenso.value="";
-  tipoSuspenso.value="Unidade (UN)";
 
-  // Perguntar quantidade para carrinho
-  const qtd = Number(prompt("Quantidade para o carrinho:"));
+  const qtd = Number(prompt(`Produto: ${novo.nome}\nQuantidade:`));
   if(qtd>0){
     carrinho.push({...novo,qtd});
     localStorage.setItem("carrinho",JSON.stringify(carrinho));
     atualizarCarrinho();
     abrirCarrinho();
   }
-
-  estadoScanner="ATIVO";
 }
 
 startButton.onclick=iniciarScanner;
 stopButton.onclick=pararScanner;
-</script>
 
+</script>
 </body>
 </html>
