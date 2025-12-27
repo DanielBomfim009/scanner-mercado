@@ -109,7 +109,7 @@ tr:nth-child(even){background:#f5f5f5;}
   </div>
 </div>
 
-<div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️</div>
+<div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️<span id="badge" style="position:absolute;top:-8px;right:-8px;background:red;color:white;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;">0</span></div>
 
 <div id="modalCarrinho" class="modal">
   <div class="modal-content">
@@ -148,13 +148,15 @@ const areaProdutosConteudo = document.getElementById("areaProdutosConteudo");
 const tabelaCarrinho = document.getElementById("tabelaCarrinho");
 const total = document.getElementById("total");
 const toggleProdutosBtn = document.getElementById("toggleProdutosBtn");
+const badge = document.getElementById("badge");
 
 let produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
 let carrinho = JSON.parse(localStorage.getItem("carrinho")||"[]");
 
 let reader=null, stream=null;
-let scannerAtivo=false;
 const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+let buffer=[], scannerAtivo=false;
+const repeticoes=3;
 
 // Cadastro suspenso
 const cadastroSuspenso = document.getElementById("cadastroSuspenso");
@@ -164,8 +166,8 @@ const tipoSuspenso = document.getElementById("tipoSuspenso");
 const valorSuspenso = document.getElementById("valorSuspenso");
 const salvarSuspenso = document.getElementById("salvarSuspenso");
 
-// Produtos
 toggleProdutosBtn.onclick = ()=>{areaProdutosConteudo.style.display = areaProdutosConteudo.style.display==="block"?"none":"block";};
+
 function atualizarTabela(){
   const tb=document.querySelector("#produtosTable tbody");
   tb.innerHTML="";
@@ -177,6 +179,7 @@ function atualizarTabela(){
   });
 }
 atualizarTabela();
+
 function excluirProduto(i){
   if(confirm("Excluir produto?")){
     produtos.splice(i,1);
@@ -186,9 +189,16 @@ function excluirProduto(i){
 }
 
 // Carrinho
+function atualizarBadge(){
+  badge.innerText = carrinho.length;
+}
+
 function abrirCarrinho(){modalCarrinho.style.display="block"; atualizarCarrinho();}
 function fecharCarrinho(){modalCarrinho.style.display="none";}
-function removerItem(i){const row=document.getElementById("row"+i); if(row){row.classList.add("removendo"); setTimeout(()=>{carrinho.splice(i,1); localStorage.setItem("carrinho",JSON.stringify(carrinho)); atualizarCarrinho();},300);}}
+function removerItem(i){
+  const row=document.getElementById("row"+i);
+  if(row){row.classList.add("removendo"); setTimeout(()=>{carrinho.splice(i,1); localStorage.setItem("carrinho",JSON.stringify(carrinho)); atualizarCarrinho();},300);}
+}
 function atualizarCarrinho(){
   let soma=0;
   tabelaCarrinho.innerHTML=`<tr><th>Nome</th><th>Qtd</th><th>Subtotal</th><th></th></tr>`;
@@ -200,6 +210,7 @@ function atualizarCarrinho(){
     </tr>`;
   });
   total.innerText="Total: R$ "+soma.toFixed(2);
+  atualizarBadge();
 }
 atualizarCarrinho();
 function finalizarCompra(){if(!carrinho.length)return alert("Carrinho vazio"); carrinho=[]; localStorage.setItem("carrinho","[]"); atualizarCarrinho(); fecharCarrinho(); alert("Compra finalizada!");}
@@ -212,30 +223,36 @@ async function iniciarScanner(){
     if(!stream){stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}); video.srcObject=stream; await new Promise(r=>video.onloadedmetadata=r); await video.play();}
     reader = new ZXing.BrowserMultiFormatReader();
     reader.decodeFromVideoElementContinuously(video,(res)=>{
-      if(!res) return;
-      const codigo=res.text.trim(); detected.innerText=codigo;
-      barraInner.style.width="50%"; barraInner.innerText="50%";
-      const prod = produtos.find(p=>p.codigo===codigo);
-      if(prod){
-        nomeDetectado.innerText=prod.nome;
-        barraInner.style.width="100%"; barraInner.innerText="100%";
-        beep.currentTime=0; beep.play();
+      if(!res || !scannerAtivo) return;
+      const codigo=res.text.trim();
+      buffer.push(codigo);
+      if(buffer.length>repeticoes) buffer.shift();
+
+      barraInner.style.width = ((buffer.filter(v=>v===codigo).length/repeticoes)*100) + "%";
+      barraInner.innerText = Math.round((buffer.filter(v=>v===codigo).length/repeticoes)*100) + "%";
+
+      if(buffer.length===repeticoes && buffer.every(v=>v===codigo)){
         scannerAtivo=false;
-        setTimeout(()=>{
-          const qtd=Number(prompt(`Produto: ${prod.nome}\nQuantidade:`));
-          if(qtd>0){carrinho.push({...prod,qtd}); localStorage.setItem("carrinho",JSON.stringify(carrinho)); atualizarCarrinho(); abrirCarrinho();}
-          barraInner.style.width="0%"; barraInner.innerText="0%";
-        },300);
-      } else {
-        nomeDetectado.innerText="Produto não cadastrado";
-        barraInner.style.width="100%"; barraInner.innerText="100%";
         beep.currentTime=0; beep.play();
-        scannerAtivo=false;
-        setTimeout(()=>{
-          cadastroSuspenso.style.display="block"; codigoSuspenso.value=codigo; nomeSuspenso.value=""; valorSuspenso.value=""; tipoSuspenso.value="Unidade (UN)";
-          window.scrollTo({top:0,behavior:'smooth'});
-          barraInner.style.width="0%"; barraInner.innerText="0%";
-        },300);
+        const prod = produtos.find(p=>p.codigo===codigo);
+        if(prod){
+          nomeDetectado.innerText = prod.nome;
+          setTimeout(()=>{
+            const qtdInput = prompt(`Produto: ${prod.nome}\nQuantidade:`);
+            const qtd = Number(qtdInput);
+            if(qtd>0){carrinho.push({...prod,qtd}); localStorage.setItem("carrinho",JSON.stringify(carrinho)); atualizarCarrinho(); abrirCarrinho();}
+            barraInner.style.width="0%"; barraInner.innerText="0%";
+            buffer=[]; scannerAtivo=true;
+          },300);
+        } else {
+          nomeDetectado.innerText="Produto não cadastrado";
+          setTimeout(()=>{
+            cadastroSuspenso.style.display="block"; codigoSuspenso.value=codigo; nomeSuspenso.value=""; valorSuspenso.value=""; tipoSuspenso.value="Unidade (UN)";
+            window.scrollTo({top:0,behavior:'smooth'});
+            barraInner.style.width="0%"; barraInner.innerText="0%";
+            buffer=[]; scannerAtivo=true;
+          },300);
+        }
       }
     });
   } catch(e){alert("Não foi possível abrir a câmera: "+e.message); scannerAtivo=false;}
@@ -243,13 +260,14 @@ async function iniciarScanner(){
 
 function pararScanner(){scannerAtivo=false; if(reader){reader.reset();reader=null;} if(stream){stream.getTracks().forEach(t=>t.stop()); stream=null;} video.srcObject=null;}
 
-// Salvar cadastro suspenso
+// Cadastro suspenso
 salvarSuspenso.onclick=function(){
   const novo={codigo:codigoSuspenso.value.trim(),nome:nomeSuspenso.value,tipo:tipoSuspenso.value,valor:Number(valorSuspenso.value)};
   if(!novo.codigo || !novo.nome || !novo.valor){return alert("Preencha todos os campos");}
   produtos=produtos.filter(p=>p.codigo!==novo.codigo); produtos.push(novo); localStorage.setItem("produtos",JSON.stringify(produtos)); atualizarTabela();
   cadastroSuspenso.style.display="none";
-  const qtd=Number(prompt(`Produto: ${novo.nome}\nQuantidade:`));
+  const qtdInput = prompt(`Produto: ${novo.nome}\nQuantidade:`);
+  const qtd = Number(qtdInput);
   if(qtd>0){carrinho.push({...novo,qtd}); localStorage.setItem("carrinho",JSON.stringify(carrinho)); atualizarCarrinho(); abrirCarrinho();}
 }
 
