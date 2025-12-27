@@ -5,25 +5,14 @@
 <title>Compras do mês</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="https://unpkg.com/@zxing/library@latest"></script>
-
 <style>
-body{background:#eef3ff;font-family:Arial;margin:0;}
+body{background:#eef3ff;font-family:Arial;margin:0;overflow-x:hidden;}
 .container{max-width:900px;margin:auto;padding:12px;}
-.logo{text-align:center;margin-top:20px;}
-.logo img{
-  width:160px;
-  height:160px;
-  object-fit:contain;
-  border-radius:50%;
-  border:5px solid #fff;
-  box-shadow:0 10px 30px rgba(0,0,0,0.35);
-  background:#eef3ff;
-  transition: transform 0.3s;
-}
-.logo img:hover{transform:scale(1.05);}
-
-.box{background:white;border-radius:18px;padding:16px;margin-top:15px;box-shadow:0 0 15px #00000010;}
-button{width:100%;padding:14px;border:none;font-size:16px;border-radius:12px;margin-top:8px;}
+.logo{text-align:center;margin-top:10px;}
+.logo img{width:160px;height:160px;object-fit:cover;border-radius:50%;border:5px solid #fff;box-shadow:0 10px 30px rgba(0,0,0,.35);}
+h1{text-align:center;margin:10px 0;}
+.box{background:white;border-radius:18px;padding:16px;margin-top:15px;box-shadow:0 0 15px #00000010;position:relative;}
+button{width:100%;padding:14px;border:none;font-size:16px;border-radius:12px;margin-top:8px;cursor:pointer;}
 .btnStart{background:#2e6bff;color:white;}
 .btnStop{background:#6b6b6b;color:white;}
 
@@ -37,49 +26,64 @@ button{width:100%;padding:14px;border:none;font-size:16px;border-radius:12px;mar
 }
 @keyframes scan{0%{top:10%}50%{top:90%}100%{top:10%}}
 
-input,select{width:100%;padding:12px;border-radius:12px;border:1px solid #ccc;margin-top:6px;}
+input,select{width:100%;padding:12px;border-radius:12px;border:1px solid #ccc;margin-top:6px;box-sizing:border-box;}
 table{width:100%;border-collapse:collapse;}
-td,th{padding:10px;}
+td,th{padding:10px;text-align:center;}
 tr:nth-child(even){background:#f5f5f5;}
 
 #carrinhoIcone{
   position:fixed;left:18px;bottom:18px;width:70px;height:70px;
   border-radius:50%;background:#2e6bff;color:white;
   display:flex;align-items:center;justify-content:center;
-  font-size:28px;box-shadow:0 8px 20px rgba(0,0,0,.35);cursor:pointer;
+  font-size:28px;box-shadow:0 8px 20px rgba(0,0,0,.35);z-index:999;
 }
 
-.modal{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.6);display:none;}
-.modal-content{background:white;width:92%;margin:40px auto;padding:12px;border-radius:18px;max-height:80vh;overflow-y:auto;}
+.modal{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.6);display:none;overflow:auto;}
+.modal-content{background:white;width:92%;max-width:480px;margin:20px auto;padding:12px;border-radius:18px;position:relative;animation:fadeIn 0.3s;}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.modal-body{max-height:400px;overflow-y:auto;}
 .total{text-align:right;font-weight:bold;padding-top:10px;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
 
 #areaProdutosConteudo{display:none;}
 .toggleBtn{background:#ffb703;color:#000;}
 
 .produtoDetectado{text-align:center;font-weight:bold;color:#2e6bff;margin-top:6px;}
-
 .subtotal{
-  background:#e6edff;
-  color:#1a3cff;
-  padding:4px 8px;
-  border-radius:6px;
-  font-weight:bold;
+  background:#e6edff;color:#1a3cff;padding:4px 8px;border-radius:6px;font-weight:bold;
 }
-
-.btn-trash{
-  background:none;border:none;font-size:20px;cursor:pointer;color:#ff3b3b;
-}
+.btn-trash{background:none;border:none;font-size:20px;cursor:pointer;color:#ff3b3b;}
 .btn-trash:hover{transform:scale(1.15);}
 .removendo{animation:remover .3s forwards;}
 @keyframes remover{to{opacity:0;transform:translateX(-40px);}}
+
+#cadastroSuspenso{
+  position:fixed;bottom:10px;left:50%;transform:translateX(-50%);
+  width:90%;max-width:400px;background:white;padding:16px;border-radius:18px;
+  box-shadow:0 5px 20px rgba(0,0,0,.3);display:none;z-index:1000;
+  max-height:70vh;overflow-y:auto;
+}
+#cadastroSuspenso label{display:block;margin-top:10px;font-weight:bold;}
+#cadastroSuspenso input,#cadastroSuspenso select{
+  width:100%;padding:10px;border-radius:10px;border:1px solid #ccc;margin-top:4px;box-sizing:border-box;
+}
+#cadastroSuspenso button{
+  margin-top:12px;background:#2e6bff;color:white;border:none;border-radius:12px;padding:12px;font-size:16px;cursor:pointer;
+}
+#cadastroSuspenso button:hover{background:#1d4ed8;}
+
+#barraValidacao{
+  height:20px;width:100%;background:#ccc;border-radius:10px;margin-top:6px;position:relative;
+}
+#barraValidacaoInner{
+  height:100%;width:0%;background:#2e6bff;border-radius:10px;transition:width 0.3s ease;text-align:center;color:white;font-weight:bold;line-height:20px;
+}
 </style>
 </head>
-
 <body>
-
 <div class="container">
-  <div class="logo"><img src="logo.png" alt="Gael Logo"></div>
-  <h1 style="text-align:center">🛒 Compras do mês 🛍️</h1>
+  <div class="logo"><img src="logo.png"></div>
+  <h1>🛒 Compras do mês 🛍️</h1>
 
   <div class="box">
     <button class="btnStart" id="startButton">📸 Abrir câmera</button>
@@ -90,14 +94,12 @@ tr:nth-child(even){background:#f5f5f5;}
     </div>
     <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
     <p id="nomeDetectado" class="produtoDetectado"></p>
-    <div id="progressBar" style="width:100%;height:8px;background:#ccc;border-radius:4px;margin-top:6px;">
-      <div id="progress" style="width:0%;height:100%;background:#2e6bff;border-radius:4px;"></div>
-    </div>
+    <div id="barraValidacao"><div id="barraValidacaoInner">0%</div></div>
   </div>
 
   <div class="box">
     <h2>📦 Produtos cadastrados</h2>
-    <button class="toggleBtn" onclick="toggleProdutos()">Mostrar / Ocultar</button>
+    <button class="toggleBtn" id="toggleProdutosBtn">Mostrar / Ocultar</button>
     <div id="areaProdutosConteudo">
       <table id="produtosTable">
         <thead><tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Preço</th><th></th></tr></thead>
@@ -105,54 +107,75 @@ tr:nth-child(even){background:#f5f5f5;}
       </table>
     </div>
   </div>
-
-  <div class="box" id="cadastroBox" style="display:none;">
-    <h2>✏️ Cadastro de produto</h2>
-    <label>Código</label><input id="codigo">
-    <label>Nome</label><input id="nome">
-    <label>Tipo</label>
-    <select id="tipo"><option>Unidade (UN)</option><option>Peso (KG)</option></select>
-    <label>Valor</label><input id="valor" type="number" step="0.01">
-    <button onclick="salvarProduto()">Salvar</button>
-  </div>
 </div>
 
-<div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️</div>
+<div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️<span id="badge" style="position:absolute;top:-8px;right:-8px;background:red;color:white;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;">0</span></div>
 
 <div id="modalCarrinho" class="modal">
   <div class="modal-content">
-    <h2>Carrinho</h2>
-    <table id="tabelaCarrinho"></table>
+    <div class="modal-header">
+      <h2>Carrinho</h2>
+      <div>
+        <button onclick="finalizarCompra()" class="btnStart">Finalizar</button>
+        <button onclick="fecharCarrinho()">Fechar</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <table id="tabelaCarrinho"></table>
+    </div>
     <p id="total" class="total">Total: R$ 0,00</p>
-    <button onclick="finalizarCompra()" class="btnStart">Finalizar compra</button>
-    <button onclick="fecharCarrinho()">Fechar</button>
   </div>
 </div>
 
+<div id="cadastroSuspenso" class="box">
+  <h2>✏️ Cadastrar Produto</h2>
+  <label>Código</label><input id="codigoSuspenso" autofocus>
+  <label>Nome</label><input id="nomeSuspenso">
+  <label>Tipo</label>
+  <select id="tipoSuspenso"><option>Unidade (UN)</option><option>Peso (KG)</option></select>
+  <label>Valor</label><input id="valorSuspenso" type="number" step="0.01">
+  <button id="salvarSuspenso">Salvar Produto</button>
+</div>
+
 <script>
+const startButton = document.getElementById("startButton");
+const stopButton = document.getElementById("stopButton");
+const video = document.getElementById("video");
+const detected = document.getElementById("detected");
+const nomeDetectado = document.getElementById("nomeDetectado");
+const barraInner = document.getElementById("barraValidacaoInner");
+const areaProdutosConteudo = document.getElementById("areaProdutosConteudo");
+const tabelaCarrinho = document.getElementById("tabelaCarrinho");
+const total = document.getElementById("total");
+const toggleProdutosBtn = document.getElementById("toggleProdutosBtn");
+const badge = document.getElementById("badge");
+
 let produtos = JSON.parse(localStorage.getItem("produtos")||"[]");
 let carrinho = JSON.parse(localStorage.getItem("carrinho")||"[]");
 
-let stream=null, reader=null, buffer=[], processando=false;
-const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+let reader=null, stream=null;
+const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+let buffer=[], scannerAtivo=false;
+const repeticoes=3;
 
-function toggleProdutos(){
-  areaProdutosConteudo.style.display =
-    areaProdutosConteudo.style.display==="block" ? "none" : "block";
-}
+// Cadastro suspenso
+const cadastroSuspenso = document.getElementById("cadastroSuspenso");
+const codigoSuspenso = document.getElementById("codigoSuspenso");
+const nomeSuspenso = document.getElementById("nomeSuspenso");
+const tipoSuspenso = document.getElementById("tipoSuspenso");
+const valorSuspenso = document.getElementById("valorSuspenso");
+const salvarSuspenso = document.getElementById("salvarSuspenso");
+
+toggleProdutosBtn.onclick = ()=>{areaProdutosConteudo.style.display = areaProdutosConteudo.style.display==="block"?"none":"block";};
 
 function atualizarTabela(){
   const tb=document.querySelector("#produtosTable tbody");
   tb.innerHTML="";
   produtos.forEach((p,i)=>{
-    tb.innerHTML+=`
-      <tr>
-        <td>${p.codigo}</td>
-        <td>${p.nome}</td>
-        <td>${p.tipo}</td>
-        <td>R$ ${p.valor.toFixed(2)}</td>
-        <td><button onclick="excluirProduto(${i})">❌</button></td>
-      </tr>`;
+    tb.innerHTML+=`<tr>
+      <td>${p.codigo}</td><td>${p.nome}</td><td>${p.tipo}</td><td>R$ ${p.valor.toFixed(2)}</td>
+      <td><button onclick="excluirProduto(${i})">❌</button></td>
+    </tr>`;
   });
 }
 atualizarTabela();
@@ -165,106 +188,91 @@ function excluirProduto(i){
   }
 }
 
-function salvarProduto(){
-  produtos = produtos.filter(p=>p.codigo!==codigo.value);
-  const novo={codigo:codigo.value,nome:nome.value,tipo:tipo.value,valor:Number(valor.value)};
-  produtos.push(novo);
-  localStorage.setItem("produtos",JSON.stringify(produtos));
-  atualizarTabela();
-
-  // Pergunta quantidade e adiciona ao carrinho
-  const qtd=Number(prompt(`Produto: ${novo.nome}\nQuantidade para o carrinho:`));
-  if(qtd>0){
-    carrinho.push({...novo,qtd});
-    localStorage.setItem("carrinho",JSON.stringify(carrinho));
-    atualizarCarrinho();
-    abrirCarrinho();
-  }
-
-  // Limpa campos
-  codigo.value=""; nome.value=""; valor.value=""; tipo.value="Unidade (UN)";
+// Carrinho
+function atualizarBadge(){
+  badge.innerText = carrinho.length;
 }
 
 function abrirCarrinho(){modalCarrinho.style.display="block"; atualizarCarrinho();}
 function fecharCarrinho(){modalCarrinho.style.display="none";}
-
 function removerItem(i){
   const row=document.getElementById("row"+i);
-  row.classList.add("removendo");
-  setTimeout(()=>{
-    carrinho.splice(i,1);
-    localStorage.setItem("carrinho",JSON.stringify(carrinho));
-    atualizarCarrinho();
-  },300);
+  if(row){row.classList.add("removendo"); setTimeout(()=>{carrinho.splice(i,1); localStorage.setItem("carrinho",JSON.stringify(carrinho)); atualizarCarrinho();},300);}
 }
-
 function atualizarCarrinho(){
   let soma=0;
-  tabelaCarrinho.innerHTML=`<tr><th>Código</th><th>Nome</th><th>Qtd</th><th>Subtotal</th><th></th></tr>`;
+  tabelaCarrinho.innerHTML=`<tr><th>Nome</th><th>Qtd</th><th>Subtotal</th><th></th></tr>`;
   carrinho.forEach((x,i)=>{
-    let sub=x.valor*x.qtd;
-    soma+=sub;
-    tabelaCarrinho.innerHTML+=`
-      <tr id="row${i}">
-        <td>${x.codigo}</td>
-        <td>${x.nome}</td>
-        <td>${x.qtd}</td>
-        <td><span class="subtotal">R$ ${sub.toFixed(2)}</span></td>
-        <td><button class="btn-trash" onclick="removerItem(${i})">🗑️</button></td>
-      </tr>`;
+    let sub=x.valor*x.qtd; soma+=sub;
+    tabelaCarrinho.innerHTML+=`<tr id="row${i}">
+      <td>${x.nome}</td><td>${x.qtd}</td><td>R$ ${sub.toFixed(2)}</td>
+      <td><button class="btn-trash" onclick="removerItem(${i})">🗑️</button></td>
+    </tr>`;
   });
-  document.getElementById("total").innerText="Total: R$ "+soma.toFixed(2);
+  total.innerText="Total: R$ "+soma.toFixed(2);
+  atualizarBadge();
 }
+atualizarCarrinho();
+function finalizarCompra(){if(!carrinho.length)return alert("Carrinho vazio"); carrinho=[]; localStorage.setItem("carrinho","[]"); atualizarCarrinho(); fecharCarrinho(); alert("Compra finalizada!");}
 
-function finalizarCompra(){
-  if(!carrinho.length) return alert("Carrinho vazio");
-  if(confirm("Finalizar compra?")){
-    carrinho=[]; localStorage.setItem("carrinho","[]");
-    atualizarCarrinho(); fecharCarrinho(); alert("Compra finalizada!");
-  }
-}
-
+// Scanner
 async function iniciarScanner(){
-  if(stream || processando) return;
-  buffer=[]; processando=false;
-  const video=document.getElementById("video");
-  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
-  video.srcObject=stream;
-  await video.play();
-  reader=new ZXing.BrowserMultiFormatReader();
-  reader.decodeFromVideoElementContinuously(video,(res)=>{
-    if(!res||processando) return;
-    detected.innerText=res.text;
-    const prod=produtos.find(p=>p.codigo===res.text);
-    if(prod){
-      nomeDetectado.innerText=prod.nome;
-      const qtd=Number(prompt(`Produto: ${prod.nome}\nQuantidade:`));
-      if(qtd>0){
-        carrinho.push({...prod,qtd});
-        localStorage.setItem("carrinho",JSON.stringify(carrinho));
-        atualizarCarrinho();
-        abrirCarrinho();
+  if(scannerAtivo) return;
+  scannerAtivo=true; detected.innerText="—"; nomeDetectado.innerText=""; barraInner.style.width="0%"; barraInner.innerText="0%";
+  try{
+    if(!stream){stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}); video.srcObject=stream; await new Promise(r=>video.onloadedmetadata=r); await video.play();}
+    reader = new ZXing.BrowserMultiFormatReader();
+    reader.decodeFromVideoElementContinuously(video,(res)=>{
+      if(!res || !scannerAtivo) return;
+      const codigo=res.text.trim();
+      buffer.push(codigo);
+      if(buffer.length>repeticoes) buffer.shift();
+
+      barraInner.style.width = ((buffer.filter(v=>v===codigo).length/repeticoes)*100) + "%";
+      barraInner.innerText = Math.round((buffer.filter(v=>v===codigo).length/repeticoes)*100) + "%";
+
+      if(buffer.length===repeticoes && buffer.every(v=>v===codigo)){
+        scannerAtivo=false;
+        beep.currentTime=0; beep.play();
+        const prod = produtos.find(p=>p.codigo===codigo);
+        if(prod){
+          nomeDetectado.innerText = prod.nome;
+          setTimeout(()=>{
+            const qtdInput = prompt(`Produto: ${prod.nome}\nQuantidade:`);
+            const qtd = Number(qtdInput);
+            if(qtd>0){carrinho.push({...prod,qtd}); localStorage.setItem("carrinho",JSON.stringify(carrinho)); atualizarCarrinho(); abrirCarrinho();}
+            barraInner.style.width="0%"; barraInner.innerText="0%";
+            buffer=[]; scannerAtivo=true;
+          },300);
+        } else {
+          nomeDetectado.innerText="Produto não cadastrado";
+          setTimeout(()=>{
+            cadastroSuspenso.style.display="block"; codigoSuspenso.value=codigo; nomeSuspenso.value=""; valorSuspenso.value=""; tipoSuspenso.value="Unidade (UN)";
+            window.scrollTo({top:0,behavior:'smooth'});
+            barraInner.style.width="0%"; barraInner.innerText="0%";
+            buffer=[]; scannerAtivo=true;
+          },300);
+        }
       }
-      processando=true; pararScanner();
-    } else {
-      nomeDetectado.innerText="Produto não cadastrado";
-      document.getElementById("cadastroBox").style.display="block";
-      codigo.value=res.text;
-      processando=true; pararScanner();
-    }
-    beep.currentTime=0; beep.play();
-  });
+    });
+  } catch(e){alert("Não foi possível abrir a câmera: "+e.message); scannerAtivo=false;}
 }
 
-function pararScanner(){
-  if(reader){reader.reset(); reader=null;}
-  if(stream){stream.getTracks().forEach(t=>t.stop()); stream=null;}
-  processando=false;
+function pararScanner(){scannerAtivo=false; if(reader){reader.reset();reader=null;} if(stream){stream.getTracks().forEach(t=>t.stop()); stream=null;} video.srcObject=null;}
+
+// Cadastro suspenso
+salvarSuspenso.onclick=function(){
+  const novo={codigo:codigoSuspenso.value.trim(),nome:nomeSuspenso.value,tipo:tipoSuspenso.value,valor:Number(valorSuspenso.value)};
+  if(!novo.codigo || !novo.nome || !novo.valor){return alert("Preencha todos os campos");}
+  produtos=produtos.filter(p=>p.codigo!==novo.codigo); produtos.push(novo); localStorage.setItem("produtos",JSON.stringify(produtos)); atualizarTabela();
+  cadastroSuspenso.style.display="none";
+  const qtdInput = prompt(`Produto: ${novo.nome}\nQuantidade:`);
+  const qtd = Number(qtdInput);
+  if(qtd>0){carrinho.push({...novo,qtd}); localStorage.setItem("carrinho",JSON.stringify(carrinho)); atualizarCarrinho(); abrirCarrinho();}
 }
 
 startButton.onclick=iniciarScanner;
 stopButton.onclick=pararScanner;
 </script>
-
 </body>
 </html>
