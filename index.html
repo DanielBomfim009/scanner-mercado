@@ -9,17 +9,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --primary:#3b7ddd;
-  --secondary:#ffb703;
-  --background:#eef3ff;
-  --card:#fff;
-  --danger:#ff3b3b;
-  --sidebar-width:220px;
-  --transition-speed:0.3s;
-  --font-base:16px;
-  --radius:18px;
-  --shadow:0 4px 18px rgba(0,0,0,.15);
+  --primary: #3b7ddd;
+  --secondary: #ffb703;
+  --background: #eef3ff;
+  --card: #fff;
+  --danger: #ff3b3b;
+  --sidebar-width: 220px;
+  --transition-speed: 0.3s;
+  --font-base: 16px;
+  --radius: 16px;
+  --shadow: 0 6px 18px rgba(0,0,0,.15);
 }
+
+/* Reset */
 * {margin:0;padding:0;box-sizing:border-box;font-family:'Roboto',sans-serif;}
 body {background:var(--background); display:flex; min-height:100vh; overflow-x:hidden; font-size:var(--font-base);}
 
@@ -49,7 +51,7 @@ body {background:var(--background); display:flex; min-height:100vh; overflow-x:h
   box-shadow:var(--shadow);
 }
 
-/* Conteúdo principal */
+/* Content */
 #content{
   margin-left:var(--sidebar-width);
   flex:1; padding:20px;
@@ -63,7 +65,7 @@ body {background:var(--background); display:flex; min-height:100vh; overflow-x:h
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   color:white; z-index:2000;
 }
-#splash img{width:300px; height:300px; object-fit:contain; margin-bottom:12px; border-radius:50%;}
+#splash img{width:220px; height:220px; object-fit:contain; margin-bottom:12px; border-radius:50%;}
 #splash p{font-size:18px; text-align:center; font-weight:500;}
 
 /* Views */
@@ -73,9 +75,9 @@ body {background:var(--background); display:flex; min-height:100vh; overflow-x:h
 
 /* Home */
 #home{text-align:center;}
-#home .logo-home{width:250px;height:250px;object-fit:contain;margin:20px auto;}
-#home h2{margin:6px 0 20px; color:var(--primary); font-weight:500; font-size:1.2rem;}
-#orcamento{position:relative; max-width:300px; margin:10px auto;}
+#home .logo-home{width:180px;height:180px;object-fit:contain;margin:20px auto;}
+#home h2{margin:8px 0 16px; color:var(--primary); font-weight:500; font-size:1.3rem;}
+#orcamento{position:relative; max-width:320px; margin:10px auto;}
 #orcamento input{
   width:100%; padding:12px 12px 12px 40px; border-radius:12px; border:1px solid #ccc;
   font-size:16px;
@@ -92,13 +94,14 @@ body {background:var(--background); display:flex; min-height:100vh; overflow-x:h
 }
 
 /* Scanner */
-#camera{width:100%;height:280px;background:#000;border-radius:var(--radius);overflow:hidden;position:relative;margin-top:10px; box-shadow:var(--shadow);}
+#scanner .box{display:flex; flex-direction:column; align-items:center;}
+#camera{width:100%;max-width:480px;height:280px;background:#000;border-radius:var(--radius);overflow:hidden;position:relative;margin-top:10px; box-shadow:var(--shadow);}
 #camera video{width:100%;height:100%;object-fit:cover; border-radius:var(--radius);}
 .scan-line{position:absolute;left:0;right:0;height:3px;background:var(--secondary);animation:scan 2s linear infinite;}
 @keyframes scan{0%{top:10%}50%{top:90%}100%{top:10%}}
-#barraValidacao{height:22px;background:#ccc;border-radius:12px;margin-top:8px;}
+#barraValidacao{height:22px;background:#ccc;border-radius:12px;margin-top:8px;width:100%;max-width:480px;}
 #barraValidacaoInner{height:100%;width:0;background:var(--primary);border-radius:12px;text-align:center;color:white;font-weight:bold;transition:width 0.3s;}
-#scannerStats{margin-top:10px;font-size:14px;text-align:left;}
+#scannerStats{margin-top:12px;font-size:14px;text-align:left; width:100%; max-width:480px;}
 
 /* Produtos */
 #produtosContainer{background:var(--card); border-radius:var(--radius); padding:15px; max-height:400px; overflow-y:auto; box-shadow:var(--shadow);}
@@ -117,9 +120,9 @@ button.deleteBtn{background:var(--danger);color:white;border:none;padding:4px 8p
 /* Carrinho */
 #carrinhoIcone{
   position:fixed; bottom:20px; right:20px;
-  width:70px;height:70px; background:var(--primary);
-  border-radius:20px; color:#fff; display:flex;
-  align-items:center; justify-content:center; font-size:26px; cursor:pointer;
+  width:60px;height:60px; background:var(--primary);
+  border-radius:15px; color:#fff; display:flex;
+  align-items:center; justify-content:center; font-size:24px; cursor:pointer;
   z-index:200; box-shadow:var(--shadow);
 }
 #carrinhoIcone span{
@@ -130,21 +133,20 @@ button.deleteBtn{background:var(--danger);color:white;border:none;padding:4px 8p
 
 /* Modal */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:1000;}
-.modal-content{background:#fff;width:90%;max-width:480px;margin:40px auto;padding:20px;border-radius:var(--radius);}
+.modal-content{background:#fff;width:90%;max-width:480px;margin:40px auto;padding:20px;border-radius:var(--radius);box-shadow:var(--shadow);}
 
 /* Cadastro produto */
 #cadastroSuspenso, #cadastroManual .box input, #cadastroManual .box select, #cadastroManual .box button{
   width:100%;padding:12px;margin-top:8px;border-radius:12px;border:1px solid #ccc;
 }
-#cadastroSuspenso button, #cadastroManual .box button{background:var(--primary);color:white;border:none;}
+#cadastroSuspenso button, #cadastroManual .box button{background:var(--primary);color:white;border:none; cursor:pointer;}
+#cadastroManual .box{max-width:400px;margin:20px auto;}
 </style>
 </head>
 <body>
 
-<!-- Hamburger -->
 <div id="hamburger">☰</div>
 
-<!-- Sidebar -->
 <div id="sidebar">
   <button onclick="irPara('home')">🏠 Home</button>
   <button onclick="irPara('scanner')">📷 Scanner</button>
@@ -153,16 +155,13 @@ button.deleteBtn{background:var(--danger);color:white;border:none;padding:4px 8p
   <button onclick="irPara('cadastroManual')">✏️ Cadastro Manual</button>
 </div>
 
-<!-- Conteúdo -->
 <div id="content">
 
-  <!-- Splash -->
   <div id="splash">
     <img src="logo.png" alt="Logo">
     <p>Bem-vindo ao seu app de compras inteligente</p>
   </div>
 
-  <!-- Home -->
   <section id="home" class="view active">
     <img src="logo.png" class="logo-home" alt="Logo">
     <h2>Bem-vindo ao GoL BUY SMART</h2>
@@ -173,7 +172,6 @@ button.deleteBtn{background:var(--danger);color:white;border:none;padding:4px 8p
     <div class="box" id="homeCards"></div>
   </section>
 
-  <!-- Scanner -->
   <section id="scanner" class="view">
     <div class="box">
       <div id="camera">
@@ -190,7 +188,6 @@ button.deleteBtn{background:var(--danger);color:white;border:none;padding:4px 8p
     </div>
   </section>
 
-  <!-- Produtos -->
   <section id="produtos" class="view">
     <h2>Produtos cadastrados</h2>
     <div id="produtosContainer">
@@ -201,7 +198,6 @@ button.deleteBtn{background:var(--danger);color:white;border:none;padding:4px 8p
     </div>
   </section>
 
-  <!-- Cadastro Manual -->
   <section id="cadastroManual" class="view">
     <div class="box">
       <h2>Cadastro de Produto Manual</h2>
@@ -223,14 +219,12 @@ button.deleteBtn{background:var(--danger);color:white;border:none;padding:4px 8p
     </div>
   </section>
 
-  <!-- Histórico -->
   <section id="historico" class="view">
     <div class="box" id="historicoConteudo"></div>
   </section>
 
 </div>
 
-<!-- Carrinho -->
 <div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️<span id="badge">0</span></div>
 <div id="modalCarrinho" class="modal">
   <div class="modal-content">
@@ -242,7 +236,6 @@ button.deleteBtn{background:var(--danger);color:white;border:none;padding:4px 8p
   </div>
 </div>
 
-<!-- Cadastro Suspenso -->
 <div id="cadastroSuspenso">
   <h3>Cadastrar/Editar Produto</h3>
   <input id="codigoSuspenso" placeholder="Código">
@@ -260,42 +253,53 @@ button.deleteBtn{background:var(--danger);color:white;border:none;padding:4px 8p
 </div>
 
 <script>
-// JS completo integrando scanner, produtos, cadastro, orçamento e carrinho
+// ===================== JS COMPLETO =====================
+
+// Elementos e storage
 const $=id=>document.getElementById(id);
 const Storage={get:(k,f=[])=>JSON.parse(localStorage.getItem(k))||f,set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))};
 let produtos=Storage.get("produtos"), carrinho=Storage.get("carrinho"), historico=Storage.get("historicoCompras");
 let reader=null,stream=null,buffer=[],scannerAtivo=false,editIndex=null;
 const repeticoes=3, beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
-// Orçamento
-let orcamento=Number(localStorage.getItem("orcamento"))||0;
-$("orcamentoInput").value=orcamento;
-$("orcamentoInput").addEventListener("change",()=>{
-  orcamento=Number($("orcamentoInput").value);
-  localStorage.setItem("orcamento",orcamento);
-});
-
 // Splash
-window.onload=()=>{setTimeout(()=>{$("splash").style.display="none"; irPara('home'); atualizarProdutos(); atualizarHistorico(); atualizarCarrinho(); iniciarScanner();},1500);};
+window.onload=()=>{
+  $("orcamentoInput").value = Storage.get("orcamentoValue", "");
+  setTimeout(()=>{
+    $("splash").style.display="none"; 
+    irPara('home'); 
+    atualizarProdutos(); 
+    atualizarHistorico(); 
+    atualizarCarrinho(); 
+    atualizarScannerStats();
+    iniciarScanner();
+  },1500);
+};
 
 // Sidebar toggle
 const sidebar=$("sidebar"), content=$("content"), hamburger=$("hamburger");
 hamburger.onclick=()=>{sidebar.classList.toggle("hide");content.classList.toggle("full");};
 
 // Router
-function irPara(tela){document.querySelectorAll(".view").forEach(v=>v.classList.remove("active")); $(tela).classList.add("active"); atualizarScannerStats(); if(tela!=="scanner") pararScanner(); else iniciarScanner();}
+function irPara(tela){document.querySelectorAll(".view").forEach(v=>v.classList.remove("active")); $(tela).classList.add("active");}
 
 // Produtos
 function atualizarProdutos(){
   const tb=$("produtosTable").querySelector("tbody"); tb.innerHTML="";
-  produtos.forEach((p,i)=>{tb.innerHTML+=`<tr><td>${p.codigo}</td><td>${p.nome}</td><td>${p.categoria||"Outros"}</td><td>${p.tipo}</td><td>R$ ${p.valor.toFixed(2)}</td><td><button class="editBtn" onclick="editarProduto(${i})">✏️</button><button class="deleteBtn" onclick="excluirProduto(${i})">❌</button></td></tr>`;});
+  produtos.forEach((p,i)=>{
+    tb.innerHTML+=`<tr>
+      <td>${p.codigo}</td><td>${p.nome}</td><td>${p.categoria}</td><td>${p.tipo}</td><td>R$ ${p.valor.toFixed(2)}</td>
+      <td><button class="editBtn" onclick="editarProduto(${i})">✏️</button>
+      <button class="deleteBtn" onclick="excluirProduto(${i})">❌</button></td>
+    </tr>`;
+  });
   const homeCards=$("homeCards"); homeCards.innerHTML="";
-  historico.slice(-2).reverse().forEach(h=>{homeCards.innerHTML+=`<div class="box"><strong>${h.data}</strong><br>Total: R$ ${h.total.toFixed(2)}</div>`;});
+  historico.slice(-2).reverse().forEach(h=>{
+    homeCards.innerHTML+=`<div class="box"><strong>${h.data}</strong><br>Total: R$ ${h.total.toFixed(2)}</div>`;
+  });
 }
-
-// Excluir/Editar produto
-function excluirProduto(i){if(confirm("Excluir produto?")){produtos.splice(i,1);Storage.set("produtos",produtos); atualizarProdutos(); atualizarScannerStats();}}
-function editarProduto(i){editIndex=i;$("cadastroSuspenso").style.display="block";$("codigoSuspenso").value=produtos[i].codigo;$("nomeSuspenso").value=produtos[i].nome;$("categoriaSuspenso").value=produtos[i].categoria||"Outros";$("tipoSuspenso").value=produtos[i].tipo;$("valorSuspenso").value=produtos[i].valor;}
+function excluirProduto(i){if(confirm("Excluir produto?")){produtos.splice(i,1);Storage.set("produtos",produtos);atualizarProdutos();atualizarScannerStats();}}
+function editarProduto(i){editIndex=i;$("cadastroSuspenso").style.display="block";$("codigoSuspenso").value=produtos[i].codigo;$("nomeSuspenso").value=produtos[i].nome;$("categoriaSuspenso").value=produtos[i].categoria;$("tipoSuspenso").value=produtos[i].tipo;$("valorSuspenso").value=produtos[i].valor;}
 
 // Scanner
 async function iniciarScanner(){
@@ -311,9 +315,7 @@ async function iniciarScanner(){
     $("barraValidacaoInner").style.width=(ok/repeticoes*100)+"%";
     $("barraValidacaoInner").innerText=Math.round(ok/repeticoes*100)+"%";
     $("detected").innerText=codigo;
-    if(ok>=repeticoes){
-      beep.play(); processarCodigo(codigo);
-    }
+    if(ok>=repeticoes){beep.play();processarCodigo(codigo);}
   });
 }
 function processarCodigo(codigo){
@@ -322,27 +324,27 @@ function processarCodigo(codigo){
   if(p){
     let q=Number(prompt(`Produto: ${p.nome}\nQuantidade:`));
     if(q>0){carrinho.push({...p,qtd:q});Storage.set("carrinho",carrinho);abrirCarrinho();}
-  } else {irPara('cadastroManual'); $("codigoManual").value=codigo;}
+  } else{
+    irPara('cadastroManual');
+    $("codigoManual").value=codigo;
+  }
   setTimeout(()=>{scannerAtivo=true;buffer=[];$("barraValidacaoInner").style.width="0%";},500);
 }
 function pararScanner(){scannerAtivo=false;if(reader)reader.reset();if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;$("video").srcObject=null;}
 
-// Cadastro Suspenso
+// Cadastro produto suspenso
 $("salvarSuspenso").onclick=()=>{
   const novo={codigo:$("codigoSuspenso").value,nome:$("nomeSuspenso").value,categoria:$("categoriaSuspenso").value,tipo:$("tipoSuspenso").value,valor:Number($("valorSuspenso").value)};
   if(!novo.codigo||!novo.nome||!novo.valor) return alert("Preencha tudo");
   if(editIndex!==null){produtos[editIndex]=novo; editIndex=null;} else {produtos.push(novo);}
-Storage.set("produtos",produtos); atualizarProdutos(); atualizarScannerStats(); $("cadastroSuspenso").style.display="none";
+  Storage.set("produtos",produtos); atualizarProdutos(); atualizarScannerStats(); $("cadastroSuspenso").style.display="none";
 };
 
-// Cadastro Manual
+// Cadastro produto manual
 $("salvarManual").onclick=()=>{
   const novo={codigo:$("codigoManual").value,nome:$("nomeManual").value,categoria:$("categoriaManual").value,tipo:$("tipoManual").value,valor:Number($("valorManual").value)};
   if(!novo.codigo||!novo.nome||!novo.valor) return alert("Preencha tudo");
-  produtos.push(novo);
-  Storage.set("produtos",produtos); atualizarProdutos(); atualizarScannerStats();
-  alert("Produto cadastrado com sucesso!");
-  $("codigoManual").value=$("nomeManual").value=$("valorManual").value="";
+  produtos.push(novo); Storage.set("produtos",produtos); atualizarProdutos(); atualizarScannerStats(); alert("Produto cadastrado");$("codigoManual").value=""; $("nomeManual").value=""; $("valorManual").value="";
 };
 
 // Carrinho
@@ -376,19 +378,18 @@ function atualizarHistorico(){
   });
 }
 
-// Scanner Stats
+// Orçamento
+$("orcamentoInput").onchange=()=>{Storage.set("orcamentoValue",$("orcamentoInput").value);};
+
+// Scanner stats
 function atualizarScannerStats(){
   $("totalProdutos").innerText=produtos.length;
-  const stats={};
-  produtos.forEach(p=>{stats[p.categoria]= (stats[p.categoria]||0)+1;});
+  const catCount={};
+  produtos.forEach(p=>{catCount[p.categoria]=(catCount[p.categoria]||0)+1;});
   const ul=$("categoriaStats"); ul.innerHTML="";
-  Object.keys(stats).forEach(cat=>{ul.innerHTML+=`<li>${cat}: ${stats[cat]}</li>`;});
+  for(let cat in catCount){ul.innerHTML+=`<li>${cat}: ${catCount[cat]}</li>`;}
 }
-
-// Inicializa stats
-atualizarScannerStats();
-
 </script>
+
 </body>
 </html>
-
