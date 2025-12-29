@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>GoL BUY SMART</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#3b7ddd">
 
 <script src="https://unpkg.com/@zxing/library@0.21.2"></script>
@@ -13,9 +13,9 @@
 :root {
   --primary:#3b7ddd;
   --secondary:#ffb703;
+  --danger:#ff3b3b;
   --background:#eef3ff;
   --card:#fff;
-  --danger:#ff3b3b;
   --sidebar-width:220px;
   --transition-speed:0.3s;
   --font-base:16px;
@@ -23,7 +23,7 @@
   --shadow:0 4px 18px rgba(0,0,0,.15);
 }
 
-/* Reset */
+/* Reset e body */
 * {margin:0;padding:0;box-sizing:border-box;font-family:'Roboto',sans-serif;}
 body {background:var(--background); display:flex; min-height:100vh; overflow-x:hidden; font-size:var(--font-base);}
 
@@ -56,7 +56,7 @@ body {background:var(--background); display:flex; min-height:100vh; overflow-x:h
 /* Conteúdo principal */
 #content{
   margin-left:var(--sidebar-width);
-  flex:1; padding:20px;
+  flex:1; padding:15px;
   transition:margin-left var(--transition-speed);
 }
 #content.full{margin-left:0;}
@@ -67,7 +67,7 @@ body {background:var(--background); display:flex; min-height:100vh; overflow-x:h
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   color:white; z-index:2000;
 }
-#splash img{width:300px; height:300px; object-fit:contain; margin-bottom:10px;}
+#splash img{width:250px; height:250px; object-fit:contain; margin-bottom:10px;}
 #splash p{font-size:18px; text-align:center; font-weight:500;}
 
 /* Views */
@@ -77,29 +77,30 @@ body {background:var(--background); display:flex; min-height:100vh; overflow-x:h
 
 /* Home */
 #home{text-align:center;}
-#home .logo-home{width:280px;height:280px;object-fit:contain;margin:0 auto 10px;}
-#home h2{margin:0 0 20px; color:var(--primary); font-weight:500; font-size:1.5rem;}
-#orcamento{position:relative; max-width:400px; margin:10px auto;}
+#home .logo-home{width:250px;height:250px;object-fit:contain;margin:10px auto;}
+#home h2{margin:5px 0 15px;color:var(--primary); font-weight:500; font-size:1.3rem;}
+#orcamento{margin:10px auto; max-width:350px; text-align:left;}
+#orcamento h3{margin-bottom:5px;}
 #orcamento input{
-  width:100%; padding:12px 12px 12px 50px; margin-top:8px; border-radius:12px; border:1px solid #ccc;
-  font-size:16px;
+  width:100%; padding:10px 12px; margin-bottom:10px; border-radius:12px; border:1px solid #ccc; font-size:16px;
 }
-#orcamento::before{
-  content:'R$'; position:absolute; left:15px; top:45%; transform:translateY(-50%); color:#555; font-weight:bold;
+#orcamentoBar{
+  width:100%; height:22px; background:#ccc; border-radius:12px; overflow:hidden;
+  margin-top:5px;
 }
-#orcamentoBar{width:100%; height:22px; background:#ccc; border-radius:12px; margin-top:10px; overflow:hidden;}
-#orcamentoBarInner{height:100%; width:0%; background:var(--primary); text-align:center; color:white; font-weight:bold; line-height:22px; transition:width 0.3s;}
-#homeCards{display:flex; flex-direction:column; gap:12px; margin-top:15px;}
+#orcamentoBarInner{
+  height:100%; width:0%; background:green; text-align:center; color:white; font-weight:bold; line-height:22px;
+  transition: width 0.3s, background 0.3s;
+}
+#homeCards{display:flex; flex-direction:column; gap:12px; margin-top:15px; max-width:350px; margin-left:auto; margin-right:auto;}
 
 /* Box */
 .box{
-  background:var(--card); border-radius:var(--radius); padding:20px; margin-bottom:20px;
+  background:var(--card); border-radius:var(--radius); padding:15px; margin-bottom:15px;
   box-shadow:var(--shadow);
 }
 
 /* Scanner */
-#scannerStats{display:flex; justify-content:space-between; flex-wrap:wrap; margin-top:10px; font-size:14px;}
-#scannerStats ul{list-style:none; padding-left:0;}
 #camera{width:100%;height:280px;background:#000;border-radius:var(--radius);overflow:hidden;position:relative; box-shadow:var(--shadow);}
 #camera video{width:100%;height:100%;object-fit:cover; border-radius:var(--radius);}
 .scan-line{position:absolute;left:0;right:0;height:3px;background:var(--secondary);animation:scan 2s linear infinite;}
@@ -108,7 +109,6 @@ body {background:var(--background); display:flex; min-height:100vh; overflow-x:h
 #barraValidacaoInner{height:100%;width:0;background:var(--primary);border-radius:12px;text-align:center;color:white;font-weight:bold;transition:width 0.3s;}
 
 /* Produtos */
-#produtos .table-wrapper{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px;}
 td,th{padding:8px;text-align:center;}
 tr:nth-child(even){background:#f3f3f3;}
@@ -128,31 +128,33 @@ button.deleteBtn{background:var(--danger);color:white;border:none;padding:4px 8p
   border-radius:50%; color:#fff; display:flex;
   align-items:center; justify-content:center; font-size:26px; cursor:pointer;
   z-index:200;
-  box-shadow:var(--shadow);
 }
 #carrinhoIcone span{
   position:absolute; top:-5px; right:-5px; width:20px;height:20px;
   background:red;color:#fff; border-radius:50%;
   font-size:12px; display:flex; align-items:center; justify-content:center;
 }
+#modalCarrinho{position:fixed; inset:0;background:rgba(0,0,0,.6); display:none; z-index:1000;}
+#modalCarrinho .modal-content{background:#f0f0f0; width:90%; max-width:480px; margin:40px auto; padding:20px; border-radius:var(--radius); box-shadow:var(--shadow);}
+#modalCarrinho table{width:100%; margin-bottom:10px; border-collapse:collapse;}
+#modalCarrinho td, #modalCarrinho th{padding:8px;text-align:center;}
 
-/* Modal */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:1000;}
-.modal-content{background:#fff;width:90%;max-width:480px;margin:40px auto;padding:20px;border-radius:var(--radius);}
-
-/* Cadastro produto */
+/* Cadastro */
 #cadastro{
-  display:none; max-width:500px; margin:10px auto;
+  display:none; max-width:350px; margin:10px auto; background:#fff; padding:15px;
+  border-radius:var(--radius); box-shadow:var(--shadow);
 }
-#cadastro input, select, button{width:100%;padding:12px;margin-top:8px;border-radius:12px;border:1px solid #ccc;}
-#cadastro button{background:var(--primary);color:white;border:none;}
+#cadastro input, #cadastro select, #cadastro button{
+  width:100%; padding:10px; margin-top:8px; border-radius:12px; border:1px solid #ccc;
+}
+#cadastro button{background:var(--primary); color:#fff; border:none; font-weight:500; cursor:pointer;}
+#cadastro h3{margin-bottom:10px; text-align:center; color:var(--primary);}
 
-/* Responsividade */
-@media(max-width:480px){
-  #sidebar{width:180px;}
-  #content{margin-left:180px;padding:15px;}
-  #home .logo-home{width:200px;height:200px;}
-}
+/* Scanner stats */
+#scannerStats{margin-top:10px; max-width:350px; margin-left:auto; margin-right:auto;}
+#categoriaChart{height:120px; display:flex; flex-direction:column; gap:5px; margin-top:5px;}
+.bar{height:20px; border-radius:10px; background:var(--secondary); position:relative;}
+.bar span{position:absolute; left:5px; top:0; color:#000; font-weight:500; line-height:20px;}
 </style>
 </head>
 <body>
@@ -169,7 +171,6 @@ button.deleteBtn{background:var(--danger);color:white;border:none;padding:4px 8p
   <button onclick="irPara('historico')">🧾 Histórico</button>
 </div>
 
-<!-- Conteúdo -->
 <div id="content">
 
   <!-- Splash -->
@@ -182,33 +183,30 @@ button.deleteBtn{background:var(--danger);color:white;border:none;padding:4px 8p
   <section id="home" class="view active">
     <img src="logo.png" class="logo-home" alt="Logo">
     <h2>Bem-vindo ao GoL BUY SMART</h2>
-    <div class="box" id="orcamento">
-      <h3>💰 Orçamento Mensal</h3>
+    <div id="orcamento" class="box">
+      <h3>💰 Orçamento mensal</h3>
       <input type="number" id="orcamentoInput" placeholder="Digite seu orçamento">
       <div id="orcamentoBar"><div id="orcamentoBarInner">0%</div></div>
     </div>
-    <div class="box" id="homeCards"></div>
+    <div id="homeCards"></div>
   </section>
 
   <!-- Scanner -->
   <section id="scanner" class="view">
     <div class="box">
-      <div id="camera">
-        <video id="video" playsinline></video>
-        <div class="scan-line"></div>
-      </div>
+      <div id="camera"><video id="video" playsinline></video><div class="scan-line"></div></div>
       <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
       <div id="barraValidacao"><div id="barraValidacaoInner">0%</div></div>
-      <div id="scannerStats">
-        <p>Total produtos cadastrados: <span id="totalProdutos">0</span></p>
-        <ul id="categoriaStats"></ul>
-      </div>
+    </div>
+    <div id="scannerStats" class="box">
+      <p>Total de produtos cadastrados: <span id="totalProdutos">0</span></p>
+      <div id="categoriaChart"></div>
     </div>
   </section>
 
   <!-- Produtos -->
   <section id="produtos" class="view">
-    <div class="box table-wrapper">
+    <div class="box">
       <h2>Produtos cadastrados</h2>
       <table id="produtosTable">
         <thead><tr><th>Código</th><th>Nome</th><th>Categoria</th><th>Tipo</th><th>Valor</th><th>Ações</th></tr></thead>
@@ -220,18 +218,11 @@ button.deleteBtn{background:var(--danger);color:white;border:none;padding:4px 8p
   <!-- Cadastro -->
   <section id="cadastro" class="view">
     <div class="box">
-      <h2>Cadastrar Produto</h2>
+      <h3>Cadastro de Produto</h3>
       <input id="codigoCadastro" placeholder="Código">
       <input id="nomeCadastro" placeholder="Nome">
-      <select id="categoriaCadastro">
-        <option>Alimentos</option>
-        <option>Limpeza</option>
-        <option>Outros</option>
-      </select>
-      <select id="tipoCadastro">
-        <option>UN</option>
-        <option>KG</option>
-      </select>
+      <input id="categoriaCadastro" placeholder="Categoria (Ex: Comida, Limpeza)">
+      <select id="tipoCadastro"><option>UN</option><option>KG</option></select>
       <input id="valorCadastro" type="number" step="0.01" placeholder="Valor">
       <button id="salvarCadastro">Salvar</button>
     </div>
@@ -261,16 +252,20 @@ button.deleteBtn{background:var(--danger);color:white;border:none;padding:4px 8p
 const $=id=>document.getElementById(id);
 const Storage={get:(k,f=[])=>JSON.parse(localStorage.getItem(k))||f,set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))};
 let produtos=Storage.get("produtos"), carrinho=Storage.get("carrinho"), historico=Storage.get("historicoCompras");
-let reader=null,stream=null,buffer=[],scannerAtivo=false;
+let reader=null,stream=null,buffer=[],scannerAtivo=false,editIndex=null;
 const repeticoes=3, beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
 // Splash
-window.addEventListener("DOMContentLoaded", () => {
-  setTimeout(() => {
+window.onload=()=>{
+  setTimeout(()=>{
     $("splash").style.display="none";
-    irPara('home'); atualizarProdutos(); atualizarHistorico(); atualizarCarrinho(); atualizarScannerStats();
-  },1500);
-});
+    irPara('home');
+    atualizarProdutos();
+    atualizarHistorico();
+    atualizarCarrinho();
+    atualizarScannerStats();
+  },1000);
+};
 
 // Sidebar toggle
 const sidebar=$("sidebar"), content=$("content"), hamburger=$("hamburger");
@@ -280,55 +275,44 @@ hamburger.onclick=()=>{sidebar.classList.toggle("hide");content.classList.toggle
 function irPara(tela){
   document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
   $(tela).classList.add("active");
-  if(tela==="scanner") iniciarScanner();
-  else pararScanner();
-  if(tela==="cadastro") abrirCadastroInputs();
+  if(tela==="scanner") iniciarScanner(); else pararScanner();
+  if(tela==="cadastro") abrirCadastroUI();
 }
 
-// Home - Orçamento
-$("orcamentoInput").addEventListener("input", atualizarOrcamento);
-function atualizarOrcamento(){
-  const orc=parseFloat($("orcamentoInput").value)||0;
-  const gasto=carrinho.reduce((a,b)=>a+b.qtd*b.valor,0);
-  const perc=Math.min((gasto/orc)*100,100);
-  $("orcamentoBarInner").style.width=perc+"%";
-  $("orcamentoBarInner").innerText=`R$ ${gasto.toFixed(2)} / R$ ${orc.toFixed(2)}`;
-}
+// Funções Cadastro
+function abrirCadastroUI(){ $("codigoCadastro").value=""; $("nomeCadastro").value=""; $("categoriaCadastro").value=""; $("tipoCadastro").value="UN"; $("valorCadastro").value=""; editIndex=null; }
+$("salvarCadastro").onclick=()=>{
+  const novo={codigo:$("codigoCadastro").value,nome:$("nomeCadastro").value,categoria:$("categoriaCadastro").value,tipo:$("tipoCadastro").value,valor:Number($("valorCadastro").value)};
+  if(!novo.codigo||!novo.nome||!novo.categoria||!novo.valor) return alert("Preencha todos os campos");
+  if(editIndex!==null){produtos[editIndex]=novo; editIndex=null;} else produtos.push(novo);
+  Storage.set("produtos",produtos);
+  atualizarProdutos();
+  atualizarScannerStats();
+  alert("Produto cadastrado com sucesso!");
+  irPara('produtos');
+};
 
 // Produtos
 function atualizarProdutos(){
   const tb=$("produtosTable").querySelector("tbody"); 
   tb.innerHTML=produtos.map((p,i)=>`<tr>
-      <td>${p.codigo}</td><td>${p.nome}</td><td>${p.categoria||""}</td><td>${p.tipo}</td><td>R$ ${p.valor.toFixed(2)}</td>
-      <td><button class="editBtn" onclick="editarProduto(${i})">✏️</button>
-      <button class="deleteBtn" onclick="excluirProduto(${i})">❌</button></td>
-    </tr>`).join("");
+    <td>${p.codigo}</td><td>${p.nome}</td><td>${p.categoria}</td><td>${p.tipo}</td><td>R$ ${p.valor.toFixed(2)}</td>
+    <td><button class="editBtn" onclick="editarProduto(${i})">✏️</button>
+    <button class="deleteBtn" onclick="excluirProduto(${i})">❌</button></td>
+  </tr>`).join("");
+}
 
-  // Home cards últimos 3 meses
-  const homeCards=$("homeCards"); 
-  const ultimos=historico.slice(-3).reverse();
-  homeCards.innerHTML=ultimos.map(h=>`<div class="box"><strong>${h.data}</strong><br>Total: R$ ${h.total.toFixed(2)}</div>`).join("");
-}
-function excluirProduto(i){
-  if(confirm("Excluir produto?")){produtos.splice(i,1);Storage.set("produtos",produtos);atualizarProdutos(); atualizarScannerStats();}
-}
+// Editar/Excluir
 function editarProduto(i){
-  abrirCadastroInputs(produtos[i], i);
+  editIndex=i;
+  irPara('cadastro');
+  $("codigoCadastro").value=produtos[i].codigo;
+  $("nomeCadastro").value=produtos[i].nome;
+  $("categoriaCadastro").value=produtos[i].categoria;
+  $("tipoCadastro").value=produtos[i].tipo;
+  $("valorCadastro").value=produtos[i].valor;
 }
-
-// Cadastro
-let editIndex=null;
-function abrirCadastroInputs(p=null, index=null){
-  editIndex=index!==undefined?index:null;
-  if(p){$("codigoCadastro").value=p.codigo; $("nomeCadastro").value=p.nome; $("categoriaCadastro").value=p.categoria||"Outros"; $("tipoCadastro").value=p.tipo; $("valorCadastro").value=p.valor;}
-  else{$("codigoCadastro").value=""; $("nomeCadastro").value=""; $("categoriaCadastro").value="Alimentos"; $("tipoCadastro").value="UN"; $("valorCadastro").value="";}
-}
-$("salvarCadastro").onclick=()=>{
-  const novo={codigo:$("codigoCadastro").value,nome:$("nomeCadastro").value,categoria:$("categoriaCadastro").value,tipo:$("tipoCadastro").value,valor:Number($("valorCadastro").value)};
-  if(!novo.codigo||!novo.nome||!novo.valor) return alert("Preencha tudo");
-  if(editIndex!==null){produtos[editIndex]=novo; editIndex=null;} else {produtos.push(novo);}
-  Storage.set("produtos",produtos); atualizarProdutos(); atualizarScannerStats(); irPara("produtos");
-};
+function excluirProduto(i){if(confirm("Excluir produto?")){produtos.splice(i,1);Storage.set("produtos",produtos);atualizarProdutos(); atualizarScannerStats();}}
 
 // Scanner
 async function iniciarScanner(){
@@ -344,23 +328,32 @@ async function iniciarScanner(){
       let ok=buffer.filter(v=>v===codigo).length;
       $("barraValidacaoInner").style.width=(ok/repeticoes*100)+"%";
       $("barraValidacaoInner").innerText=Math.round(ok/repeticoes*100)+"%";
+      $("detected").innerText=codigo;
       if(ok>=repeticoes){beep.play(); processarCodigo(codigo);}
     });
   }catch(e){alert("Erro ao acessar câmera: "+e);}
 }
+
 function processarCodigo(codigo){
   scannerAtivo=false;
   let p=produtos.find(x=>x.codigo===codigo);
-  if(p){let q=Number(prompt(`Produto: ${p.nome}\nQuantidade:`)); if(q>0){carrinho.push({...p,qtd:q}); Storage.set("carrinho",carrinho); atualizarCarrinho(); abrirCarrinho(); atualizarOrcamento();}}
-  else{ irPara("cadastro"); $("codigoCadastro").value=codigo; $("nomeCadastro").focus(); }
+  if(p){let q=Number(prompt(`Produto: ${p.nome}\nQuantidade:`));if(q>0){carrinho.push({...p,qtd:q});Storage.set("carrinho",carrinho);abrirCarrinho();}}
+  else{irPara('cadastro'); $("codigoCadastro").value=codigo;}
   setTimeout(()=>{scannerAtivo=true;buffer=[];$("barraValidacaoInner").style.width="0%";},500);
 }
 function pararScanner(){scannerAtivo=false;if(reader)reader.reset();if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;$("video").srcObject=null;}
+
+// Scanner stats
 function atualizarScannerStats(){
   $("totalProdutos").innerText=produtos.length;
-  const categorias={};
-  produtos.forEach(p=>{categorias[p.categoria]=(categorias[p.categoria]||0)+1;});
-  $("categoriaStats").innerHTML=Object.entries(categorias).map(([cat,q])=>`<li>${cat}: ${q}</li>`).join("");
+  const chart=$("categoriaChart");
+  chart.innerHTML="";
+  const catCounts={};
+  produtos.forEach(p=>{catCounts[p.categoria]=(catCounts[p.categoria]||0)+1;});
+  for(const c in catCounts){
+    const perc=(catCounts[c]/produtos.length*100).toFixed(0);
+    chart.innerHTML+=`<div class="bar" style="width:${perc}%"><span>${c} (${catCounts[c]})</span></div>`;
+  }
 }
 
 // Carrinho
@@ -376,14 +369,15 @@ function finalizarCompra(){
   historico.push({data:new Date().toLocaleString("pt-BR"),total:carrinho.reduce((a,b)=>a+b.valor*b.qtd,0),itens:[...carrinho]});
   Storage.set("historicoCompras",historico);
   carrinho=[]; Storage.set("carrinho",carrinho);
-  atualizarCarrinho(); atualizarHistorico(); atualizarOrcamento(); fecharCarrinho(); alert("Compra finalizada!");
+  atualizarCarrinho(); atualizarHistorico(); fecharCarrinho(); alert("Compra finalizada!");
+  atualizarOrcamento();
 }
 
 // Histórico
 function atualizarHistorico(){
   const area=$("historicoConteudo"); area.innerHTML="";
   if(!historico.length){area.innerHTML="<p>Nenhuma compra registrada.</p>"; return;}
-  historico.forEach((c,i)=>{
+  historico.slice(-90).reverse().forEach((c,i)=>{
     let itens=""; c.itens.forEach(it=>{itens+=`<li>${it.nome} — ${it.qtd} x R$ ${it.valor.toFixed(2)} = R$ ${(it.qtd*it.valor).toFixed(2)}</li>`;});
     area.innerHTML+=`<div class="historico-card">
       <h4>Compra ${i+1}</h4>
@@ -394,11 +388,26 @@ function atualizarHistorico(){
   });
 }
 
+// Orçamento
+$("orcamentoInput").addEventListener("input", atualizarOrcamento);
+function atualizarOrcamento(){
+  const orcamento=Number($("orcamentoInput").value) || 0;
+  const gasto=carrinho.reduce((a,b)=>a+b.valor*b.qtd,0);
+  const perc=Math.min((gasto/orcamento)*100,100);
+  const bar=$("orcamentoBarInner");
+  bar.style.width=perc+"%";
+  if(perc<50) bar.style.background="green";
+  else if(perc<80) bar.style.background="orange";
+  else bar.style.background="red";
+  bar.innerText=`${Math.round(perc)}%`;
+}
+
 // Pausar scanner ao trocar aba
 document.addEventListener("visibilitychange", ()=>{
   if(document.hidden) pararScanner();
   else if($("scanner").classList.contains("active")) iniciarScanner();
 });
+
 </script>
 </body>
 </html>
