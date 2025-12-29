@@ -7,7 +7,9 @@
 <meta name="description" content="Aplicativo web de compras inteligentes com leitor de código de barras">
 <meta name="theme-color" content="#3b7ddd">
 
-<script src="https://unpkg.com/@zxing/library@0.21.2"></script>
+<!-- ZXING CORRETO PARA BROWSER -->
+<script src="https://unpkg.com/@zxing/browser@0.1.4"></script>
+
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
 <style>
@@ -68,7 +70,7 @@ tr:nth-child(even){background:#f5f5f5;}
 #barraValidacao{height:22px;width:100%;background:#ccc;border-radius:12px;margin-top:6px;}
 #barraValidacaoInner{height:100%;width:0%;background:var(--primary);border-radius:12px;text-align:center;color:white;font-weight:bold;}
 
-/* ===== ANIMAÇÃO ENTRE TELAS (ADICIONADO) ===== */
+/* ===== ANIMAÇÃO ENTRE TELAS ===== */
 .view{animation:fade .25s ease;}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 </style>
@@ -101,8 +103,8 @@ tr:nth-child(even){background:#f5f5f5;}
   <!-- SCANNER -->
   <section class="view" id="scanner" style="display:none;">
     <div class="box">
-      <button class="btnStart" id="startButton">📸 Abrir câmera</button>
-      <button class="btnStop" id="stopButton">⏹️ Parar</button>
+      <button class="btnStart" onclick="iniciarScanner()">📸 Abrir câmera</button>
+      <button class="btnStop" onclick="pararScanner()">⏹️ Parar</button>
       <div id="camera">
         <video id="video" playsinline></video>
         <div class="scan-line"></div>
@@ -152,7 +154,7 @@ tr:nth-child(even){background:#f5f5f5;}
   </div>
 </div>
 
-<!-- CADASTRO (PREPARADO PARA VIRAR TELA FUTURA) -->
+<!-- CADASTRO -->
 <div id="cadastroSuspenso">
   <h2>✏️ Cadastrar Produto</h2>
   <input id="codigoSuspenso" placeholder="Código">
@@ -166,66 +168,69 @@ tr:nth-child(even){background:#f5f5f5;}
 </div>
 
 <script>
-/* ================= UTIL ================= */
 const $=id=>document.getElementById(id);
 const Storage={
   get:(k,f=[])=>{try{const v=JSON.parse(localStorage.getItem(k));return Array.isArray(v)?v:f}catch{return f}},
   set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))
 };
 
-/* ================= ESTADO ================= */
 let produtos=Storage.get("produtos");
 let carrinho=Storage.get("carrinho");
 let historicoCompras=Storage.get("historicoCompras");
 
-let reader=null,stream=null,buffer=[],scannerAtivo=false;
+/* ================= SCANNER CORRIGIDO ================= */
+let reader=null;
+let buffer=[];
 const repeticoes=3;
 const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
-/* ================= SPLASH ================= */
+/* SPLASH */
 window.onload=()=>setTimeout(()=>{
   $("splash").style.display="none";
   $("app").style.display="block";
   irPara("home");
 },1500);
 
-/* ================= SCANNER ================= */
+/* SCANNER */
 async function iniciarScanner(){
-  if(scannerAtivo)return;
-  scannerAtivo=true;buffer=[];
-  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
-  $("video").srcObject=stream;
-  await $("video").play();
-reader = new ZXingBrowser.BrowserMultiFormatReader();
+  if(reader) return;
 
-reader.decodeFromVideoElementContinuously(
-  $("video"),
-  (res, err) => {
-    if (res) {
-      const codigo = res.text;
-      buffer.push(codigo);
-      if (buffer.length > repeticoes) buffer.shift();
+  reader = new ZXingBrowser.BrowserMultiFormatReader();
 
-      if (buffer.filter(v => v === codigo).length >= repeticoes) {
-        processarCodigo(codigo);
-        buffer = [];
+  await reader.decodeFromVideoDevice(
+    null,
+    $("video"),
+    (res, err) => {
+      if(res){
+        const codigo=res.text;
+        $("detected").innerText=codigo;
+
+        buffer.push(codigo);
+        if(buffer.length>repeticoes) buffer.shift();
+
+        if(buffer.filter(v=>v===codigo).length>=repeticoes){
+          beep.play();
+          buffer=[];
+        }
       }
     }
-  }
-);
-}
-function pararScanner(){
-  if(reader)reader.reset();
-  if(stream)stream.getTracks().forEach(t=>t.stop());
-  scannerAtivo=false;
+  );
 }
 
-/* ================= ROUTER ================= */
+function pararScanner(){
+  if(reader){
+    reader.reset();
+    reader=null;
+  }
+}
+
+/* ROUTER */
 function irPara(tela){
   document.querySelectorAll(".view").forEach(v=>v.style.display="none");
-  document.getElementById(tela).style.display="block";
-  if(tela==="scanner") iniciarScanner(); else pararScanner();
+  $(tela).style.display="block";
+  tela==="scanner"?iniciarScanner():pararScanner();
 }
 </script>
+
 </body>
 </html>
