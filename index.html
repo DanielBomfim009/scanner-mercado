@@ -7,9 +7,7 @@
 <meta name="description" content="Aplicativo web de compras inteligentes com leitor de código de barras">
 <meta name="theme-color" content="#3b7ddd">
 
-<!-- ZXing (versão fixa para estabilidade) -->
 <script src="https://unpkg.com/@zxing/library@0.21.2"></script>
-
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
 <style>
@@ -74,7 +72,6 @@ tr:nth-child(even){background:#f5f5f5;}
 
 <body>
 
-<!-- Splash -->
 <div id="splash" style="position:fixed;inset:0;background:#1a1a1a;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;z-index:2000;">
   <img src="logo.png" style="width:300px;height:300px;object-fit:contain;">
   <p style="margin-top:15px;font-size:18px;">Bem-vindo ao seu app de compras inteligente</p>
@@ -107,14 +104,12 @@ tr:nth-child(even){background:#f5f5f5;}
     </div>
   </div>
 
-  <!-- ===== MELHORIA: HISTÓRICO DE COMPRAS ===== -->
   <div class="box">
     <h2>🧾 Histórico de compras</h2>
     <button class="toggleBtn" onclick="atualizarHistorico()">Atualizar histórico</button>
     <button class="btnStop" onclick="apagarHistorico()">Apagar histórico</button>
     <div id="historicoConteudo" style="margin-top:10px;"></div>
   </div>
-
 </div>
 
 <div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️<span id="badge">0</span></div>
@@ -147,19 +142,25 @@ tr:nth-child(even){background:#f5f5f5;}
 /* ================= UTIL ================= */
 const $=id=>document.getElementById(id);
 const Storage={
-  get:(k,f=[])=>JSON.parse(localStorage.getItem(k))||f,
+  get:(k,f=[])=>{
+    try{
+      const v=JSON.parse(localStorage.getItem(k));
+      return Array.isArray(v)?v:f;
+    }catch{
+      return f;
+    }
+  },
   set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))
 };
 
 /* ================= ESTADO ================= */
 let produtos=Storage.get("produtos");
 let carrinho=Storage.get("carrinho");
+let historicoCompras=Storage.get("historicoCompras");
+
 let reader=null,stream=null,buffer=[],scannerAtivo=false;
 const repeticoes=3;
 const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
-
-/* ===== MELHORIA: HISTÓRICO ===== */
-let historicoCompras = Storage.get("historicoCompras");
 
 /* ================= SPLASH ================= */
 window.onload=()=>setTimeout(()=>{
@@ -204,25 +205,36 @@ function atualizarCarrinho(){
 }
 function abrirCarrinho(){$("modalCarrinho").style.display="block";atualizarCarrinho();}
 function fecharCarrinho(){$("modalCarrinho").style.display="none";}
-function finalizarCompra(){
-  if(!carrinho.length)return alert("Carrinho vazio");
-  carrinho=[];Storage.set("carrinho",carrinho);
-  atualizarCarrinho();fecharCarrinho();
-  alert("Compra finalizada!");
-}
-atualizarCarrinho();
 
-/* ===== MELHORIA: SALVAR HISTÓRICO ===== */
-function salvarHistorico(total){
+/* ================= FINALIZAR ÚNICO ================= */
+function salvarHistoricoSeguro(total){
+  const snapshot=JSON.parse(JSON.stringify(carrinho));
   historicoCompras.push({
+    id:"HIST_"+Date.now()+"_"+Math.random().toString(36).slice(2),
     data:new Date().toLocaleString("pt-BR"),
-    total:total,
-    itens:[...carrinho]
+    total,
+    itens:snapshot
   });
   Storage.set("historicoCompras",historicoCompras);
 }
 
-/* ===== MELHORIA: MOSTRAR HISTÓRICO COM ITENS ===== */
+function finalizarCompra(){
+  if(!carrinho.length)return alert("Carrinho vazio");
+
+  let total=0;
+  carrinho.forEach(p=>total+=p.valor*p.qtd);
+
+  salvarHistoricoSeguro(total);
+
+  carrinho=[];
+  Storage.set("carrinho",carrinho);
+  atualizarCarrinho();
+  fecharCarrinho();
+  atualizarHistorico();
+  alert("Compra finalizada!");
+}
+
+/* ================= HISTÓRICO ================= */
 function atualizarHistorico(){
   const area=$("historicoConteudo");
   area.innerHTML="";
@@ -233,81 +245,62 @@ function atualizarHistorico(){
   historicoCompras.forEach((c,i)=>{
     let itens="";
     c.itens.forEach(it=>{
-      itens+=`<li>${it.nome} — ${it.qtd} x R$ ${it.valor.toFixed(2)} = R$ ${(it.qtd*it.valor).toFixed(2)}</li>`;
+      itens+=`<li>${it.nome} — ${it.qtd} x R$ ${it.valor.toFixed(2)}</li>`;
     });
     area.innerHTML+=`
       <div style="margin-bottom:10px;padding:10px;border:1px solid #ddd;border-radius:12px;">
         <strong>Compra ${i+1}</strong><br>
         <small>${c.data}</small><br>
         <strong>Total:</strong> R$ ${c.total.toFixed(2)}
-        <details>
-          <summary style="cursor:pointer;">Ver itens</summary>
-          <ul>${itens}</ul>
-        </details>
-      </div>
-    `;
+        <details><summary>Ver itens</summary><ul>${itens}</ul></details>
+      </div>`;
   });
 }
 
-/* ===== MELHORIA: APAGAR HISTÓRICO ===== */
 function apagarHistorico(){
-  if(!confirm("Deseja apagar todo o histórico de compras?"))return;
+  if(!confirm("Deseja apagar todo o histórico?"))return;
   historicoCompras=[];
   Storage.set("historicoCompras",historicoCompras);
   atualizarHistorico();
-  alert("Histórico apagado!");
 }
-
-/* ===== MELHORIA: INTEGRAR FINALIZAR ===== */
-const finalizarCompraOriginal=finalizarCompra;
-finalizarCompra=function(){
-  let total=0;
-  carrinho.forEach(p=>total+=p.valor*p.qtd);
-  salvarHistorico(total);
-  finalizarCompraOriginal();
-  atualizarHistorico();
-};
 
 /* ================= SCANNER ================= */
 async function iniciarScanner(){
   if(scannerAtivo)return;
   scannerAtivo=true;buffer=[];
-  if(!stream){
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
-    $("video").srcObject=stream;
-    await $("video").play();
-  }
+  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+  $("video").srcObject=stream;
+  await $("video").play();
   reader=new ZXing.BrowserMultiFormatReader();
   reader.decodeFromVideoElementContinuously($("video"),res=>{
-    if(!res||!scannerAtivo)return;
-    const codigo=res.text.trim();
+    if(!res)return;
+    const codigo=res.text;
     buffer.push(codigo); if(buffer.length>repeticoes)buffer.shift();
-    let ok=buffer.filter(v=>v===codigo).length;
-    $("barraValidacaoInner").style.width=(ok/repeticoes*100)+"%";
-    $("barraValidacaoInner").innerText=Math.round(ok/repeticoes*100)+"%";
-    if(ok>=repeticoes)processarCodigo(codigo);
+    if(buffer.filter(v=>v===codigo).length>=repeticoes){
+      processarCodigo(codigo);
+      buffer=[];
+    }
   });
 }
 function processarCodigo(codigo){
-  scannerAtivo=false;beep.play();
+  beep.play();
   let p=produtos.find(x=>x.codigo===codigo);
-  setTimeout(()=>{
-    if(p){
-      let q=Number(prompt(`Produto: ${p.nome}\nQuantidade:`));
-      if(q>0){carrinho.push({...p,qtd:q});Storage.set("carrinho",carrinho);abrirCarrinho();}
-    }else{
-      $("cadastroSuspenso").style.display="block";
-      $("codigoSuspenso").value=codigo;
+  if(p){
+    let q=Number(prompt(`Produto: ${p.nome}\nQuantidade:`));
+    if(q>0){
+      carrinho.push({...p,qtd:q});
+      Storage.set("carrinho",carrinho);
+      abrirCarrinho();
     }
-    $("barraValidacaoInner").style.width="0%";
-    scannerAtivo=true;buffer=[];
-  },300);
+  }else{
+    $("cadastroSuspenso").style.display="block";
+    $("codigoSuspenso").value=codigo;
+  }
 }
 function pararScanner(){
-  scannerAtivo=false;
   if(reader)reader.reset();
   if(stream)stream.getTracks().forEach(t=>t.stop());
-  stream=null;$("video").srcObject=null;
+  scannerAtivo=false;
 }
 
 /* ================= CADASTRO ================= */
@@ -319,12 +312,12 @@ $("salvarSuspenso").onclick=()=>{
     valor:Number($("valorSuspenso").value)
   };
   if(!novo.codigo||!novo.nome||!novo.valor)return alert("Preencha tudo");
-  produtos.push(novo);Storage.set("produtos",produtos);
+  produtos.push(novo);
+  Storage.set("produtos",produtos);
   atualizarProdutos();
   $("cadastroSuspenso").style.display="none";
 };
 
-/* ================= EVENTOS ================= */
 $("startButton").onclick=iniciarScanner;
 $("stopButton").onclick=pararScanner;
 $("toggleProdutosBtn").onclick=()=>{
