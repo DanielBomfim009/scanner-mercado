@@ -1,236 +1,447 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>GoL BUY SMART - Compras do mês</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Aplicativo web de compras inteligentes com leitor de código de barras">
-<meta name="theme-color" content="#3b7ddd">
+  <meta charset="UTF-8">
+  <title>GoL BUY SMART - Compras do mês</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Aplicativo web de compras inteligentes com leitor de código de barras">
+  <meta name="theme-color" content="#3b7ddd">
 
-<!-- ZXING CORRETO PARA BROWSER -->
-<script src="https://unpkg.com/@zxing/browser@0.1.4"></script>
+  <!-- ZXing (scanner) -->
+  <script src="https://unpkg.com/@zxing/library@0.21.2"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
-<style>
-:root {
-  --primary:#3b7ddd;
-  --secondary:#ffb703;
-  --background:#eef3ff;
-  --card-bg:#ffffff;
-  --text-dark:#1a1a1a;
-  --text-light:#ffffff;
-  --danger:#ff3b3b;
-}
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Roboto',sans-serif;}
-body{background:var(--background);overflow-x:hidden;}
-.container{max-width:900px;margin:auto;padding:12px;}
-.logo{text-align:center;margin-top:20px;}
-.logo img{width:200px;height:200px;object-fit:contain;border-radius:50%;border:5px solid var(--text-light);box-shadow:0 10px 30px rgba(0,0,0,.35);}
-h1{text-align:center;margin:15px 0;color:var(--primary);}
-.box{background:var(--card-bg);border-radius:18px;padding:20px;margin-top:20px;box-shadow:0 4px 20px rgba(0,0,0,.15);}
-button{width:100%;padding:14px;border:none;font-size:16px;border-radius:12px;margin-top:10px;cursor:pointer;}
-.btnStart{background:var(--primary);color:white;}
-.btnStop{background:#6b6b6b;color:white;}
-.toggleBtn{background:var(--secondary);color:#000;font-weight:500;}
+  <style>
+    :root {
+      --primary: #3b7ddd;
+      --secondary: #ffb703;
+      --background: #eef3ff;
+      --card-bg: #ffffff;
+      --text-dark: #1a1a1a;
+      --text-light: #ffffff;
+      --danger: #ff3b3b;
+    }
 
-#camera{width:100%;height:260px;background:#000;border-radius:18px;margin-top:12px;overflow:hidden;position:relative;}
-#camera video{width:100%;height:100%;object-fit:cover;}
-.scan-line{position:absolute;left:0;right:0;height:2px;background:red;animation:scan 2s linear infinite;}
-@keyframes scan{0%{top:10%}50%{top:90%}100%{top:10%}}
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Roboto',sans-serif; }
+    body { background: var(--background); overflow-x:hidden; }
 
-input,select{width:100%;padding:12px;border-radius:12px;border:1px solid #ccc;margin-top:6px;font-size:15px;}
-table{width:100%;border-collapse:collapse;margin-top:10px;}
-td,th{padding:10px;text-align:center;}
-tr:nth-child(even){background:#f5f5f5;}
+    header {
+      background: var(--primary);
+      padding: 12px 20px;
+      color:white;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:flex-start;
+      position:sticky;
+      top:0;
+      z-index:100;
+    }
 
-#carrinhoIcone{
-  position:fixed;left:18px;bottom:18px;width:70px;height:70px;border-radius:50%;
-  background:var(--primary);color:white;
-  display:flex;align-items:center;justify-content:center;
-  font-size:28px;box-shadow:0 8px 20px rgba(0,0,0,.35);cursor:pointer;z-index:999;
-}
-#carrinhoIcone span{
-  position:absolute;top:-8px;right:-8px;background:red;color:white;
-  width:18px;height:18px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;font-size:12px;
-}
+    header button {
+      background: var(--secondary);
+      border:none;
+      padding:10px 14px;
+      border-radius:12px;
+      color:#000;
+      font-weight:500;
+      cursor:pointer;
+    }
 
-.modal{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.6);display:none;z-index:1000;}
-.modal-content{background:white;width:92%;max-width:480px;margin:40px auto;padding:20px;border-radius:18px;}
-.modal-header{display:flex;justify-content:space-between;align-items:center;}
-.total{text-align:right;font-weight:bold;margin-top:10px;}
+    .container { max-width:900px; margin:auto; padding:12px; }
+    h1 { text-align:center; margin:15px 0; color:var(--primary); }
+    .box {
+      background:var(--card-bg);
+      border-radius:18px;
+      padding:20px;
+      margin-top:20px;
+      box-shadow:0 4px 20px rgba(0,0,0,.15);
+    }
 
-#cadastroSuspenso{
-  position:fixed;bottom:10px;left:50%;transform:translateX(-50%);
-  width:90%;max-width:400px;background:white;padding:20px;border-radius:18px;
-  box-shadow:0 5px 20px rgba(0,0,0,.3);display:none;z-index:1001;
-}
+    button { width:100%; padding:14px; border:none; font-size:16px; border-radius:12px; margin-top:10px; cursor:pointer; }
+    .btnStart { background: var(--primary); color:white; }
+    .btnStop { background:#6b6b6b; color:white; }
+    .toggleBtn { background: var(--secondary); color:#000; font-weight:500; }
 
-#barraValidacao{height:22px;width:100%;background:#ccc;border-radius:12px;margin-top:6px;}
-#barraValidacaoInner{height:100%;width:0%;background:var(--primary);border-radius:12px;text-align:center;color:white;font-weight:bold;}
+    #camera { width:100%; height:260px; background:#000; border-radius:18px; margin-top:12px; overflow:hidden; position:relative; }
+    #camera video { width:100%; height:100%; object-fit:cover; }
+    .scan-line { position:absolute; left:0; right:0; height:2px; background:red; animation:scan 2s linear infinite; }
+    @keyframes scan { 0%{top:10%}50%{top:90%}100%{top:10%} }
 
-/* ===== ANIMAÇÃO ENTRE TELAS ===== */
-.view{animation:fade .25s ease;}
-@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-</style>
+    input, select { width:100%; padding:12px; border-radius:12px; border:1px solid #ccc; margin-top:6px; font-size:15px; }
+
+    table { width:100%; border-collapse:collapse; margin-top:10px; }
+    td, th { padding:10px; text-align:center; }
+    tr:nth-child(even) { background:#f5f5f5; }
+
+    #carrinhoIcone {
+      position:fixed;
+      left:18px;
+      bottom:18px;
+      width:70px;
+      height:70px;
+      border-radius:50%;
+      background:var(--primary);
+      color:white;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:28px;
+      box-shadow:0 8px 20px rgba(0,0,0,.35);
+      cursor:pointer;
+      z-index:999;
+    }
+
+    #carrinhoIcone span {
+      position:absolute;
+      top:-8px;
+      right:-8px;
+      background:red;
+      color:white;
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:12px;
+    }
+
+    .modal {
+      position:fixed;
+      left:0;
+      top:0;
+      width:100%;
+      height:100%;
+      background:rgba(0,0,0,.6);
+      display:none;
+      z-index:1000;
+    }
+
+    .modal-content {
+      background:white;
+      width:92%;
+      max-width:480px;
+      margin:40px auto;
+      padding:20px;
+      border-radius:18px;
+    }
+
+    .modal-header {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    .total { text-align:right; font-weight:bold; margin-top:10px; }
+
+    #cadastroSuspenso {
+      position:fixed;
+      bottom:10px;
+      left:50%;
+      transform:translateX(-50%);
+      width:90%;
+      max-width:400px;
+      background:white;
+      padding:20px;
+      border-radius:18px;
+      box-shadow:0 5px 20px rgba(0,0,0,.3);
+      display:none;
+      z-index:1001;
+    }
+
+    #barraValidacao { height:22px; width:100%; background:#ccc; border-radius:12px; margin-top:6px; }
+    #barraValidacaoInner {
+      height:100%;
+      width:0%;
+      background:var(--primary);
+      border-radius:12px;
+      text-align:center;
+      color:white;
+      font-weight:bold;
+    }
+
+    .view { display:none; animation:fade .25s ease; }
+    .view.active { display:block; }
+    @keyframes fade { from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
+
+    /* SPLASH */
+    #splash {
+      position:fixed;
+      inset:0;
+      background:#1a1a1a;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      color:white;
+      z-index:2000;
+    }
+
+    #splash img { width:300px; height:300px; object-fit:contain; }
+    #splash p { margin-top:15px; font-size:18px; }
+  </style>
 </head>
-
 <body>
 
-<!-- SPLASH -->
-<div id="splash" style="position:fixed;inset:0;background:#1a1a1a;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;z-index:2000;">
-  <img src="logo.png" style="width:300px;height:300px;object-fit:contain;">
-  <p style="margin-top:15px;font-size:18px;">Bem-vindo ao seu app de compras inteligente</p>
-</div>
-
-<div class="container" id="app" style="display:none;">
-
   <!-- MENU -->
-  <div class="box">
-    <button class="btnStart" onclick="irPara('home')">🏠 Home</button>
-    <button class="btnStart" onclick="irPara('scanner')">📷 Scanner</button>
-    <button class="btnStart" onclick="irPara('produtos')">📦 Produtos</button>
-    <button class="btnStart" onclick="irPara('historico')">🧾 Histórico</button>
-  </div>
+  <header>
+    <button onclick="irPara('home')">🏠 Home</button>
+    <button onclick="irPara('scanner')">📷 Scanner</button>
+    <button onclick="irPara('produtos')">📦 Produtos</button>
+    <button onclick="irPara('historico')">🧾 Histórico</button>
+  </header>
 
-  <!-- HOME -->
-  <section class="view" id="home">
-    <div class="logo"><img src="logo.png"></div>
-    <h1>🛒 Compras do mês</h1>
-  </section>
+  <div class="container">
+    <!-- HOME -->
+    <section id="home" class="view active">
+      <h1>🛒 Compras do mês</h1>
+      <div class="box" id="homeCards"></div>
+    </section>
 
-  <!-- SCANNER -->
-  <section class="view" id="scanner" style="display:none;">
-    <div class="box">
-      <button class="btnStart" onclick="iniciarScanner()">📸 Abrir câmera</button>
-      <button class="btnStop" onclick="pararScanner()">⏹️ Parar</button>
-      <div id="camera">
-        <video id="video" playsinline></video>
-        <div class="scan-line"></div>
+    <!-- SCANNER -->
+    <section id="scanner" class="view">
+      <div class="box">
+        <button class="btnStart" id="startButton">📸 Abrir câmera</button>
+        <button class="btnStop" id="stopButton">⏹️ Parar</button>
+        <div id="camera">
+          <video id="video" playsinline></video>
+          <div class="scan-line"></div>
+        </div>
+        <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
+        <div id="barraValidacao"><div id="barraValidacaoInner">0%</div></div>
       </div>
-      <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
-      <div id="barraValidacao"><div id="barraValidacaoInner">0%</div></div>
-    </div>
-  </section>
+    </section>
 
-  <!-- PRODUTOS -->
-  <section class="view" id="produtos" style="display:none;">
-    <div class="box">
-      <h2>📦 Produtos cadastrados</h2>
-      <table id="produtosTable">
-        <thead>
-          <tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Preço</th><th></th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </section>
+    <!-- PRODUTOS -->
+    <section id="produtos" class="view">
+      <div class="box">
+        <h2>📦 Produtos cadastrados</h2>
+        <table id="produtosTable">
+          <thead>
+            <tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Preço</th><th></th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
 
-  <!-- HISTÓRICO -->
-  <section class="view" id="historico" style="display:none;">
-    <div class="box">
-      <h2>🧾 Histórico de compras</h2>
-      <button class="toggleBtn" onclick="atualizarHistorico()">Atualizar</button>
-      <button class="btnStop" onclick="apagarHistorico()">Apagar</button>
-      <div id="historicoConteudo"></div>
-    </div>
-  </section>
-
-</div>
-
-<!-- CARRINHO -->
-<div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️<span id="badge">0</span></div>
-
-<div id="modalCarrinho" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2>Carrinho</h2>
-      <button onclick="fecharCarrinho()">Fechar</button>
-    </div>
-    <table id="tabelaCarrinho"></table>
-    <p id="total" class="total">Total: R$ 0,00</p>
-    <button class="btnStart" onclick="finalizarCompra()">Finalizar</button>
+    <!-- HISTÓRICO -->
+    <section id="historico" class="view">
+      <div class="box">
+        <h2>🧾 Histórico de compras</h2>
+        <div id="historicoConteudo"></div>
+      </div>
+    </section>
   </div>
-</div>
 
-<!-- CADASTRO -->
-<div id="cadastroSuspenso">
-  <h2>✏️ Cadastrar Produto</h2>
-  <input id="codigoSuspenso" placeholder="Código">
-  <input id="nomeSuspenso" placeholder="Nome">
-  <select id="tipoSuspenso">
-    <option>Unidade (UN)</option>
-    <option>Peso (KG)</option>
-  </select>
-  <input id="valorSuspenso" type="number" step="0.01" placeholder="Valor">
-  <button id="salvarSuspenso" class="btnStart">Salvar</button>
-</div>
+  <!-- CARRINHO -->
+  <div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️<span id="badge">0</span></div>
+  <div id="modalCarrinho" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Carrinho</h2>
+        <button onclick="fecharCarrinho()">Fechar</button>
+      </div>
+      <table id="tabelaCarrinho"></table>
+      <p id="total" class="total">Total: R$ 0,00</p>
+      <button class="btnStart" onclick="finalizarCompra()">Finalizar</button>
+    </div>
+  </div>
 
-<script>
-const $=id=>document.getElementById(id);
-const Storage={
-  get:(k,f=[])=>{try{const v=JSON.parse(localStorage.getItem(k));return Array.isArray(v)?v:f}catch{return f}},
-  set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))
-};
+  <!-- CADASTRO -->
+  <div id="cadastroSuspenso">
+    <h2>✏️ Cadastrar Produto</h2>
+    <input id="codigoSuspenso" placeholder="Código">
+    <input id="nomeSuspenso" placeholder="Nome">
+    <select id="tipoSuspenso">
+      <option>Unidade (UN)</option>
+      <option>Peso (KG)</option>
+    </select>
+    <input id="valorSuspenso" type="number" step="0.01" placeholder="Valor">
+    <button id="salvarSuspenso" class="btnStart">Salvar</button>
+  </div>
 
-let produtos=Storage.get("produtos");
-let carrinho=Storage.get("carrinho");
-let historicoCompras=Storage.get("historicoCompras");
+  <script>
+    /* ================= UTIL ================= */
+    const $ = id => document.getElementById(id);
+    const Storage = {
+      get: (k,f=[]) => JSON.parse(localStorage.getItem(k))||f,
+      set: (k,v) => localStorage.setItem(k,JSON.stringify(v))
+    };
 
-/* ================= SCANNER CORRIGIDO ================= */
-let reader=null;
-let buffer=[];
-const repeticoes=3;
-const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+    /* ================= ESTADO ================= */
+    let produtos = Storage.get("produtos");
+    let carrinho = Storage.get("carrinho");
+    let historicoCompras = Storage.get("historicoCompras");
+    let reader = null, stream = null, buffer = [], scannerAtivo = false;
+    const repeticoes = 3;
+    const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
-/* SPLASH */
-window.onload=()=>setTimeout(()=>{
-  $("splash").style.display="none";
-  $("app").style.display="block";
-  irPara("home");
-},1500);
+    /* ================= SPLASH ================= */
+    window.onload = () => setTimeout(() => {
+      $("splash").style.display="none";
+      irPara('home');
+      atualizarProdutos();
+      atualizarHistorico();
+      atualizarCarrinho();
+    }, 1500);
 
-/* SCANNER */
-async function iniciarScanner(){
-  if(reader) return;
+    /* ================= ROUTER ================= */
+    function irPara(tela){
+      document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+      $(tela).classList.add("active");
+      if(tela==="scanner") iniciarScanner();
+      else pararScanner();
+    }
 
-  reader = new ZXingBrowser.BrowserMultiFormatReader();
+    /* ================= PRODUTOS ================= */
+    function atualizarProdutos(){
+      const tb = document.querySelector("#produtosTable tbody");
+      tb.innerHTML = "";
+      produtos.forEach((p,i)=>{
+        tb.innerHTML+=`<tr>
+          <td>${p.codigo}</td>
+          <td>${p.nome}</td>
+          <td>${p.tipo}</td>
+          <td>R$ ${p.valor.toFixed(2)}</td>
+          <td><button onclick="excluirProduto(${i})">❌</button></td>
+        </tr>`;
+      });
 
-  await reader.decodeFromVideoDevice(
-    null,
-    $("video"),
-    (res, err) => {
-      if(res){
-        const codigo=res.text;
-        $("detected").innerText=codigo;
+      const homeCards = $("homeCards");
+      homeCards.innerHTML = "";
+      produtos.forEach(p=>{
+        homeCards.innerHTML += `<div style="padding:12px;margin:6px;border:1px solid #ccc;border-radius:12px;">
+          <strong>${p.nome}</strong><br>R$ ${p.valor.toFixed(2)}
+        </div>`;
+      });
+    }
 
-        buffer.push(codigo);
-        if(buffer.length>repeticoes) buffer.shift();
-
-        if(buffer.filter(v=>v===codigo).length>=repeticoes){
-          beep.play();
-          buffer=[];
-        }
+    function excluirProduto(i){
+      if(confirm("Excluir produto?")){
+        produtos.splice(i,1);
+        Storage.set("produtos",produtos);
+        atualizarProdutos();
       }
     }
-  );
-}
 
-function pararScanner(){
-  if(reader){
-    reader.reset();
-    reader=null;
-  }
-}
+    /* ================= CARRINHO ================= */
+    function atualizarCarrinho(){
+      let total=0;
+      $("tabelaCarrinho").innerHTML="<tr><th>Nome</th><th>Qtd</th><th>Subtotal</th></tr>";
+      carrinho.forEach(p=>{
+        let sub=p.valor*p.qtd;
+        total+=sub;
+        $("tabelaCarrinho").innerHTML+=`<tr><td>${p.nome}</td><td>${p.qtd}</td><td>R$ ${sub.toFixed(2)}</td></tr>`;
+      });
+      $("total").innerText="Total: R$ "+total.toFixed(2);
+      $("badge").innerText=carrinho.length;
+    }
 
-/* ROUTER */
-function irPara(tela){
-  document.querySelectorAll(".view").forEach(v=>v.style.display="none");
-  $(tela).style.display="block";
-  tela==="scanner"?iniciarScanner():pararScanner();
-}
-</script>
+    function abrirCarrinho(){ $("modalCarrinho").style.display="block"; atualizarCarrinho(); }
+    function fecharCarrinho(){ $("modalCarrinho").style.display="none"; }
+
+    function finalizarCompra(){
+      if(!carrinho.length) return alert("Carrinho vazio");
+      let total=0;
+      carrinho.forEach(p=>total+=p.valor*p.qtd);
+      historicoCompras.push({data:new Date().toLocaleString("pt-BR"), total:total, itens:[...carrinho]});
+      Storage.set("historicoCompras",historicoCompras);
+      carrinho=[]; Storage.set("carrinho",carrinho);
+      atualizarCarrinho(); atualizarHistorico(); fecharCarrinho();
+      alert("Compra finalizada!");
+    }
+
+    /* ================= HISTÓRICO ================= */
+    function atualizarHistorico(){
+      const area = $("historicoConteudo");
+      area.innerHTML = "";
+      if(!historicoCompras.length){ area.innerHTML="<p>Nenhuma compra registrada.</p>"; return; }
+      historicoCompras.forEach((c,i)=>{
+        let itens="";
+        c.itens.forEach(it=>{
+          itens+=`<li>${it.nome} — ${it.qtd} x R$ ${it.valor.toFixed(2)} = R$ ${(it.qtd*it.valor).toFixed(2)}</li>`;
+        });
+        area.innerHTML+=`<div style="margin-bottom:10px;padding:10px;border:1px solid #ddd;border-radius:12px;">
+          <strong>Compra ${i+1}</strong><br>
+          <small>${c.data}</small><br>
+          <strong>Total:</strong> R$ ${c.total.toFixed(2)}
+          <details><summary style="cursor:pointer;">Ver itens</summary><ul>${itens}</ul></details>
+        </div>`;
+      });
+    }
+
+    /* ================= SCANNER ================= */
+    async function iniciarScanner(){
+      if(scannerAtivo) return;
+      scannerAtivo=true;
+      buffer=[];
+      if(!stream){
+        stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+        $("video").srcObject = stream;
+        await $("video").play();
+      }
+      reader = new ZXing.BrowserMultiFormatReader();
+      reader.decodeFromVideoElementContinuously($("video"), res=>{
+        if(!res || !scannerAtivo) return;
+        const codigo = res.text.trim();
+        buffer.push(codigo);
+        if(buffer.length>repeticoes) buffer.shift();
+        let ok = buffer.filter(v=>v===codigo).length;
+        $("barraValidacaoInner").style.width=(ok/repeticoes*100)+"%";
+        $("barraValidacaoInner").innerText=Math.round(ok/repeticoes*100)+"%";
+        if(ok>=repeticoes) processarCodigo(codigo);
+      });
+    }
+
+    function processarCodigo(codigo){
+      scannerAtivo=false;
+      beep.play();
+      let p = produtos.find(x=>x.codigo===codigo);
+      setTimeout(()=>{
+        if(p){
+          let q = Number(prompt(`Produto: ${p.nome}\nQuantidade:`));
+          if(q>0){ carrinho.push({...p,qtd:q}); Storage.set("carrinho",carrinho); abrirCarrinho(); }
+        } else {
+          $("cadastroSuspenso").style.display="block";
+          $("codigoSuspenso").value = codigo;
+        }
+        $("barraValidacaoInner").style.width="0%";
+        buffer=[];
+        scannerAtivo=true;
+      },300);
+    }
+
+    function pararScanner(){
+      scannerAtivo=false;
+      if(reader) reader.reset();
+      if(stream) stream.getTracks().forEach(t=>t.stop());
+      stream=null;
+      $("video").srcObject=null;
+    }
+
+    /* ================= CADASTRO ================= */
+    $("salvarSuspenso").onclick = ()=>{
+      const novo = {
+        codigo: $("codigoSuspenso").value,
+        nome: $("nomeSuspenso").value,
+        tipo: $("tipoSuspenso").value,
+        valor: Number($("valorSuspenso").value)
+      };
+      if(!novo.codigo || !novo.nome || !novo.valor) return alert("Preencha tudo");
+      produtos.push(novo);
+      Storage.set("produtos",produtos);
+      atualizarProdutos();
+      $("cadastroSuspenso").style.display="none";
+    };
+
+    /* ================= EVENTOS ================= */
+    $("startButton").onclick = iniciarScanner;
+    $("stopButton").onclick = pararScanner;
+  </script>
 
 </body>
 </html>
