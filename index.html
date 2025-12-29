@@ -5,7 +5,6 @@
 <title>GoL BUY SMART</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#3b7ddd">
-
 <script src="https://unpkg.com/@zxing/library@0.21.2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -35,6 +34,14 @@ body {
   font-size:var(--font-base);
 }
 
+/* Splash Screen */
+#splash{
+  position:fixed; inset:0; background:#1a1a1a; color:white; display:flex;
+  flex-direction:column; align-items:center; justify-content:center; z-index:2000;
+}
+#splash img{width:300px;height:300px;object-fit:contain;}
+#splash p{margin-top:15px;font-size:18px;}
+
 /* Sidebar */
 #sidebar{
   position:fixed; top:0; left:0; bottom:0;
@@ -47,8 +54,7 @@ body {
 #sidebar button{
   background:none; border:none; color:white;
   text-align:left; padding:14px 20px; font-size:16px;
-  display:flex; align-items:center; gap:8px; transition:background 0.2s; cursor:pointer;
-  border-radius:8px;
+  display:flex; align-items:center; gap:8px; cursor:pointer; border-radius:8px;
 }
 #sidebar button:hover{background:rgba(255,255,255,0.2);}
 
@@ -61,7 +67,7 @@ body {
   box-shadow:var(--shadow);
 }
 
-/* Conteúdo principal */
+/* Content */
 #content{
   margin-left:var(--sidebar-width);
   flex:1; padding:20px 10px;
@@ -80,22 +86,17 @@ body {
 #home h2{margin:10px 0;color:var(--primary); font-weight:700; font-size:1.5rem;}
 #orcamento{position:relative; max-width:400px; margin:20px auto;}
 #orcamento h3{margin-bottom:8px;}
-#orcamento .input-container{position:relative;}
-#orcamento .input-container input{
-  width:100%; padding:12px; border-radius:12px; border:1px solid #ccc; font-size:16px;
-  text-align:center;
+#orcamento input{
+  width:100%; padding:12px 12px 12px 50px; border-radius:12px; border:1px solid #ccc; font-size:16px;
 }
-#orcamento .input-container span{
-  position:absolute; left:12px; top:50%; transform:translateY(-50%);
-  font-weight:bold; color:#555;
+#orcamento::before{
+  content:'R$'; position:absolute; left:15px; top:38px; color:#555; font-weight:bold;
 }
 #orcamentoBarra{
   height:22px; background:#ccc; border-radius:12px; margin-top:8px; overflow:hidden;
 }
 #orcamentoBarraInner{
-  height:100%; width:0%; background:var(--secondary); text-align:center; color:white;
-  font-weight:bold; line-height:22px; transition:width 0.5s ease;
-  display:flex; align-items:center; justify-content:center;
+  height:100%; width:0%; background:var(--secondary); text-align:center; color:white; font-weight:bold; transition:width 0.5s;
 }
 
 /* Box */
@@ -112,23 +113,14 @@ body {
 #camera video{width:100%;height:100%;object-fit:cover; border-radius:var(--radius);}
 .scan-line{position:absolute;left:0;right:0;height:3px;background:var(--secondary);animation:scan 2s linear infinite;}
 @keyframes scan{0%{top:10%}50%{top:90%}100%{top:10%}}
-#scannerMsg{text-align:center;color:#333;font-weight:500;margin-top:6px;}
-#barraValidacao{height:22px; background:#ccc; border-radius:12px; margin-top:10px; overflow:hidden;}
-#barraValidacaoInner{
-  height:100%; width:0%; background:var(--secondary); text-align:center; color:white;
-  font-weight:bold; line-height:22px; display:flex; align-items:center; justify-content:center;
-  transition:width 0.5s ease;
-}
 
 /* Produtos */
 #produtosBox{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;margin-top:10px;font-size:16px;}
-th,td{padding:10px;text-align:center;border:1px solid #ddd;}
+th,td{padding:10px;text-align:center;}
 tr:nth-child(even){background:#f3f3f3;}
-button.editBtn{background:var(--secondary);color:#000;margin-right:5px;border:none;padding:6px 10px;border-radius:6px;cursor:pointer; transition:opacity .2s;}
-button.editBtn:hover{opacity:0.8;}
-button.deleteBtn{background:var(--danger);color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer; transition:opacity .2s;}
-button.deleteBtn:hover{opacity:0.8;}
+button.editBtn{background:var(--secondary);color:#000;margin-right:5px;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;}
+button.deleteBtn{background:var(--danger);color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;}
 
 /* Histórico */
 .historico-card{background:#fff;border-radius:12px;padding:15px;margin-bottom:12px;box-shadow:0 2px 12px rgba(0,0,0,.15);}
@@ -154,25 +146,28 @@ button.deleteBtn:hover{opacity:0.8;}
   background:#fff;width:95%;max-width:480px;margin:40px auto;padding:20px;border-radius:var(--radius);
   box-shadow:var(--shadow);
 }
-#modalCarrinho table{width:100%;margin-bottom:12px;border-collapse:collapse;}
-#modalCarrinho table th, #modalCarrinho table td {border:1px solid #ddd; padding:8px; text-align:center;}
-#modalCarrinho button{width:100%;padding:12px;margin-top:8px;border:none;border-radius:12px;color:white;font-weight:700; font-size:16px; cursor:pointer;}
-#modalCarrinho button.finalizar{background:var(--primary);}
-#modalCarrinho button.fechar{background:#555;}
+#modalCarrinho table{width:100%;margin-bottom:12px;}
+#modalCarrinho button{width:100%;padding:12px;margin-top:8px;border:none;border-radius:12px;color:white;background:var(--primary);cursor:pointer; font-weight:700;}
 
 /* Cadastro */
 #cadastroBox{max-width:400px;margin:20px auto;}
 #cadastroBox input, #cadastroBox select, #cadastroBox button{
   width:100%;padding:12px;margin-top:8px;border-radius:12px;border:1px solid #ccc;font-size:16px;
 }
-#cadastroBox button{background:var(--primary);color:white;border:none; font-weight:700; cursor:pointer; transition:opacity .2s;}
-#cadastroBox button:hover{opacity:0.85;}
+#cadastroBox button{background:var(--primary);color:white;border:none; font-weight:700;}
 
 /* Gráfico scanner */
 #scannerChartBox{margin-top:20px;}
 </style>
 </head>
+
 <body>
+
+<!-- Splash Screen -->
+<div id="splash">
+  <img src="logo.png" alt="Logo">
+  <p>Bem-vindo ao GoL BUY SMART</p>
+</div>
 
 <div id="hamburger">☰</div>
 
@@ -193,10 +188,7 @@ button.deleteBtn:hover{opacity:0.8;}
 
     <div id="orcamento" class="box">
       <h3>💰 Orçamento Mensal</h3>
-      <div class="input-container">
-        <span>R$</span>
-        <input type="number" id="orcamentoInput" placeholder="Digite seu orçamento">
-      </div>
+      <input type="number" id="orcamentoInput" placeholder="Digite seu orçamento">
       <div id="orcamentoBarra"><div id="orcamentoBarraInner">0%</div></div>
       <p style="margin-top:8px;">Gasto atual: R$ <span id="orcamentoGasto">0.00</span></p>
     </div>
@@ -206,7 +198,6 @@ button.deleteBtn:hover{opacity:0.8;}
   <section id="scanner" class="view">
     <div class="box">
       <div id="camera"><video id="video" playsinline></video><div class="scan-line"></div></div>
-      <p id="scannerMsg">📌 Posicione o código de barras na área da câmera</p>
       <div id="scannerInfo">
         <p>Código detectado: <span id="detected">—</span></p>
         <p>Total produtos cadastrados: <span id="totalProdutos">0</span></p>
@@ -238,8 +229,6 @@ button.deleteBtn:hover{opacity:0.8;}
       <select id="categoriaCadastro">
         <option value="Alimentos">Alimentos</option>
         <option value="Limpeza">Limpeza</option>
-	<option value="Bebida">Bebida</option>
-	<option value="Farmácia">Farmácia</option>
         <option value="Higiene">Higiene</option>
         <option value="Outros">Outros</option>
       </select>
@@ -265,21 +254,24 @@ button.deleteBtn:hover{opacity:0.8;}
     <h3>Carrinho</h3>
     <table id="tabelaCarrinho"></table>
     <p id="total">Total: R$ 0,00</p>
-    <button class="finalizar" onclick="finalizarCompra()">Finalizar</button>
-    <button class="fechar" onclick="fecharCarrinho()">Fechar</button>
+    <button onclick="finalizarCompra()">Finalizar</button>
+    <button onclick="fecharCarrinho()">Fechar</button>
   </div>
 </div>
 
 <script>
-// ======== JS Completo do seu código com animação suave ========
-
-// Elements & Storage
+// Elementos & Storage
 const $=id=>document.getElementById(id);
 const Storage={get:(k,f=[])=>JSON.parse(localStorage.getItem(k))||f,set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))};
-let produtos=Storage.get("produtos"), carrinho=Storage.get("carrinho"), historico=Storage.get("historicoCompras"), orcamento=Storage.get("orcamento") || 0;
-let reader=null,stream=null,buffer=[],scannerAtivo=false;
+let produtos=Storage.get("produtos"), carrinho=Storage.get("carrinho"), historico=Storage.get("historicoCompras"), orcamento=Storage.get("orcamento")||0;
+let reader=null, stream=null, buffer=[], scannerAtivo=false;
 const repeticoes=3, beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 let categoriaChart;
+
+// Splash Screen
+window.onload=()=>setTimeout(()=>{
+  $("splash").style.display="none";
+},1500);
 
 // Hamburger
 const sidebar=$("sidebar"), content=$("content"), hamburger=$("hamburger");
@@ -302,9 +294,9 @@ $("orcamentoInput").addEventListener("input",()=>{
 
 // Atualizar Orçamento
 function atualizarOrcamento(){
-  let gasto = carrinho.reduce((a,b)=>a+b.valor*b.qtd,0);
+  let gasto=carrinho.reduce((a,b)=>a+b.valor*b.qtd,0);
   $("orcamentoGasto").innerText=gasto.toFixed(2);
-  let pct = orcamento ? Math.min(100, (gasto/orcamento*100)) : 0;
+  let pct=orcamento?Math.min(100,(gasto/orcamento*100)):0;
   $("orcamentoBarraInner").style.width=pct+"%";
   $("orcamentoBarraInner").innerText=Math.round(pct)+"%";
 }
@@ -373,49 +365,77 @@ function abrirCarrinho(){ $("modalCarrinho").style.display="block"; atualizarCar
 function fecharCarrinho(){ $("modalCarrinho").style.display="none"; }
 function finalizarCompra(){
   if(!carrinho.length) return alert("Carrinho vazio");
-  historico.push({data:new Date().toLocaleString("pt-BR"),itens:[...carrinho]});
+  historico.push({data:new Date().toLocaleString("pt-BR"),total:carrinho.reduce((a,b)=>a+b.valor*b.qtd,0),itens:[...carrinho]});
   Storage.set("historicoCompras",historico);
   carrinho=[]; Storage.set("carrinho",carrinho);
-  atualizarCarrinho();
-  alert("Compra finalizada!");
+  atualizarCarrinho(); atualizarHistorico(); fecharCarrinho(); alert("Compra finalizada!");
 }
 
+// Histórico
+function atualizarHistorico(){
+  const area=$("historicoConteudo"); area.innerHTML="";
+  if(!historico.length){area.innerHTML="<p>Nenhuma compra registrada.</p>"; return;}
+  historico.forEach((c,i)=>{
+    let itens=""; c.itens.forEach(it=>{itens+=`<li>${it.nome} — ${it.qtd} x R$ ${it.valor.toFixed(2)} = R$ ${(it.qtd*it.valor).toFixed(2)}</li>`;});
+    area.innerHTML+=`<div class="historico-card"><h4>Compra ${i+1}</h4><small>${c.data}</small><p>Total: R$ ${c.total.toFixed(2)}</p><details><summary>Ver itens</summary><ul>${itens}</ul></details></div>`;
+  });
+}
+atualizarHistorico();
+atualizarProdutosTable();
+atualizarCarrinho();
+
 // Scanner
-function iniciarScanner(){
+async function iniciarScanner(){
   if(scannerAtivo) return;
-  scannerAtivo=true;
-  navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}})
-    .then(s=>{stream=s;$("video").srcObject=s;$("video").play(); reader=new ZXing.BrowserMultiFormatReader(); scanLoop();})
-    .catch(e=>console.error(e));
+  scannerAtivo=true; buffer=[];
+  if(!stream){
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+    $("video").srcObject=stream;
+    await $("video").play();
+  }
+  reader=new ZXing.BrowserMultiFormatReader();
+  reader.decodeFromVideoElementContinuously($("video"),res=>{
+    if(!res||!scannerAtivo) return;
+    const codigo=res.text.trim();
+    buffer.push(codigo); if(buffer.length>repeticoes) buffer.shift();
+    let ok=buffer.filter(v=>v===codigo).length;
+    $("barraValidacaoInner").style.width=(ok/repeticoes*100)+"%";
+    $("barraValidacaoInner").innerText=Math.round(ok/repeticoes*100)+"%";
+    if(ok>=repeticoes) processarCodigo(codigo);
+  });
 }
-function scanLoop(){
-  if(!scannerAtivo) return;
-  reader.decodeOnceFromVideoElement($("video")).then(result=>{
-    $("detected").innerText=result.text;
-    beep.play();
-    let p=produtos.find(p=>p.codigo===result.text);
-    if(p){
-      let c=carrinho.find(c=>c.codigo===p.codigo);
-      if(c) c.qtd++; else carrinho.push({...p,qtd:1});
-      Storage.set("carrinho",carrinho);
+function processarCodigo(codigo){
+  try{
+    navigator.vibrate?.(50);
+    scannerAtivo=false; beep.play();
+    let p=produtos.find(x=>x.codigo===codigo);
+    setTimeout(()=>{
+      if(p){
+        let q=Number(prompt(`Produto: ${p.nome}\nQuantidade:`));
+        if(q>0){carrinho.push({...p,qtd:q}); Storage.set("carrinho",carrinho); abrirCarrinho();}
+      }else{ alert("Produto não cadastrado."); }
+      $("barraValidacaoInner").style.width="0%";
+      scannerAtivo=true; buffer=[];
       atualizarCarrinho();
-    }
-    $("barraValidacaoInner").style.width="100%";
-    setTimeout(()=>{$("barraValidacaoInner").style.width="0%"; scanLoop();},500);
-  }).catch(scanLoop);
+    },300);
+  }catch(e){console.error(e);scannerAtivo=true;}
 }
-function pararScanner(){scannerAtivo=false; if(stream){stream.getTracks().forEach(t=>t.stop());$("video").srcObject=null;}}
+function pararScanner(){
+  scannerAtivo=false;
+  if(reader) reader.reset();
+  if(stream) stream.getTracks().forEach(t=>t.stop());
+  stream=null; $("video").srcObject=null;
+}
 
 // Scanner Chart
 function atualizarScannerChart(){
-  const ctx=$("categoriaChart");
-  const catCount={};
-  produtos.forEach(p=>catCount[p.categoria]=(catCount[p.categoria]||0)+1);
+  const categorias={};
+  produtos.forEach(p=>{categorias[p.categoria]=(categorias[p.categoria]||0)+1;});
   if(categoriaChart) categoriaChart.destroy();
-  categoriaChart=new Chart(ctx,{type:'pie',data:{labels:Object.keys(catCount),datasets:[{data:Object.values(catCount),backgroundColor:['#3b7ddd','#ffb703','#ff6b6b','#6bffb7']}]},options:{responsive:true}});
+  const ctx=$("categoriaChart").getContext("2d");
+  categoriaChart=new Chart(ctx,{type:'doughnut',data:{labels:Object.keys(categorias),datasets:[{data:Object.values(categorias),backgroundColor:['#3b7ddd','#ffb703','#ff3b3b','#6b6b6b']}]},options:{plugins:{legend:{position:'bottom'}}}});
 }
-atualizarProdutosTable(); atualizarScannerChart(); atualizarCarrinho();
-
+atualizarScannerChart();
 </script>
 </body>
 </html>
