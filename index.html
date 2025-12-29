@@ -31,22 +31,42 @@ body{
   min-height:100vh;
 }
 
-/* Splash */
+/* SPLASH */
 #splash{
   position:fixed;
   inset:0;
-  background:#1a1a1a;
+  background:linear-gradient(180deg,#111,#1a1a1a);
   color:#fff;
   display:flex;
   flex-direction:column;
-  justify-content:center;
   align-items:center;
+  justify-content:center;
+  gap:14px;
   z-index:2000;
+  text-align:center;
 }
-#splash img{width:220px}
-#splash p{margin-top:10px}
+.splash-logo{
+  width:220px;
+  opacity:0;
+  transform:scale(0.92);
+  animation:logoFade 1.2s ease forwards;
+}
+.splash-text{
+  font-size:17px;
+  font-weight:400;
+  letter-spacing:.4px;
+  opacity:0;
+  animation:textFade 1s ease forwards;
+  animation-delay:.6s;
+}
+@keyframes logoFade{
+  to{opacity:1;transform:scale(1);}
+}
+@keyframes textFade{
+  to{opacity:.85;}
+}
 
-/* Sidebar */
+/* SIDEBAR */
 #sidebar{
   width:220px;
   background:var(--primary);
@@ -74,7 +94,7 @@ body{
   transform:translateX(4px);
 }
 
-/* Hamburger */
+/* HAMBURGER */
 #hamburger{
   position:fixed;
   top:12px;left:12px;
@@ -91,7 +111,7 @@ body{
   box-shadow:var(--shadow);
 }
 
-/* Content */
+/* CONTENT */
 #content{
   margin-left:220px;
   flex:1;
@@ -100,7 +120,7 @@ body{
 }
 #content.full{margin-left:0}
 
-/* Views */
+/* VIEWS */
 .view{display:none;animation:fade .3s ease}
 .view.active{display:block}
 @keyframes fade{
@@ -108,7 +128,7 @@ body{
   to{opacity:1;transform:none}
 }
 
-/* Box */
+/* BOX */
 .box{
   background:var(--card);
   border-radius:var(--radius);
@@ -117,11 +137,11 @@ body{
   box-shadow:var(--shadow);
 }
 
-/* Home */
+/* HOME */
 #home{text-align:center}
 .logo-home{width:220px;margin-bottom:10px}
 
-/* Orçamento */
+/* ORÇAMENTO */
 #orcamento input{
   width:100%;
   padding:12px;
@@ -145,7 +165,7 @@ body{
   transition:.4s;
 }
 
-/* Scanner */
+/* SCANNER */
 #camera{
   width:100%;
   height:260px;
@@ -188,12 +208,12 @@ body{
   transition:.3s;
 }
 
-/* Tabela */
+/* TABLE */
 table{width:100%;border-collapse:collapse}
 th,td{padding:10px;text-align:center}
 tr:nth-child(even){background:#f3f3f3}
 
-/* Carrinho */
+/* CARRINHO */
 #carrinhoIcone{
   position:fixed;
   bottom:20px;right:20px;
@@ -220,7 +240,7 @@ tr:nth-child(even){background:#f3f3f3}
   justify-content:center;
 }
 
-/* Modal */
+/* MODAL */
 #modalCarrinho{
   position:fixed;
   inset:0;
@@ -251,9 +271,10 @@ tr:nth-child(even){background:#f3f3f3}
 
 <body>
 
+<!-- SPLASH -->
 <div id="splash">
-  <img src="logo.png">
-  <p>Bem-vindo ao seu app de compras inteligente</p>
+  <img src="logo.png" alt="GoL BUY SMART Logo" class="splash-logo">
+  <p class="splash-text">Sua experiência inteligente em compras começa agora</p>
 </div>
 
 <div id="hamburger">☰</div>
@@ -271,7 +292,6 @@ tr:nth-child(even){background:#f3f3f3}
 <section id="home" class="view active">
   <img src="logo.png" class="logo-home">
   <h2>Bem-vindo ao GoL BUY SMART</h2>
-
   <div id="orcamento" class="box">
     <h3>💰 Orçamento Mensal</h3>
     <input type="number" id="orcamentoInput">
@@ -286,7 +306,6 @@ tr:nth-child(even){background:#f3f3f3}
       <video id="video" playsinline></video>
       <div class="scan-line"></div>
     </div>
-    <p>Código: <span id="detected">—</span></p>
     <div id="barraValidacao"><div id="barraValidacaoInner">0%</div></div>
     <canvas id="categoriaChart"></canvas>
   </div>
@@ -357,7 +376,9 @@ let reader=null,stream=null,buffer=[],scannerAtivo=false;
 const repeticoes=3;
 let chart;
 
-window.onload=()=>setTimeout(()=>$("splash").style.display="none",1200);
+window.onload=()=>{
+  setTimeout(()=>{$("splash").style.display="none";},1800);
+};
 
 $("hamburger").onclick=()=>{
   $("sidebar").classList.toggle("hide");
@@ -370,14 +391,13 @@ function irPara(t){
   t==="scanner"?iniciarScanner():pararScanner();
 }
 
-/* Orçamento */
+/* ORÇAMENTO */
 $("orcamentoInput").value=orcamento;
 $("orcamentoInput").oninput=()=>{
   orcamento=Number($("orcamentoInput").value);
   localStorage.setItem("orcamento",orcamento);
   atualizarOrcamento();
 };
-
 function atualizarOrcamento(){
   let gasto=carrinho.reduce((a,b)=>a+b.valor*b.qtd,0);
   $("orcamentoGasto").innerText=gasto.toFixed(2);
@@ -386,7 +406,7 @@ function atualizarOrcamento(){
   $("orcamentoBarraInner").innerText=Math.round(pct)+"%";
 }
 
-/* Cadastro */
+/* CADASTRO */
 function atualizarProdutos(){
   const tb=$("produtosTable").querySelector("tbody");
   tb.innerHTML="";
@@ -398,7 +418,6 @@ function atualizarProdutos(){
     </tr>`;
   });
 }
-
 $("salvarCadastro").onclick=()=>{
   let v=Number($("valorCadastro").value);
   if(v<=0||isNaN(v)) return alert("Valor inválido");
@@ -414,7 +433,6 @@ $("salvarCadastro").onclick=()=>{
   atualizarGrafico();
   irPara("produtos");
 };
-
 function excluirProduto(i){
   if(confirm("Excluir?")){
     produtos.splice(i,1);
@@ -424,14 +442,9 @@ function excluirProduto(i){
   }
 }
 
-/* Carrinho */
-function abrirCarrinho(){
-  $("modalCarrinho").style.display="block";
-  atualizarCarrinho();
-}
-function fecharCarrinho(){
-  $("modalCarrinho").style.display="none";
-}
+/* CARRINHO */
+function abrirCarrinho(){ $("modalCarrinho").style.display="block"; atualizarCarrinho(); }
+function fecharCarrinho(){ $("modalCarrinho").style.display="none"; }
 function atualizarCarrinho(){
   let total=0;
   $("tabelaCarrinho").innerHTML="<tr><th>Nome</th><th>Qtd</th><th>Subtotal</th></tr>";
@@ -453,7 +466,7 @@ function finalizarCompra(){
   atualizarHistorico();
 }
 
-/* Histórico */
+/* HISTÓRICO */
 function atualizarHistorico(){
   const a=$("historicoConteudo");
   a.innerHTML="";
@@ -462,7 +475,7 @@ function atualizarHistorico(){
   });
 }
 
-/* Scanner */
+/* SCANNER */
 async function iniciarScanner(){
   if(scannerAtivo) return;
   scannerAtivo=true;
@@ -480,7 +493,6 @@ async function iniciarScanner(){
     if(ok>=repeticoes) adicionarProduto(res.text);
   });
 }
-
 function adicionarProduto(codigo){
   scannerAtivo=false;
   let p=produtos.find(x=>x.codigo===codigo);
@@ -496,7 +508,6 @@ function adicionarProduto(codigo){
   buffer=[];
   scannerAtivo=true;
 }
-
 function pararScanner(){
   scannerAtivo=false;
   if(reader){reader.reset();reader=null;}
@@ -504,7 +515,7 @@ function pararScanner(){
   $("video").srcObject=null;
 }
 
-/* Gráfico */
+/* GRÁFICO */
 function atualizarGrafico(){
   const c={};
   produtos.forEach(p=>c[p.categoria]=(c[p.categoria]||0)+1);
@@ -520,5 +531,6 @@ atualizarCarrinho();
 atualizarHistorico();
 atualizarGrafico();
 </script>
+
 </body>
 </html>
