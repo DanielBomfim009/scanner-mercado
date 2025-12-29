@@ -18,11 +18,14 @@
   --danger:#ff3b3b;
   --sidebar-width:220px;
   --transition-speed:0.3s;
+  --font-base:16px;
+  --radius:18px;
+  --shadow:0 4px 18px rgba(0,0,0,.15);
 }
 
 /* Reset básico */
 * {margin:0;padding:0;box-sizing:border-box;font-family:'Roboto',sans-serif;}
-body {background:var(--background); display:flex; min-height:100vh; overflow-x:hidden;}
+body {background:var(--background); display:flex; min-height:100vh; overflow-x:hidden; font-size:var(--font-base);}
 
 /* Sidebar */
 #sidebar{
@@ -37,6 +40,7 @@ body {background:var(--background); display:flex; min-height:100vh; overflow-x:h
   background:none; border:none; color:white;
   text-align:left; padding:14px 20px; font-size:16px;
   display:flex; align-items:center; gap:8px; transition:background 0.2s; cursor:pointer;
+  border-radius:8px;
 }
 #sidebar button:hover{background:rgba(255,255,255,0.2);}
 
@@ -46,6 +50,7 @@ body {background:var(--background); display:flex; min-height:100vh; overflow-x:h
   width:42px; height:42px; background:var(--primary);
   color:white; display:flex; align-items:center; justify-content:center;
   border-radius:10px; z-index:101; cursor:pointer; font-size:24px;
+  box-shadow:var(--shadow);
 }
 
 /* Conteúdo principal */
@@ -62,8 +67,8 @@ body {background:var(--background); display:flex; min-height:100vh; overflow-x:h
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   color:white; z-index:2000;
 }
-#splash img{width:300px; height:300px; object-fit:contain; margin-bottom:20px;}
-#splash p{font-size:18px; text-align:center;}
+#splash img{width:300px; height:300px; object-fit:contain; margin-bottom:20px; border-radius:50%;}
+#splash p{font-size:18px; text-align:center; font-weight:500;}
 
 /* Views */
 .view{display:none; animation:fade .25s ease;}
@@ -72,8 +77,8 @@ body {background:var(--background); display:flex; min-height:100vh; overflow-x:h
 
 /* Home */
 #home{text-align:center;}
-#home .logo-home{width:250px;height:250px;object-fit:contain;margin:20px auto;}
-#home h2{margin:10px 0; color:var(--primary);}
+#home .logo-home{width:250px;height:250px;object-fit:contain;margin:20px auto; border-radius:20px; box-shadow:var(--shadow);}
+#home h2{margin:10px 0; color:var(--primary); font-weight:500; font-size:1.2rem;}
 #orcamento{position:relative;}
 #orcamento input{
   width:100%; padding:12px 50px 12px 12px; margin-top:10px; border-radius:12px; border:1px solid #ccc;
@@ -82,30 +87,31 @@ body {background:var(--background); display:flex; min-height:100vh; overflow-x:h
 #orcamento::before{
   content:'R$'; position:absolute; left:15px; top:45px; color:#555; font-weight:bold;
 }
+#homeCards{display:flex; flex-direction:column; gap:12px; margin-top:15px;}
 
 /* Box */
 .box{
-  background:var(--card); border-radius:18px; padding:20px; margin-bottom:20px;
-  box-shadow:0 4px 18px rgba(0,0,0,.15);
+  background:var(--card); border-radius:var(--radius); padding:20px; margin-bottom:20px;
+  box-shadow:var(--shadow);
 }
 
 /* Scanner */
-#camera{width:100%;height:280px;background:#000;border-radius:18px;overflow:hidden;position:relative;margin-top:10px;}
-#camera video{width:100%;height:100%;object-fit:cover;}
-.scan-line{position:absolute;left:0;right:0;height:2px;background:red;animation:scan 2s linear infinite;}
+#camera{width:100%;height:280px;background:#000;border-radius:var(--radius);overflow:hidden;position:relative;margin-top:10px; box-shadow:var(--shadow);}
+#camera video{width:100%;height:100%;object-fit:cover; border-radius:var(--radius);}
+.scan-line{position:absolute;left:0;right:0;height:3px;background:var(--secondary);animation:scan 2s linear infinite;}
 @keyframes scan{0%{top:10%}50%{top:90%}100%{top:10%}}
 #barraValidacao{height:22px;background:#ccc;border-radius:12px;margin-top:8px;}
-#barraValidacaoInner{height:100%;width:0;background:var(--primary);border-radius:12px;text-align:center;color:white;font-weight:bold;}
+#barraValidacaoInner{height:100%;width:0;background:var(--primary);border-radius:12px;text-align:center;color:white;font-weight:bold;transition:width 0.3s;}
 
 /* Produtos */
-table{width:100%;border-collapse:collapse;margin-top:10px;}
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px;}
 td,th{padding:8px;text-align:center;}
 tr:nth-child(even){background:#f3f3f3;}
 button.editBtn{background:var(--secondary);color:#000;margin-right:5px;border:none;padding:4px 8px;border-radius:6px;cursor:pointer;}
 button.deleteBtn{background:var(--danger);color:white;border:none;padding:4px 8px;border-radius:6px;cursor:pointer;}
 
 /* Histórico */
-.historico-card{background:#fff;border-radius:12px;padding:15px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.1);}
+.historico-card{background:#fff;border-radius:12px;padding:15px;margin-bottom:12px;box-shadow:0 2px 12px rgba(0,0,0,.15);}
 .historico-card h4{margin-bottom:6px; color:var(--primary);}
 .historico-card details{margin-top:6px;}
 .historico-card details ul{padding-left:20px;margin:0;max-height:150px;overflow-y:auto;}
@@ -126,12 +132,12 @@ button.deleteBtn{background:var(--danger);color:white;border:none;padding:4px 8p
 
 /* Modal */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:1000;}
-.modal-content{background:#fff;width:90%;max-width:480px;margin:40px auto;padding:20px;border-radius:18px;}
+.modal-content{background:#fff;width:90%;max-width:480px;margin:40px auto;padding:20px;border-radius:var(--radius);}
 
 /* Cadastro produto */
 #cadastroSuspenso{
   position:fixed; bottom:10px; left:50%; transform:translateX(-50%);
-  width:90%; max-width:400px; background:#fff; padding:20px; border-radius:18px; display:none; z-index:1001;
+  width:90%; max-width:400px; background:#fff; padding:20px; border-radius:var(--radius); display:none; z-index:1001;
 }
 #cadastroSuspenso input, select, button{width:100%;padding:12px;margin-top:8px;border-radius:12px;border:1px solid #ccc;}
 #cadastroSuspenso button{background:var(--primary);color:white;border:none;}
@@ -302,7 +308,13 @@ function atualizarCarrinho(){
 }
 function abrirCarrinho(){ $("modalCarrinho").style.display="block"; atualizarCarrinho(); }
 function fecharCarrinho(){ $("modalCarrinho").style.display="none"; }
-function finalizarCompra(){if(!carrinho.length)return alert("Carrinho vazio");historico.push({data:new Date().toLocaleString("pt-BR"),total:carrinho.reduce((a,b)=>a+b.valor*b.qtd,0),itens:[...carrinho]});Storage.set("historicoCompras",historico);carrinho=[];Storage.set("carrinho",carrinho);atualizarCarrinho();atualizarHistorico();fecharCarrinho();alert("Compra finalizada!");}
+function finalizarCompra(){
+  if(!carrinho.length) return alert("Carrinho vazio");
+  historico.push({data:new Date().toLocaleString("pt-BR"),total:carrinho.reduce((a,b)=>a+b.valor*b.qtd,0),itens:[...carrinho]});
+  Storage.set("historicoCompras",historico);
+  carrinho=[]; Storage.set("carrinho",carrinho);
+  atualizarCarrinho(); atualizarHistorico(); fecharCarrinho(); alert("Compra finalizada!");
+}
 
 // Histórico
 function atualizarHistorico(){
