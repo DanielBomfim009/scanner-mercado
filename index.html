@@ -40,7 +40,7 @@ body {
   flex-direction:column; align-items:center; justify-content:center; z-index:2000;
 }
 #splash img{width:300px;height:300px;object-fit:contain;}
-#splash p{margin-top:15px;font-size:18px;}
+#splash p{margin-top:15px;font-size:18px; text-align:center;}
 
 /* Sidebar */
 #sidebar{
@@ -158,6 +158,16 @@ button.deleteBtn{background:var(--danger);color:white;border:none;padding:6px 10
 
 /* Gráfico scanner */
 #scannerChartBox{margin-top:20px;}
+
+/* Mobile Responsiveness */
+@media(max-width:480px){
+  #content{margin-left:0; padding:10px;}
+  #sidebar{width:180px;}
+  #home .logo-home{width:200px;height:200px;}
+  #orcamento input{padding:12px 12px 12px 45px;}
+  #camera{height:180px;}
+  button, #cadastroBox input, #cadastroBox select{font-size:14px;}
+}
 </style>
 </head>
 
@@ -166,7 +176,7 @@ button.deleteBtn{background:var(--danger);color:white;border:none;padding:6px 10
 <!-- Splash Screen -->
 <div id="splash">
   <img src="logo.png" alt="Logo">
-  <p>Bem-vindo ao GoL BUY SMART</p>
+  <p>Bem-vindo ao seu app de compras inteligente</p>
 </div>
 
 <div id="hamburger">☰</div>
@@ -184,7 +194,7 @@ button.deleteBtn{background:var(--danger);color:white;border:none;padding:6px 10
   <!-- Home -->
   <section id="home" class="view active">
     <img src="logo.png" class="logo-home" alt="Logo">
-    <h2>Bem-vindo ao GoL BUY SMART</h2>
+    <h2>Bem-vindo ao seu app de compras inteligente</h2>
 
     <div id="orcamento" class="box">
       <h3>💰 Orçamento Mensal</h3>
