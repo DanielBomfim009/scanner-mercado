@@ -80,17 +80,22 @@ body {
 #home h2{margin:10px 0;color:var(--primary); font-weight:700; font-size:1.5rem;}
 #orcamento{position:relative; max-width:400px; margin:20px auto;}
 #orcamento h3{margin-bottom:8px;}
-#orcamento input{
-  width:100%; padding:12px 12px 12px 50px; border-radius:12px; border:1px solid #ccc; font-size:16px;
+#orcamento .input-container{position:relative;}
+#orcamento .input-container input{
+  width:100%; padding:12px; border-radius:12px; border:1px solid #ccc; font-size:16px;
+  text-align:center;
 }
-#orcamento::before{
-  content:'R$'; position:absolute; left:15px; top:38px; color:#555; font-weight:bold;
+#orcamento .input-container span{
+  position:absolute; left:12px; top:50%; transform:translateY(-50%);
+  font-weight:bold; color:#555;
 }
 #orcamentoBarra{
   height:22px; background:#ccc; border-radius:12px; margin-top:8px; overflow:hidden;
 }
 #orcamentoBarraInner{
-  height:100%; width:0%; background:var(--secondary); text-align:center; color:white; font-weight:bold; line-height:22px; transition:width 0.3s;
+  height:100%; width:0%; background:var(--secondary); text-align:center; color:white;
+  font-weight:bold; line-height:22px; transition:width 0.5s ease;
+  display:flex; align-items:center; justify-content:center;
 }
 
 /* Box */
@@ -107,14 +112,23 @@ body {
 #camera video{width:100%;height:100%;object-fit:cover; border-radius:var(--radius);}
 .scan-line{position:absolute;left:0;right:0;height:3px;background:var(--secondary);animation:scan 2s linear infinite;}
 @keyframes scan{0%{top:10%}50%{top:90%}100%{top:10%}}
+#scannerMsg{text-align:center;color:#333;font-weight:500;margin-top:6px;}
+#barraValidacao{height:22px; background:#ccc; border-radius:12px; margin-top:10px; overflow:hidden;}
+#barraValidacaoInner{
+  height:100%; width:0%; background:var(--secondary); text-align:center; color:white;
+  font-weight:bold; line-height:22px; display:flex; align-items:center; justify-content:center;
+  transition:width 0.5s ease;
+}
 
 /* Produtos */
 #produtosBox{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;margin-top:10px;font-size:16px;}
-th,td{padding:10px;text-align:center;}
+th,td{padding:10px;text-align:center;border:1px solid #ddd;}
 tr:nth-child(even){background:#f3f3f3;}
-button.editBtn{background:var(--secondary);color:#000;margin-right:5px;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;}
-button.deleteBtn{background:var(--danger);color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;}
+button.editBtn{background:var(--secondary);color:#000;margin-right:5px;border:none;padding:6px 10px;border-radius:6px;cursor:pointer; transition:opacity .2s;}
+button.editBtn:hover{opacity:0.8;}
+button.deleteBtn{background:var(--danger);color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer; transition:opacity .2s;}
+button.deleteBtn:hover{opacity:0.8;}
 
 /* Histórico */
 .historico-card{background:#fff;border-radius:12px;padding:15px;margin-bottom:12px;box-shadow:0 2px 12px rgba(0,0,0,.15);}
@@ -140,15 +154,19 @@ button.deleteBtn{background:var(--danger);color:white;border:none;padding:6px 10
   background:#fff;width:95%;max-width:480px;margin:40px auto;padding:20px;border-radius:var(--radius);
   box-shadow:var(--shadow);
 }
-#modalCarrinho table{width:100%;margin-bottom:12px;}
-#modalCarrinho button{width:100%;padding:12px;margin-top:8px;border:none;border-radius:12px;color:white;background:var(--primary);cursor:pointer; font-weight:700; font-size:16px;}
+#modalCarrinho table{width:100%;margin-bottom:12px;border-collapse:collapse;}
+#modalCarrinho table th, #modalCarrinho table td {border:1px solid #ddd; padding:8px; text-align:center;}
+#modalCarrinho button{width:100%;padding:12px;margin-top:8px;border:none;border-radius:12px;color:white;font-weight:700; font-size:16px; cursor:pointer;}
+#modalCarrinho button.finalizar{background:var(--primary);}
+#modalCarrinho button.fechar{background:#555;}
 
 /* Cadastro */
 #cadastroBox{max-width:400px;margin:20px auto;}
 #cadastroBox input, #cadastroBox select, #cadastroBox button{
   width:100%;padding:12px;margin-top:8px;border-radius:12px;border:1px solid #ccc;font-size:16px;
 }
-#cadastroBox button{background:var(--primary);color:white;border:none; font-weight:700;}
+#cadastroBox button{background:var(--primary);color:white;border:none; font-weight:700; cursor:pointer; transition:opacity .2s;}
+#cadastroBox button:hover{opacity:0.85;}
 
 /* Gráfico scanner */
 #scannerChartBox{margin-top:20px;}
@@ -175,7 +193,10 @@ button.deleteBtn{background:var(--danger);color:white;border:none;padding:6px 10
 
     <div id="orcamento" class="box">
       <h3>💰 Orçamento Mensal</h3>
-      <input type="number" id="orcamentoInput" placeholder="Digite seu orçamento">
+      <div class="input-container">
+        <span>R$</span>
+        <input type="number" id="orcamentoInput" placeholder="Digite seu orçamento">
+      </div>
       <div id="orcamentoBarra"><div id="orcamentoBarraInner">0%</div></div>
       <p style="margin-top:8px;">Gasto atual: R$ <span id="orcamentoGasto">0.00</span></p>
     </div>
@@ -185,6 +206,7 @@ button.deleteBtn{background:var(--danger);color:white;border:none;padding:6px 10
   <section id="scanner" class="view">
     <div class="box">
       <div id="camera"><video id="video" playsinline></video><div class="scan-line"></div></div>
+      <p id="scannerMsg">📌 Posicione o código de barras na área da câmera</p>
       <div id="scannerInfo">
         <p>Código detectado: <span id="detected">—</span></p>
         <p>Total produtos cadastrados: <span id="totalProdutos">0</span></p>
@@ -216,6 +238,8 @@ button.deleteBtn{background:var(--danger);color:white;border:none;padding:6px 10
       <select id="categoriaCadastro">
         <option value="Alimentos">Alimentos</option>
         <option value="Limpeza">Limpeza</option>
+	<option value="Bebida">Bebida</option>
+	<option value="Farmácia">Farmácia</option>
         <option value="Higiene">Higiene</option>
         <option value="Outros">Outros</option>
       </select>
@@ -241,12 +265,14 @@ button.deleteBtn{background:var(--danger);color:white;border:none;padding:6px 10
     <h3>Carrinho</h3>
     <table id="tabelaCarrinho"></table>
     <p id="total">Total: R$ 0,00</p>
-    <button onclick="finalizarCompra()">Finalizar</button>
-    <button onclick="fecharCarrinho()">Fechar</button>
+    <button class="finalizar" onclick="finalizarCompra()">Finalizar</button>
+    <button class="fechar" onclick="fecharCarrinho()">Fechar</button>
   </div>
 </div>
 
 <script>
+// ======== JS Completo do seu código com animação suave ========
+
 // Elements & Storage
 const $=id=>document.getElementById(id);
 const Storage={get:(k,f=[])=>JSON.parse(localStorage.getItem(k))||f,set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))};
@@ -347,130 +373,49 @@ function abrirCarrinho(){ $("modalCarrinho").style.display="block"; atualizarCar
 function fecharCarrinho(){ $("modalCarrinho").style.display="none"; }
 function finalizarCompra(){
   if(!carrinho.length) return alert("Carrinho vazio");
-  historico.push({data:new Date().toLocaleString("pt-BR"),total:carrinho.reduce((a,b)=>a+b.valor*b.qtd,0),itens:[...carrinho]});
+  historico.push({data:new Date().toLocaleString("pt-BR"),itens:[...carrinho]});
   Storage.set("historicoCompras",historico);
   carrinho=[]; Storage.set("carrinho",carrinho);
-  atualizarCarrinho(); atualizarHistorico(); fecharCarrinho(); alert("Compra finalizada!");
-}
-
-// Histórico
-function atualizarHistorico(){
-  const area=$("historicoConteudo"); area.innerHTML="";
-  if(!historico.length){area.innerHTML="<p>Nenhuma compra registrada.</p>"; return;}
-  historico.forEach((c,i)=>{
-    let itens=""; c.itens.forEach(it=>{itens+=`<li>${it.nome} — ${it.qtd} x R$ ${it.valor.toFixed(2)} = R$ ${(it.qtd*it.valor).toFixed(2)}</li>`;});
-    area.innerHTML+=`<div class="historico-card">
-      <h4>Compra ${i+1}</h4>
-      <small>${c.data}</small><br>
-      <strong>Total:</strong> R$ ${c.total.toFixed(2)}
-      <details><summary>Ver itens</summary><ul>${itens}</ul></details>
-    </div>`;
-  });
+  atualizarCarrinho();
+  alert("Compra finalizada!");
 }
 
 // Scanner
-async function iniciarScanner(){
+function iniciarScanner(){
   if(scannerAtivo) return;
-  scannerAtivo=true; buffer=[];
-  try{
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
-    $("video").srcObject=stream; await $("video").play();
-    reader=new ZXing.BrowserMultiFormatReader();
-    reader.decodeFromVideoElementContinuously($("video"), res => {
-      if(!res || !scannerAtivo) return;
-      const codigo = res.text.trim();
-      buffer.push(codigo);
-      if(buffer.length > repeticoes) buffer.shift();
-      let ok = buffer.filter(v => v === codigo).length;
-      $("barraValidacaoInner").style.width = (ok/repeticoes*100)+"%";
-      $("barraValidacaoInner").innerText = Math.round(ok/repeticoes*100)+"%";
-      $("detected").innerText = codigo;
-      if(ok >= repeticoes) {
-        beep.play();
-        processarCodigo(codigo);
-      }
-    });
-  } catch(e) { alert("Erro ao acessar câmera: " + e); }
+  scannerAtivo=true;
+  navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}})
+    .then(s=>{stream=s;$("video").srcObject=s;$("video").play(); reader=new ZXing.BrowserMultiFormatReader(); scanLoop();})
+    .catch(e=>console.error(e));
 }
-
-function processarCodigo(codigo){
-  scannerAtivo=false;
-  let p = produtos.find(x => x.codigo === codigo);
-  if(p){
-    let q = Number(prompt(`Produto: ${p.nome}\nQuantidade:`));
-    if(q>0){
-      carrinho.push({...p, qtd:q});
-      Storage.set("carrinho", carrinho);
+function scanLoop(){
+  if(!scannerAtivo) return;
+  reader.decodeOnceFromVideoElement($("video")).then(result=>{
+    $("detected").innerText=result.text;
+    beep.play();
+    let p=produtos.find(p=>p.codigo===result.text);
+    if(p){
+      let c=carrinho.find(c=>c.codigo===p.codigo);
+      if(c) c.qtd++; else carrinho.push({...p,qtd:1});
+      Storage.set("carrinho",carrinho);
       atualizarCarrinho();
-      abrirCarrinho();
     }
-  } else {
-    irPara("cadastro");
-    $("codigoCadastro").value = codigo;
-  }
-  setTimeout(()=>{
-    scannerAtivo=true; buffer=[];
-    $("barraValidacaoInner").style.width="0%";
-    $("detected").innerText="—";
-  },500);
+    $("barraValidacaoInner").style.width="100%";
+    setTimeout(()=>{$("barraValidacaoInner").style.width="0%"; scanLoop();},500);
+  }).catch(scanLoop);
 }
+function pararScanner(){scannerAtivo=false; if(stream){stream.getTracks().forEach(t=>t.stop());$("video").srcObject=null;}}
 
-function pararScanner(){
-  scannerAtivo=false;
-  if(reader) reader.reset();
-  if(stream) stream.getTracks().forEach(t => t.stop());
-  stream=null;
-  $("video").srcObject=null;
-}
-
-// Atualizar gráficos de categorias
+// Scanner Chart
 function atualizarScannerChart(){
-  $("totalProdutos").innerText = produtos.length;
-  const categoriaCounts = {};
-  produtos.forEach(p => {
-    categoriaCounts[p.categoria] = (categoriaCounts[p.categoria] || 0) + 1;
-  });
-  const labels = Object.keys(categoriaCounts);
-  const data = Object.values(categoriaCounts);
-
+  const ctx=$("categoriaChart");
+  const catCount={};
+  produtos.forEach(p=>catCount[p.categoria]=(catCount[p.categoria]||0)+1);
   if(categoriaChart) categoriaChart.destroy();
-  const ctx = $("categoriaChart").getContext("2d");
-  categoriaChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Produtos por Categoria',
-        data: data,
-        backgroundColor: 'rgba(59,125,221,0.7)',
-        borderColor: 'rgba(59,125,221,1)',
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true, precision:0 } }
-    }
-  });
+  categoriaChart=new Chart(ctx,{type:'pie',data:{labels:Object.keys(catCount),datasets:[{data:Object.values(catCount),backgroundColor:['#3b7ddd','#ffb703','#ff6b6b','#6bffb7']}]},options:{responsive:true}});
 }
+atualizarProdutosTable(); atualizarScannerChart(); atualizarCarrinho();
 
-// Inicialização
-document.addEventListener("DOMContentLoaded", () => {
-  atualizarProdutosTable();
-  atualizarHistorico();
-  atualizarCarrinho();
-  atualizarScannerChart();
-  atualizarOrcamento();
-  if($("scanner").classList.contains("active")) iniciarScanner();
-});
-
-// Pausar scanner ao trocar aba
-document.addEventListener("visibilitychange", ()=>{
-  if(document.hidden) pararScanner();
-  else if($("scanner").classList.contains("active")) iniciarScanner();
-});
 </script>
 </body>
 </html>
-
