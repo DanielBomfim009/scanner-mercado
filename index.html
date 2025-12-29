@@ -2,131 +2,154 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>GoL BUY SMART - Compras do mês</title>
+<title>GoL BUY SMART</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Aplicativo web de compras inteligentes com leitor de código de barras">
 <meta name="theme-color" content="#3b7ddd">
 
-<!-- ZXing (scanner) -->
-<script src="https://unpkg.com/@zxing/library@0.21.2"></script>
+<script src="https://unpkg.com/@zxing/browser@0.1.4"></script>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
 <style>
-:root {
+:root{
   --primary:#3b7ddd;
   --secondary:#ffb703;
   --background:#eef3ff;
-  --card-bg:#ffffff;
-  --text-dark:#1a1a1a;
-  --text-light:#ffffff;
+  --card:#fff;
   --danger:#ff3b3b;
-  --sidebar-width:220px;
-  --transition-speed:0.3s;
+  --sidebar:220px;
 }
 
-* {margin:0;padding:0;box-sizing:border-box;font-family:'Roboto',sans-serif;}
-body {background:var(--background); display:flex; min-height:100vh; overflow-x:hidden;}
-a {text-decoration:none;color:inherit;}
-button {cursor:pointer;}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Roboto}
+body{background:var(--background);display:flex;min-height:100vh}
 
-/* ================= SIDEBAR ================= */
-#sidebar {
-  position:fixed;
-  left:0; top:0; bottom:0;
-  width:var(--sidebar-width);
+/* ===== SIDEBAR ===== */
+#sidebar{
+  width:var(--sidebar);
   background:var(--primary);
-  color:white;
-  display:flex;
-  flex-direction:column;
+  color:#fff;
+  position:fixed;
+  top:0;left:0;bottom:0;
   padding-top:20px;
-  transition:transform var(--transition-speed);
-  z-index:100;
+  transition:.3s;
 }
-#sidebar.hide {transform:translateX(-100%);}
-#sidebar button {
+#sidebar.hide{transform:translateX(-100%)}
+#sidebar button{
+  width:100%;
   background:none;
   border:none;
-  color:white;
+  color:#fff;
+  padding:14px 20px;
   text-align:left;
-  padding:12px 20px;
   font-size:16px;
+  cursor:pointer;
+}
+#sidebar button:hover{background:rgba(255,255,255,.15)}
+
+/* ===== CONTENT ===== */
+#content{
+  margin-left:var(--sidebar);
+  width:100%;
+  padding:20px;
+  transition:.3s;
+}
+#content.full{margin-left:0}
+
+/* ===== HAMBURGER ===== */
+#hamburger{
+  width:42px;height:42px;
+  background:var(--primary);
+  color:#fff;
+  border-radius:10px;
   display:flex;
   align-items:center;
-  gap:10px;
-  transition:background 0.2s;
-}
-#sidebar button:hover {background:rgba(255,255,255,0.2);}
-
-/* ================= HAMBURGER ================= */
-#hamburger {
-  position:fixed;
-  top:12px; left:12px;
-  width:40px; height:40px;
-  background:var(--primary);
-  color:white;
-  display:flex; align-items:center; justify-content:center;
-  border-radius:8px;
-  z-index:101;
+  justify-content:center;
+  cursor:pointer;
+  margin-bottom:10px;
 }
 
-/* ================= CONTAINER ================= */
-#content {
-  margin-left:var(--sidebar-width);
-  flex:1;
-  padding:20px;
-  transition:margin-left var(--transition-speed);
-}
-#content.full {margin-left:0;}
-
-/* ================= HOME ================= */
-#home {text-align:center;}
-#home .logo-home {width:200px;height:200px;margin:auto;display:block;object-fit:contain;}
-#home h2 {margin-top:15px;color:var(--primary);}
-
-/* ================= BOXES ================= */
-.box {
-  background:var(--card-bg);
+/* ===== BOX ===== */
+.box{
+  background:var(--card);
   border-radius:18px;
   padding:20px;
-  margin-top:20px;
-  box-shadow:0 4px 20px rgba(0,0,0,.15);
+  box-shadow:0 4px 18px rgba(0,0,0,.15);
+  margin-bottom:20px;
 }
 
-/* ================= TABLE ================= */
-table {width:100%;border-collapse:collapse;margin-top:10px;}
-td,th {padding:10px;text-align:center;}
-tr:nth-child(even){background:#f5f5f5;}
+/* ===== HOME ===== */
+#home{text-align:center}
+#home img{width:200px;margin:20px auto}
+#orcamento input{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid #ccc;
+  margin-top:10px;
+  font-size:16px;
+}
 
-/* ================= SCANNER ================= */
-#camera {width:100%;height:260px;background:#000;border-radius:18px;margin-top:12px;overflow:hidden;position:relative;}
-#camera video{width:100%;height:100%;object-fit:cover;}
-.scan-line{position:absolute;left:0;right:0;height:2px;background:red;animation:scan 2s linear infinite;}
+/* ===== VIEWS ===== */
+.view{display:none;animation:fade .25s ease}
+.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+
+/* ===== SCANNER ===== */
+#camera{width:100%;height:260px;background:#000;border-radius:18px;overflow:hidden;position:relative}
+#camera video{width:100%;height:100%;object-fit:cover}
+.scan-line{position:absolute;left:0;right:0;height:2px;background:red;animation:scan 2s linear infinite}
 @keyframes scan{0%{top:10%}50%{top:90%}100%{top:10%}}
-#barraValidacao{height:22px;width:100%;background:#ccc;border-radius:12px;margin-top:6px;}
-#barraValidacaoInner{height:100%;width:0%;background:var(--primary);border-radius:12px;text-align:center;color:white;font-weight:bold;}
 
-/* ================= MODAL ================= */
-.modal{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.6);display:none;z-index:1000;}
-.modal-content{background:white;width:92%;max-width:480px;margin:40px auto;padding:20px;border-radius:18px;}
-.modal-header{display:flex;justify-content:space-between;align-items:center;}
-.total{text-align:right;font-weight:bold;margin-top:10px;}
+#barraValidacao{height:22px;background:#ccc;border-radius:12px;margin-top:8px}
+#barraValidacaoInner{height:100%;width:0;background:var(--primary);border-radius:12px;color:#fff;text-align:center}
 
-/* ================= CADASTRO ================= */
-#cadastroSuspenso{ position:fixed;bottom:10px;left:50%;transform:translateX(-50%); width:90%;max-width:400px;background:white;padding:20px;border-radius:18px; box-shadow:0 5px 20px rgba(0,0,0,.3);display:none;z-index:1001;}
+/* ===== TABLE ===== */
+table{width:100%;border-collapse:collapse;margin-top:10px}
+td,th{padding:10px;text-align:center}
+tr:nth-child(even){background:#f3f3f3}
 
-/* ================= VIEWS ================= */
-.view{display:none;animation:fade .25s ease;}
-.view.active{display:block;}
-@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* ===== MODAL ===== */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:10}
+.modal-content{background:#fff;width:90%;max-width:480px;margin:40px auto;padding:20px;border-radius:18px}
 
+/* ===== CARRINHO ===== */
+#carrinhoIcone{
+  position:fixed;bottom:20px;right:20px;
+  width:70px;height:70px;
+  background:var(--primary);
+  border-radius:50%;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:26px;
+  cursor:pointer;
+}
+#badge{
+  position:absolute;top:-5px;right:-5px;
+  background:red;color:#fff;
+  width:20px;height:20px;
+  border-radius:50%;
+  font-size:12px;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* ===== CADASTRO ===== */
+#cadastroSuspenso{
+  position:fixed;bottom:10px;left:50%;
+  transform:translateX(-50%);
+  background:#fff;
+  width:90%;max-width:400px;
+  padding:20px;border-radius:18px;
+  display:none;z-index:20;
+}
+#cadastroSuspenso input,select,button{
+  width:100%;padding:12px;margin-top:8px;border-radius:12px;border:1px solid #ccc
+}
 </style>
 </head>
+
 <body>
 
-<!-- HAMBURGER -->
-<div id="hamburger">☰</div>
-
-<!-- SIDEBAR -->
 <div id="sidebar">
   <button onclick="irPara('home')">🏠 Home</button>
   <button onclick="irPara('scanner')">📷 Scanner</button>
@@ -134,34 +157,28 @@ tr:nth-child(even){background:#f5f5f5;}
   <button onclick="irPara('historico')">🧾 Histórico</button>
 </div>
 
-<!-- CONTAINER PRINCIPAL -->
 <div id="content">
-
-  <!-- SPLASH -->
-  <div id="splash" style="position:fixed;inset:0;background:#1a1a1a;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;z-index:2000;">
-    <img src="logo.png" style="width:300px;height:300px;object-fit:contain;">
-    <p style="margin-top:15px;font-size:18px;">Bem-vindo ao seu app de compras inteligente</p>
-  </div>
+  <div id="hamburger">☰</div>
 
   <!-- HOME -->
   <section id="home" class="view active">
-    <img src="logo.png" class="logo-home" alt="Logo">
+    <img src="logo.png">
     <h2>Bem-vindo ao GoL BUY SMART</h2>
-    <div class="box" id="homeCards">
-      <!-- Cards de destaque -->
+    <div class="box" id="orcamento">
+      <h3>💰 Orçamento mensal</h3>
+      <input type="number" id="orcamentoInput" placeholder="Digite seu orçamento">
     </div>
   </section>
 
   <!-- SCANNER -->
   <section id="scanner" class="view">
     <div class="box">
-      <button class="btnStart" id="startButton">📸 Abrir câmera</button>
-      <button class="btnStop" id="stopButton">⏹️ Parar</button>
+      <button onclick="iniciarScanner()">📸 Abrir câmera</button>
+      <button onclick="pararScanner()">⏹️ Parar</button>
       <div id="camera">
         <video id="video" playsinline></video>
         <div class="scan-line"></div>
       </div>
-      <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
       <div id="barraValidacao"><div id="barraValidacaoInner">0%</div></div>
     </div>
   </section>
@@ -169,9 +186,9 @@ tr:nth-child(even){background:#f5f5f5;}
   <!-- PRODUTOS -->
   <section id="produtos" class="view">
     <div class="box">
-      <h2>📦 Produtos cadastrados</h2>
+      <h2>Produtos cadastrados</h2>
       <table id="produtosTable">
-        <thead><tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Preço</th><th></th></tr></thead>
+        <thead><tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Valor</th><th></th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -180,209 +197,109 @@ tr:nth-child(even){background:#f5f5f5;}
   <!-- HISTÓRICO -->
   <section id="historico" class="view">
     <div class="box">
-      <h2>🧾 Histórico de compras</h2>
+      <h2>Histórico</h2>
       <div id="historicoConteudo"></div>
     </div>
   </section>
-
 </div>
 
-<!-- CARRINHO -->
-<div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️<span id="badge">0</span></div>
+<div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️<div id="badge">0</div></div>
+
 <div id="modalCarrinho" class="modal">
   <div class="modal-content">
-    <div class="modal-header">
-      <h2>Carrinho</h2>
-      <button onclick="fecharCarrinho()">Fechar</button>
-    </div>
+    <h3>Carrinho</h3>
     <table id="tabelaCarrinho"></table>
-    <p id="total" class="total">Total: R$ 0,00</p>
-    <button class="btnStart" onclick="finalizarCompra()">Finalizar</button>
+    <p id="total"></p>
+    <button onclick="finalizarCompra()">Finalizar</button>
+    <button onclick="fecharCarrinho()">Fechar</button>
   </div>
 </div>
 
-<!-- CADASTRO -->
 <div id="cadastroSuspenso">
-  <h2>✏️ Cadastrar Produto</h2>
+  <h3>Cadastrar produto</h3>
   <input id="codigoSuspenso" placeholder="Código">
   <input id="nomeSuspenso" placeholder="Nome">
-  <select id="tipoSuspenso">
-    <option>Unidade (UN)</option>
-    <option>Peso (KG)</option>
-  </select>
+  <select id="tipoSuspenso"><option>UN</option><option>KG</option></select>
   <input id="valorSuspenso" type="number" step="0.01" placeholder="Valor">
-  <button id="salvarSuspenso" class="btnStart">Salvar</button>
+  <button onclick="salvarProduto()">Salvar</button>
 </div>
 
 <script>
-/* ================= UTIL ================= */
 const $=id=>document.getElementById(id);
-const Storage={ get:(k,f=[])=>JSON.parse(localStorage.getItem(k))||f, set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)) };
+const Storage={get:(k,f=[])=>JSON.parse(localStorage.getItem(k))||f,set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))};
 
-/* ================= ESTADO ================= */
 let produtos=Storage.get("produtos");
 let carrinho=Storage.get("carrinho");
-let historicoCompras=Storage.get("historicoCompras");
-let reader=null,stream=null,buffer=[],scannerAtivo=false;
-const repeticoes=3;
+let historico=Storage.get("historico");
+let reader,stream,buffer=[],ativo=false;
 const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
-/* ================= SPLASH ================= */
-window.onload=()=>setTimeout(()=>{
-  $("splash").style.display="none";
-  irPara('home');
-  atualizarProdutos();
-  atualizarHistorico();
-  atualizarCarrinho();
-},1500);
+$("hamburger").onclick=()=>{
+  sidebar.classList.toggle("hide");
+  content.classList.toggle("full");
+};
 
-/* ================= SIDEBAR TOGGLE ================= */
-const sidebar=$("sidebar"), content=$("content"), hamburger=$("hamburger");
-hamburger.onclick=()=>{sidebar.classList.toggle("hide"); content.classList.toggle("full");};
-
-/* ================= ROUTER ================= */
-function irPara(tela){
+function irPara(t){
   document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
-  $(tela).classList.add("active");
-  if(tela==="scanner") iniciarScanner(); else pararScanner();
+  $(t).classList.add("active");
 }
 
-/* ================= PRODUTOS ================= */
 function atualizarProdutos(){
-  const tb=document.querySelector("#produtosTable tbody");
+  const tb=$("produtosTable").querySelector("tbody");
   tb.innerHTML="";
   produtos.forEach((p,i)=>{
-    tb.innerHTML+=`<tr>
-      <td>${p.codigo}</td>
-      <td>${p.nome}</td>
-      <td>${p.tipo}</td>
-      <td>R$ ${p.valor.toFixed(2)}</td>
-      <td><button onclick="excluirProduto(${i})">❌</button></td>
-    </tr>`;
-  });
-  // Atualizar cards Home
-  const homeCards=$("homeCards");
-  homeCards.innerHTML="";
-  produtos.forEach(p=>{
-    homeCards.innerHTML+=`<div style="padding:12px;margin:6px;border:1px solid #ccc;border-radius:12px;">
-      <strong>${p.nome}</strong><br>R$ ${p.valor.toFixed(2)}
-    </div>`;
+    tb.innerHTML+=`<tr><td>${p.codigo}</td><td>${p.nome}</td><td>${p.tipo}</td><td>R$ ${p.valor}</td><td><button onclick="produtos.splice(${i},1);Storage.set('produtos',produtos);atualizarProdutos()">❌</button></td></tr>`;
   });
 }
 
-function excluirProduto(i){
-  if(confirm("Excluir produto?")){
-    produtos.splice(i,1);
-    Storage.set("produtos",produtos);
-    atualizarProdutos();
-  }
-}
-
-/* ================= CARRINHO ================= */
-function atualizarCarrinho(){
-  let total=0;
-  $("tabelaCarrinho").innerHTML="<tr><th>Nome</th><th>Qtd</th><th>Subtotal</th></tr>";
-  carrinho.forEach(p=>{
-    let sub=p.valor*p.qtd;
-    total+=sub;
-    $("tabelaCarrinho").innerHTML+=`<tr><td>${p.nome}</td><td>${p.qtd}</td><td>R$ ${sub.toFixed(2)}</td></tr>`;
-  });
-  $("total").innerText="Total: R$ "+total.toFixed(2);
-  $("badge").innerText=carrinho.length;
-}
-
-function abrirCarrinho(){$("modalCarrinho").style.display="block"; atualizarCarrinho();}
-function fecharCarrinho(){$("modalCarrinho").style.display="none";}
-
-function finalizarCompra(){
-  if(!carrinho.length) return alert("Carrinho vazio");
-  let total=0;
-  carrinho.forEach(p=>total+=p.valor*p.qtd);
-  historicoCompras.push({data:new Date().toLocaleString("pt-BR"),total:total,itens:[...carrinho]});
-  Storage.set("historicoCompras",historicoCompras);
-  carrinho=[]; Storage.set("carrinho",carrinho);
-  atualizarCarrinho();
-  atualizarHistorico();
-  fecharCarrinho();
-  alert("Compra finalizada!");
-}
-
-/* ================= HISTÓRICO ================= */
-function atualizarHistorico(){
-  const area=$("historicoConteudo");
-  area.innerHTML="";
-  if(!historicoCompras.length){
-    area.innerHTML="<p>Nenhuma compra registrada.</p>"; return;
-  }
-  historicoCompras.forEach((c,i)=>{
-    let itens="";
-    c.itens.forEach(it=>{
-      itens+=`<li>${it.nome} — ${it.qtd} x R$ ${it.valor.toFixed(2)} = R$ ${(it.qtd*it.valor).toFixed(2)}</li>`;
+function iniciarScanner(){
+  ativo=true;buffer=[];
+  navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}).then(s=>{
+    stream=s;$("video").srcObject=s;$("video").play();
+    reader=new ZXingBrowser.BrowserMultiFormatReader();
+    reader.decodeFromVideoElementContinuously($("video"),res=>{
+      if(!res||!ativo)return;
+      buffer.push(res.text);
+      if(buffer.length>3)buffer.shift();
+      let ok=buffer.filter(v=>v===res.text).length;
+      $("barraValidacaoInner").style.width=(ok/3*100)+"%";
+      $("barraValidacaoInner").innerText=Math.round(ok/3*100)+"%";
+      if(ok>=3){beep.play();processar(res.text);}
     });
-    area.innerHTML+=`<div style="margin-bottom:10px;padding:10px;border:1px solid #ddd;border-radius:12px;">
-      <strong>Compra ${i+1}</strong><br>
-      <small>${c.data}</small><br>
-      <strong>Total:</strong> R$ ${c.total.toFixed(2)}
-      <details><summary style="cursor:pointer;">Ver itens</summary><ul>${itens}</ul></details>
-    </div>`;
   });
 }
 
-/* ================= SCANNER ================= */
-async function iniciarScanner(){
-  if(scannerAtivo) return;
-  scannerAtivo=true; buffer=[];
-  if(!stream){
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
-    $("video").srcObject=stream;
-    await $("video").play();
-  }
-  reader=new ZXing.BrowserMultiFormatReader();
-  reader.decodeFromVideoElementContinuously($("video"), res=>{
-    if(!res||!scannerAtivo) return;
-    const codigo=res.text.trim();
-    buffer.push(codigo); if(buffer.length>repeticoes) buffer.shift();
-    let ok=buffer.filter(v=>v===codigo).length;
-    $("barraValidacaoInner").style.width=(ok/repeticoes*100)+"%";
-    $("barraValidacaoInner").innerText=Math.round(ok/repeticoes*100)+"%";
-    if(ok>=repeticoes) processarCodigo(codigo);
-  });
-}
-
-function processarCodigo(codigo){
-  scannerAtivo=false; beep.play();
-  let p=produtos.find(x=>x.codigo===codigo);
-  setTimeout(()=>{
-    if(p){
-      let q=Number(prompt(`Produto: ${p.nome}\nQuantidade:`));
-      if(q>0){carrinho.push({...p,qtd:q});Storage.set("carrinho",carrinho);abrirCarrinho();}
-    }else{
-      $("cadastroSuspenso").style.display="block";
-      $("codigoSuspenso").value=codigo;
-    }
-    $("barraValidacaoInner").style.width="0%"; buffer=[]; scannerAtivo=true;
-  },300);
+function processar(cod){
+  ativo=false;
+  let p=produtos.find(x=>x.codigo===cod);
+  if(p){carrinho.push({...p,qtd:1});Storage.set("carrinho",carrinho);abrirCarrinho();}
+  else{$("cadastroSuspenso").style.display="block";$("codigoSuspenso").value=cod;}
 }
 
 function pararScanner(){
-  scannerAtivo=false;
-  if(reader) reader.reset();
-  if(stream) stream.getTracks().forEach(t=>t.stop());
-  stream=null; $("video").srcObject=null;
+  ativo=false;
+  if(reader)reader.reset();
+  if(stream)stream.getTracks().forEach(t=>t.stop());
 }
 
-/* ================= CADASTRO ================= */
-$("salvarSuspenso").onclick=()=>{
-  const novo={codigo:$("codigoSuspenso").value,nome:$("nomeSuspenso").value,tipo:$("tipoSuspenso").value,valor:Number($("valorSuspenso").value)};
-  if(!novo.codigo||!novo.nome||!novo.valor) return alert("Preencha tudo");
-  produtos.push(novo); Storage.set("produtos",produtos); atualizarProdutos();
+function salvarProduto(){
+  produtos.push({codigo:codigoSuspenso.value,nome:nomeSuspenso.value,tipo:tipoSuspenso.value,valor:Number(valorSuspenso.value)});
+  Storage.set("produtos",produtos);
   $("cadastroSuspenso").style.display="none";
-};
+  atualizarProdutos();
+}
 
-/* ================= EVENTOS ================= */
-$("startButton").onclick=iniciarScanner;
-$("stopButton").onclick=pararScanner;
+function abrirCarrinho(){modalCarrinho.style.display="block";}
+function fecharCarrinho(){modalCarrinho.style.display="none";}
+function finalizarCompra(){
+  historico.push({data:new Date().toLocaleString(),itens:[...carrinho]});
+  Storage.set("historico",historico);
+  carrinho=[];Storage.set("carrinho",[]);
+  fecharCarrinho();
+}
 
+window.onload=()=>atualizarProdutos();
 </script>
+
 </body>
 </html>
