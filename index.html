@@ -23,6 +23,13 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:Roboto}
 body{background:var(--background);display:flex;min-height:100vh;overflow-x:hidden}
 
+/* SPLASH */
+#splash{
+  position:fixed;inset:0;background:#1a1a1a;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;z-index:2000;
+}
+#splash img{width:200px;height:200px;object-fit:contain;}
+#splash p{margin-top:15px;font-size:18px;text-align:center;max-width:80%;}
+
 /* SIDEBAR */
 #sidebar{
   width:var(--sidebar);
@@ -101,7 +108,7 @@ body{background:var(--background);display:flex;min-height:100vh;overflow-x:hidde
   font-size:16px;
 }
 #orcamentoBar{height:20px;background:#ccc;border-radius:12px;margin-top:10px;overflow:hidden}
-#orcamentoBarInner{height:100%;width:0;background:var(--secondary);text-align:center;color:#fff;font-weight:bold;line-height:20px}
+#orcamentoBarInner{height:100%;width:0;text-align:center;line-height:20px;font-weight:bold;color:#fff;transition:width .3s, background .3s}
 
 /* SCANNER */
 #camera{width:100%;height:260px;background:#000;border-radius:18px;overflow:hidden;position:relative}
@@ -165,6 +172,12 @@ tr:nth-child(even){background:#f3f3f3}
 </head>
 <body>
 
+<!-- SPLASH -->
+<div id="splash">
+  <img src="logo.png" alt="Logo">
+  <p>Bem-vindo ao seu app de compras inteligente</p>
+</div>
+
 <div id="sidebar">
   <button onclick="irPara('home')">🏠 Home</button>
   <button onclick="irPara('scanner')">📷 Scanner</button>
@@ -176,7 +189,7 @@ tr:nth-child(even){background:#f3f3f3}
   <div id="hamburger">☰</div>
 
   <!-- HOME -->
-  <section id="home" class="view active">
+  <section id="home" class="view">
     <img src="logo.png" alt="Logo">
     <h2>Bem-vindo ao GoL BUY SMART</h2>
     <div class="box" id="orcamento">
@@ -240,8 +253,6 @@ tr:nth-child(even){background:#f3f3f3}
 </div>
 
 <script>
-// Mesma lógica que te passei antes, mantendo funções, agora incluindo update de HomeCards e orçamento gráfico
-
 const $=id=>document.getElementById(id);
 const Storage={get:(k,f=[])=>JSON.parse(localStorage.getItem(k))||f,set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))};
 
@@ -251,6 +262,18 @@ let historico=Storage.get("historicoCompras");
 let reader,stream,buffer=[],scannerAtivo=false;
 const repeticoes=3;
 const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+
+/* SPLASH */
+window.onload=()=>{
+  setTimeout(()=>{
+    $("splash").style.display="none";
+    irPara('home');
+    atualizarProdutos();
+    atualizarHistorico();
+    atualizarCarrinho();
+    iniciarScanner();
+  },1500);
+};
 
 /* SIDEBAR HAMBURGER */
 $("hamburger").onclick=()=>{$("sidebar").classList.toggle("hide");$("content").classList.toggle("full");};
@@ -263,7 +286,7 @@ function irPara(tela){
   atualizarHome();
 }
 
-/* HOME CARDS */
+/* HOME CARDS E ORÇAMENTO */
 function atualizarHome(){
   const homeCards=$("homeCards");
   homeCards.innerHTML="";
@@ -273,12 +296,15 @@ function atualizarHome(){
   atualizarOrcamentoBar();
 }
 
-/* ORÇAMENTO */
 function atualizarOrcamentoBar(){
   const orcamento=Number($("orcamentoInput").value)||0;
   const gasto=carrinho.reduce((a,b)=>a+b.valor*b.qtd,0);
-  const perc=orcamento?Math.min(100,(gasto/orcamento*100)) : 0;
-  $("orcamentoBarInner").style.width=perc+"%";
+  let perc=orcamento?gasto/orcamento*100:0;
+  let bgColor='green';
+  if(perc>80&&perc<=100) bgColor='orange';
+  if(perc>100) bgColor='red';
+  $("orcamentoBarInner").style.width=Math.min(perc,100)+"%";
+  $("orcamentoBarInner").style.background=bgColor;
   $("orcamentoBarInner").innerText=Math.round(perc)+"%";
 }
 $("orcamentoInput").oninput=atualizarOrcamentoBar;
@@ -372,14 +398,6 @@ function salvarProduto(){
   produtos.push(novo); Storage.set("produtos",produtos); atualizarProdutos();
   $("cadastroSuspenso").style.display="none";
 }
-
-/* INICIALIZAÇÃO */
-window.onload=()=>{
-  atualizarProdutos();
-  atualizarHistorico();
-  atualizarCarrinho();
-  iniciarScanner();
-};
 </script>
 </body>
 </html>
