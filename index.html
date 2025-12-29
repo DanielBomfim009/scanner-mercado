@@ -196,16 +196,23 @@ async function iniciarScanner(){
   stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
   $("video").srcObject=stream;
   await $("video").play();
-  reader=new ZXing.BrowserMultiFormatReader();
-  reader.decodeFromVideoElementContinuously($("video"),res=>{
-    if(!res)return;
-    const codigo=res.text;
-    buffer.push(codigo); if(buffer.length>repeticoes)buffer.shift();
-    if(buffer.filter(v=>v===codigo).length>=repeticoes){
-      processarCodigo(codigo);
-      buffer=[];
+reader = new ZXingBrowser.BrowserMultiFormatReader();
+
+reader.decodeFromVideoElementContinuously(
+  $("video"),
+  (res, err) => {
+    if (res) {
+      const codigo = res.text;
+      buffer.push(codigo);
+      if (buffer.length > repeticoes) buffer.shift();
+
+      if (buffer.filter(v => v === codigo).length >= repeticoes) {
+        processarCodigo(codigo);
+        buffer = [];
+      }
     }
-  });
+  }
+);
 }
 function pararScanner(){
   if(reader)reader.reset();
