@@ -2,40 +2,66 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#4361ee" />
   <title>GoL BUY SMART</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#3b7ddd" />
+
+  <!-- Bibliotecas externas -->
+  <script src="https://unpkg.com/@zxing/library@0.21.2  "></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js  "></script>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto  :wght@400;500;700&display=swap" rel="stylesheet" />
+
   <style>
     :root {
-      --primary: #4361ee;
-      --secondary: #f72585;
-      --background: #f8f9ff;
-      --card: #ffffff;
-      --text: #212529;
-      --radius: 16px;
-      --shadow: 0 4px 12px rgba(67, 97, 238, 0.15);
+      --primary: #3b7ddd;
+      --secondary: #ffb703;
+      --background: #eef3ff;
+      --card: #fff;
+      --danger: #ff3b3b;
+      --sidebar-width: 220px;
+      --transition-speed: 0.3s;
+      --font-base: 16px;
+      --radius: 18px;
+      --shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
     }
 
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --background: #121826;
-        --card: #1e293b;
-        --text: #f1f5f9;
-      }
-    }
-
+    /* Reset */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      font-family: 'Roboto', sans-serif;
     }
 
     body {
-      background-color: var(--background);
-      font-family: sans-serif;
-      color: var(--text);
+      background: url('https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPOSITORIO/main/fungo.png  ') no-repeat center top;
+      background-size: cover;
+      display: flex;
       min-height: 100vh;
       overflow-x: hidden;
+      font-size: var(--font-base);
+    }
+
+    /* Splash Screen */
+    #splash {
+      position: fixed;
+      inset: 0;
+      background: #1a1a1a;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+    #splash img {
+      width: 300px;
+      height: 300px;
+      object-fit: contain;
+    }
+    #splash p {
+      margin-top: 15px;
+      font-size: 18px;
     }
 
     /* Sidebar */
@@ -44,28 +70,33 @@
       top: 0;
       left: 0;
       bottom: 0;
-      width: 220px;
+      width: var(--sidebar-width);
       background: var(--primary);
       color: white;
+      display: flex;
+      flex-direction: column;
       padding-top: 60px;
+      transition: transform var(--transition-speed);
       z-index: 100;
     }
+    #sidebar.hide {
+      transform: translateX(-100%);
+    }
     #sidebar button {
-      width: 100%;
       background: none;
       border: none;
       color: white;
       text-align: left;
-      padding: 16px 20px;
-      font-size: 17px;
-      font-weight: 600;
-      cursor: pointer;
+      padding: 14px 20px;
+      font-size: 16px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
+      cursor: pointer;
+      border-radius: 8px;
     }
     #sidebar button:hover {
-      background: rgba(255,255,255,0.1);
+      background: rgba(255, 255, 255, 0.2);
     }
 
     /* Hamburger */
@@ -73,344 +104,716 @@
       position: fixed;
       top: 12px;
       left: 12px;
-      width: 48px;
-      height: 48px;
+      width: 50px;
+      height: 50px;
       background: var(--primary);
       color: white;
-      border: none;
-      border-radius: 12px;
-      font-size: 24px;
-      z-index: 101;
       display: flex;
       align-items: center;
       justify-content: center;
+      border-radius: 12px;
+      z-index: 101;
+      cursor: pointer;
+      font-size: 28px;
       box-shadow: var(--shadow);
     }
 
     /* Content */
     #content {
-      margin-left: 220px;
-      padding: 20px;
-      min-height: 100vh;
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      padding: 20px 10px;
+      transition: margin-left var(--transition-speed);
     }
     #content.full {
       margin-left: 0;
     }
 
+    /* Views */
     .view {
       display: none;
+      animation: fade 0.3s ease;
     }
     .view.active {
       display: block;
     }
-
-    h2 {
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--primary);
-      margin: 0 0 20px;
-      text-align: center;
+    @keyframes fade {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: none;
+      }
     }
 
+    /* Home */
+    #home {
+      text-align: center;
+      padding-top: 20px;
+    }
+    #home .logo-home {
+      width: 300px;
+      height: 300px;
+      object-fit: contain;
+      margin: 0 auto 10px;
+    }
+    #home h2 {
+      margin: 10px 0;
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 1.5rem;
+    }
+
+    #orcamento {
+      position: relative;
+      max-width: 400px;
+      margin: 20px auto;
+    }
+    #orcamento h3 {
+      margin-bottom: 8px;
+    }
+    #orcamento input {
+      width: 100%;
+      padding: 12px 12px 12px 50px;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    #orcamento::before {
+      content: 'R$';
+      position: absolute;
+      left: 15px;
+      top: 38px;
+      color: #555;
+      font-weight: bold;
+    }
+
+    #orcamentoBarra {
+      height: 22px;
+      background: #ccc;
+      border-radius: 12px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    #orcamentoBarraInner {
+      height: 100%;
+      width: 0%;
+      background: var(--secondary);
+      text-align: center;
+      color: white;
+      font-weight: bold;
+      transition: width 0.5s;
+    }
+
+    /* Box */
     .box {
       background: var(--card);
       border-radius: var(--radius);
       padding: 20px;
       margin-bottom: 20px;
       box-shadow: var(--shadow);
-      border: 1px solid #e0e6f0;
     }
 
-    /* Botões de ação */
-    .editBtn, .deleteBtn {
-      padding: 6px 12px;
+    /* Scanner */
+    #scannerInfo {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    #camera {
+      width: 100%;
+      height: 250px;
+      background: #000;
+      border-radius: var(--radius);
+      overflow: hidden;
+      position: relative;
+      box-shadow: var(--shadow);
+    }
+    #camera video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: var(--radius);
+    }
+    .scan-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--secondary);
+      animation: scan 2s linear infinite;
+    }
+    @keyframes scan {
+      0% { top: 10%; }
+      50% { top: 90%; }
+      100% { top: 10%; }
+    }
+
+    /* Produtos */
+    #produtosBox {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 16px;
+    }
+    th, td {
+      padding: 10px;
+      text-align: center;
+    }
+    tr:nth-child(even) {
+      background: #f3f3f3;
+    }
+    button.editBtn {
+      background: var(--secondary);
+      color: #000;
+      margin-right: 5px;
       border: none;
-      border-radius: 8px;
-      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 6px;
       cursor: pointer;
-      margin: 2px;
     }
-    .editBtn { background: #4ade80; color: #000; }
-    .deleteBtn { background: #f87171; color: white; }
+    button.deleteBtn {
+      background: var(--danger);
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
 
-    /* CARRINHO */
+    /* Histórico */
+    .historico-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+    }
+    .historico-card h4 {
+      margin-bottom: 6px;
+      color: var(--primary);
+    }
+    .historico-card details {
+      margin-top: 6px;
+    }
+    .historico-card details ul {
+      padding-left: 20px;
+      margin: 0;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    /* Carrinho */
     #carrinhoIcone {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      width: 60px;
-      height: 60px;
-      background: var(--secondary);
-      color: white;
-      border: none;
+      width: 70px;
+      height: 70px;
+      background: var(--primary);
       border-radius: 50%;
-      font-size: 24px;
+      color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
+      font-size: 28px;
+      cursor: pointer;
       z-index: 200;
-      box-shadow: 0 4px 12px rgba(247, 37, 133, 0.4);
     }
     #carrinhoIcone span {
       position: absolute;
-      top: -4px;
-      right: -4px;
+      top: -5px;
+      right: -5px;
       width: 22px;
       height: 22px;
-      background: var(--primary);
-      color: white;
+      background: red;
+      color: #fff;
       border-radius: 50%;
-      font-size: 11px;
+      font-size: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
     }
 
-    /* Modal do carrinho */
     #modalCarrinho {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0, 0, 0, 0.6);
       display: none;
-      z-index: 300;
-      align-items: center;
-      justify-content: center;
+      z-index: 1000;
     }
-    .modal-content {
-      background: var(--card);
-      width: 90%;
-      max-width: 400px;
+    #modalCarrinho .modal-content {
+      background: #fff;
+      width: 95%;
+      max-width: 480px;
+      margin: 40px auto;
       padding: 20px;
       border-radius: var(--radius);
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      box-shadow: var(--shadow);
     }
-    .modal-content h3 {
-      margin-bottom: 16px;
-      color: var(--primary);
+    #modalCarrinho table {
+      width: 100%;
+      margin-bottom: 12px;
     }
-    #itensCarrinho {
-      max-height: 300px;
-      overflow-y: auto;
-      margin-bottom: 16px;
-    }
-    .item-carrinho {
-      padding: 8px 0;
-      border-bottom: 1px solid #eee;
-      display: flex;
-      justify-content: space-between;
-    }
-    .item-carrinho:last-child {
-      border-bottom: none;
-    }
-    #totalCarrinho {
-      font-weight: 700;
-      color: var(--primary);
-      margin: 12px 0;
-    }
-    .modal-btn {
+    #modalCarrinho button {
       width: 100%;
       padding: 12px;
-      border: none;
-      border-radius: var(--radius);
-      font-weight: 600;
-      cursor: pointer;
       margin-top: 8px;
+      border: none;
+      border-radius: 12px;
+      color: white;
+      background: var(--primary);
+      cursor: pointer;
+      font-weight: 700;
     }
-    .btn-finalizar { background: var(--primary); color: white; }
-    .btn-fechar { background: #6c757d; color: white; }
 
-    @media (max-width: 768px) {
-      #sidebar { width: 200px; }
-      #content { margin-left: 200px; }
+    /* Cadastro */
+    #cadastroBox {
+      max-width: 400px;
+      margin: 20px auto;
     }
-    @media (max-width: 480px) {
-      #sidebar { width: 180px; }
-      #content { margin-left: 180px; padding: 16px; }
-      #carrinhoIcone {
-        width: 56px;
-        height: 56px;
-        font-size: 22px;
-      }
+    #cadastroBox input,
+    #cadastroBox select,
+    #cadastroBox button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    #cadastroBox button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      font-weight: 700;
+    }
+
+    /* Gráfico scanner */
+    #scannerChartBox {
+      margin-top: 20px;
+    }
+    #barraValidacao {
+      height: 22px;
+      background: #ccc;
+      border-radius: 12px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    #barraValidacaoInner {
+      height: 100%;
+      width: 0%;
+      background: var(--secondary);
+      text-align: center;
+      color: white;
+      font-weight: bold;
+      transition: width 0.5s;
     }
   </style>
 </head>
 
 <body>
-  <!-- Hamburger -->
-  <button id="hamburger">☰</button>
+  <!-- Splash Screen -->
+  <div id="splash">
+    <img src="logo.png" alt="Logo" />
+    <p>Bem-vindo ao seu app de compras inteligente</p>
+  </div>
+
+  <!-- Menu Hamburger -->
+  <div id="hamburger">☰</div>
 
   <!-- Sidebar -->
   <div id="sidebar">
-    <button data-view="home">🏠 Home</button>
-    <button data-view="produtos">📦 Produtos</button>
-    <button data-view="cadastro">📝 Cadastro</button>
-    <button data-view="historico">🧾 Histórico</button>
+    <button onclick="irPara('home')">🏠 Home</button>
+    <button onclick="irPara('scanner')">📷 Scanner</button>
+    <button onclick="irPara('produtos')">📦 Produtos</button>
+    <button onclick="irPara('cadastro')">📝 Cadastro</button>
+    <button onclick="irPara('historico')">🧾 Histórico</button>
   </div>
 
-  <!-- Conteúdo -->
+  <!-- Conteúdo Principal -->
   <div id="content">
-    <div id="home" class="view active">
+    <!-- Home -->
+    <section id="home" class="view active">
+      <img src="logo.png" class="logo-home" alt="Logo" />
       <h2>Bem-vindo ao GoL BUY SMART</h2>
-      <div class="box">
-        <p>App funcionando perfeitamente!</p>
-        <button onclick="adicionarItemExemplo()" style="margin-top:12px; padding:10px; background:#4361ee; color:white; border:none; border-radius:8px; cursor:pointer;">
-          ➕ Adicionar item ao carrinho
-        </button>
+
+      <div id="orcamento" class="box">
+        <h3>💰 Orçamento Mensal</h3>
+        <input type="number" id="orcamentoInput" placeholder="Digite seu orçamento" />
+        <div id="orcamentoBarra">
+          <div id="orcamentoBarraInner">0%</div>
+        </div>
+        <p style="margin-top: 8px;">Gasto atual: R$ <span id="orcamentoGasto">0.00</span></p>
       </div>
-    </div>
+    </section>
 
-    <div id="produtos" class="view">
-      <h2>Produtos</h2>
-      <div class="box">Lista de produtos.</div>
-    </div>
+    <!-- Scanner -->
+    <section id="scanner" class="view">
+      <div class="box">
+        <div id="camera">
+          <video id="video" playsinline></video>
+          <div class="scan-line"></div>
+        </div>
+        <div id="scannerInfo">
+          <p>Código detectado: <span id="detected">—</span></p>
+          <p>Total produtos cadastrados: <span id="totalProdutos">0</span></p>
+          <div id="scannerChartBox">
+            <canvas id="categoriaChart"></canvas>
+          </div>
+        </div>
+        <div id="barraValidacao">
+          <div id="barraValidacaoInner">0%</div>
+        </div>
+      </div>
+    </section>
 
-    <div id="cadastro" class="view">
-      <h2>Cadastro</h2>
-      <div class="box">Formulário de cadastro.</div>
-    </div>
+    <!-- Produtos -->
+    <section id="produtos" class="view">
+      <div id="produtosBox" class="box">
+        <h2>Produtos Cadastrados</h2>
+        <table id="produtosTable">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Nome</th>
+              <th>Categoria</th>
+              <th>Tipo</th>
+              <th>Valor</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
 
-    <div id="historico" class="view">
-      <h2>Histórico</h2>
-      <div class="box">Seu histórico de compras.</div>
-    </div>
+    <!-- Cadastro -->
+    <section id="cadastro" class="view">
+      <div id="cadastroBox" class="box">
+        <h2>Cadastro de Produto</h2>
+        <input id="codigoCadastro" placeholder="Código" />
+        <input id="nomeCadastro" placeholder="Nome" />
+        <select id="categoriaCadastro">
+          <option value="Alimentos">Alimentos</option>
+          <option value="Limpeza">Limpeza</option>
+          <option value="Bebida">Bebida</option>
+          <option value="Farmácia">Farmácia</option>
+          <option value="Higiene">Higiene</option>
+          <option value="Outros">Outros</option>
+        </select>
+        <select id="tipoCadastro">
+          <option>UN</option>
+          <option>KG</option>
+        </select>
+        <input id="valorCadastro" type="number" step="0.01" placeholder="Valor" />
+        <button id="salvarCadastro">Salvar Produto</button>
+      </div>
+    </section>
+
+    <!-- Histórico -->
+    <section id="historico" class="view">
+      <div class="box" id="historicoConteudo"></div>
+    </section>
   </div>
 
-  <!-- CARRINHO -->
-  <button id="carrinhoIcone" onclick="abrirCarrinho()">
-    🛍️<span id="badge">0</span>
-  </button>
-
+  <!-- Carrinho -->
+  <div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️<span id="badge">0</span></div>
   <div id="modalCarrinho">
     <div class="modal-content">
-      <h3>🛒 Carrinho</h3>
-      <div id="itensCarrinho">Seu carrinho está vazio.</div>
-      <div id="totalCarrinho">Total: R$ 0,00</div>
-      <button class="modal-btn btn-finalizar" onclick="finalizarCompra()">Finalizar Compra</button>
-      <button class="modal-btn btn-fechar" onclick="fecharCarrinho()">Fechar</button>
+      <h3>Carrinho</h3>
+      <table id="tabelaCarrinho"></table>
+      <p id="total">Total: R$ 0,00</p>
+      <button onclick="finalizarCompra()">Finalizar</button>
+      <button onclick="fecharCarrinho()">Fechar</button>
     </div>
   </div>
 
+  <!-- JavaScript -->
   <script>
-    // ======================
-    // CARRINHO - LÓGICA SIMPLES
-    // ======================
+    // Utilitários
+    const $ = id => document.getElementById(id);
+    const Storage = {
+      get: (k, f = []) => JSON.parse(localStorage.getItem(k)) || f,
+      set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
+    };
 
-    let carrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
-    let historico = JSON.parse(localStorage.getItem('historicoCompras') || '[]');
+    // Dados iniciais
+    let produtos = Storage.get("produtos");
+    let carrinho = Storage.get("carrinho");
+    let historico = Storage.get("historicoCompras");
+    let orcamento = Storage.get("orcamento") || 0;
+    let reader = null, stream = null, buffer = [], scannerAtivo = false;
+    const repeticoes = 3;
+    const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg  ");
+    let categoriaChart;
 
+    // Splash Screen
+    window.onload = () => {
+      setTimeout(() => {
+        $("splash").style.display = "none";
+      }, 1500);
+    };
+
+    // Toggle Sidebar
+    const sidebar = $("sidebar");
+    const content = $("content");
+    const hamburger = $("hamburger");
+    hamburger.onclick = () => {
+      sidebar.classList.toggle("hide");
+      content.classList.toggle("full");
+    };
+
+    // Roteamento
+    function irPara(tela) {
+      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+      $(tela).classList.add("active");
+      if (tela === "scanner") iniciarScanner();
+      else pararScanner();
+    }
+
+    // Orçamento
+    $("orcamentoInput").value = orcamento;
+    $("orcamentoInput").addEventListener("input", () => {
+      orcamento = Number($("orcamentoInput").value);
+      localStorage.setItem("orcamento", orcamento);
+      atualizarOrcamento();
+    });
+
+    function atualizarOrcamento() {
+      const gasto = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
+      $("orcamentoGasto").innerText = gasto.toFixed(2);
+      const pct = orcamento ? Math.min(100, (gasto / orcamento) * 100) : 0;
+      const bar = $("orcamentoBarraInner");
+      bar.style.width = pct + "%";
+      bar.innerText = Math.round(pct) + "%";
+    }
+
+    // Produtos
+    function atualizarProdutosTable() {
+      const tbody = $("produtosTable").querySelector("tbody");
+      tbody.innerHTML = "";
+      produtos.forEach((p, i) => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${p.codigo}</td>
+            <td>${p.nome}</td>
+            <td>${p.categoria}</td>
+            <td>${p.tipo}</td>
+            <td>R$ ${p.valor.toFixed(2)}</td>
+            <td>
+              <button class="editBtn" onclick="editarProduto(${i})">✏️</button>
+              <button class="deleteBtn" onclick="excluirProduto(${i})">❌</button>
+            </td>
+          </tr>`;
+      });
+      $("totalProdutos").innerText = produtos.length;
+    }
+
+    function editarProduto(i) {
+      irPara("cadastro");
+      $("codigoCadastro").value = produtos[i].codigo;
+      $("nomeCadastro").value = produtos[i].nome;
+      $("categoriaCadastro").value = produtos[i].categoria;
+      $("tipoCadastro").value = produtos[i].tipo;
+      $("valorCadastro").value = produtos[i].valor;
+      produtos.splice(i, 1);
+      Storage.set("produtos", produtos);
+    }
+
+    function excluirProduto(i) {
+      if (confirm("Excluir produto?")) {
+        produtos.splice(i, 1);
+        Storage.set("produtos", produtos);
+        atualizarProdutosTable();
+        atualizarScannerChart();
+      }
+    }
+
+    $("salvarCadastro").onclick = () => {
+      const novo = {
+        codigo: $("codigoCadastro").value.trim(),
+        nome: $("nomeCadastro").value.trim(),
+        categoria: $("categoriaCadastro").value,
+        tipo: $("tipoCadastro").value,
+        valor: Number($("valorCadastro").value)
+      };
+      if (!novo.codigo || !novo.nome || !novo.valor) {
+        alert("Preencha todos os campos");
+        return;
+      }
+      produtos.push(novo);
+      Storage.set("produtos", produtos);
+      atualizarProdutosTable();
+      atualizarScannerChart();
+      irPara("produtos");
+    };
+
+    // Carrinho
     function atualizarCarrinho() {
-      const badge = document.getElementById('badge');
-      const itensDiv = document.getElementById('itensCarrinho');
-      const totalDiv = document.getElementById('totalCarrinho');
-
-      if (badge) {
-        badge.textContent = carrinho.length;
-      }
-
-      if (itensDiv) {
-        if (carrinho.length === 0) {
-          itensDiv.innerHTML = '<p style="color:#666; text-align:center;">Seu carrinho está vazio.</p>';
-        } else {
-          let html = '';
-          let total = 0;
-          carrinho.forEach(item => {
-            const subtotal = (item.valor * (item.qtd || 1)).toFixed(2);
-            total += parseFloat(subtotal);
-            html += `<div class="item-carrinho">
-              <span>${item.nome}</span>
-              <span>R$ ${subtotal}</span>
-            </div>`;
-          });
-          itensDiv.innerHTML = html;
-          if (totalDiv) totalDiv.textContent = `Total: R$ ${total.toFixed(2)}`;
-        }
-      }
+      let total = 0;
+      const table = $("tabelaCarrinho");
+      table.innerHTML = "<tr><th>Nome</th><th>Qtd</th><th>Subtotal</th></tr>";
+      carrinho.forEach(p => {
+        const sub = p.valor * p.qtd;
+        total += sub;
+        table.innerHTML += `<tr><td>${p.nome}</td><td>${p.qtd}</td><td>R$ ${sub.toFixed(2)}</td></tr>`;
+      });
+      $("total").innerText = "Total: R$ " + total.toFixed(2);
+      $("badge").innerText = carrinho.length;
+      atualizarOrcamento();
     }
 
     function abrirCarrinho() {
+      $("modalCarrinho").style.display = "block";
       atualizarCarrinho();
-      const modal = document.getElementById('modalCarrinho');
-      if (modal) modal.style.display = 'flex';
     }
 
     function fecharCarrinho() {
-      const modal = document.getElementById('modalCarrinho');
-      if (modal) modal.style.display = 'none';
-    }
-
-    function adicionarItemExemplo() {
-      const item = {
-        nome: "Arroz 1kg",
-        valor: 8.99,
-        qtd: 1
-      };
-      carrinho.push(item);
-      localStorage.setItem('carrinho', JSON.stringify(carrinho));
-      atualizarCarrinho();
-      alert("✅ Item adicionado ao carrinho!");
+      $("modalCarrinho").style.display = "none";
     }
 
     function finalizarCompra() {
-      if (carrinho.length === 0) {
-        alert("Carrinho vazio!");
+      if (!carrinho.length) {
+        alert("Carrinho vazio");
         return;
       }
-
-      const total = carrinho.reduce((sum, item) => sum + (item.valor * (item.qtd || 1)), 0);
+      const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
       historico.push({
-         new Date().toLocaleString("pt-BR"),
+        data: new Date().toLocaleString("pt-BR"),
         total,
         itens: [...carrinho]
       });
-
-      localStorage.setItem('historicoCompras', JSON.stringify(historico));
+      Storage.set("historicoCompras", historico);
       carrinho = [];
-      localStorage.setItem('carrinho', JSON.stringify(carrinho));
+      Storage.set("carrinho", carrinho);
       atualizarCarrinho();
+      atualizarHistorico();
       fecharCarrinho();
-      alert("✅ Compra finalizada com sucesso!");
+      alert("Compra finalizada!");
     }
 
-    // ======================
-    // NAVEGAÇÃO
-    // ======================
-
-    function irPara(viewId) {
-      document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-      const target = document.getElementById(viewId);
-      if (target) target.classList.add('active');
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-      // Configura hamburger
-      const hamburger = document.getElementById('hamburger');
-      const sidebar = document.getElementById('sidebar');
-      const content = document.getElementById('content');
-
-      if (hamburger && sidebar && content) {
-        hamburger.addEventListener('click', () => {
-          sidebar.classList.toggle('hide');
-          content.classList.toggle('full');
-        });
+    // Histórico
+    function atualizarHistorico() {
+      const area = $("historicoConteudo");
+      area.innerHTML = "";
+      if (!historico.length) {
+        area.innerHTML = "<p>Nenhuma compra registrada.</p>";
+        return;
       }
-
-      // Configura todos os botões do sidebar
-      document.querySelectorAll('#sidebar button').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const view = btn.getAttribute('data-view');
-          if (view) {
-            irPara(view);
-            // Fecha sidebar em mobile
-            sidebar.classList.add('hide');
-            content.classList.add('full');
-          }
+      historico.forEach((c, i) => {
+        let itens = "";
+        c.itens.forEach(it => {
+          itens += `<li>${it.nome} — ${it.qtd} x R$ ${it.valor.toFixed(2)} = R$ ${(it.qtd * it.valor).toFixed(2)}</li>`;
         });
+        area.innerHTML += `
+          <div class="historico-card">
+            <h4>Compra ${i + 1}</h4>
+            <small>${c.data}</small>
+            <p>Total: R$ ${c.total.toFixed(2)}</p>
+            <details><summary>Ver itens</summary><ul>${itens}</ul></details>
+          </div>`;
       });
+    }
 
-      // Inicializa carrinho
-      atualizarCarrinho();
-    });
+    // Scanner
+    async function iniciarScanner() {
+      if (scannerAtivo) return;
+      scannerAtivo = true;
+      buffer = [];
+      if (!stream) {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        $("video").srcObject = stream;
+        await $("video").play();
+      }
+      reader = new ZXing.BrowserMultiFormatReader();
+      reader.decodeFromVideoElementContinuously($("video"), (res) => {
+        if (!res || !scannerAtivo) return;
+        const codigo = res.text.trim();
+        buffer.push(codigo);
+        if (buffer.length > repeticoes) buffer.shift();
+        const ok = buffer.filter(v => v === codigo).length;
+        $("detected").innerText = codigo;
+        $("barraValidacaoInner").style.width = (ok / repeticoes * 100) + "%";
+        $("barraValidacaoInner").innerText = Math.round(ok / repeticoes * 100) + "%";
+        if (ok >= repeticoes) processarCodigo(codigo);
+      });
+    }
+
+    function processarCodigo(codigo) {
+      try {
+        navigator.vibrate?.(50);
+        scannerAtivo = false;
+        beep.play();
+        const produto = produtos.find(x => x.codigo === codigo);
+        setTimeout(() => {
+          if (produto) {
+            const q = Number(prompt(`Produto: ${produto.nome}\nQuantidade:`));
+            if (q > 0) {
+              carrinho.push({ ...produto, qtd: q });
+              Storage.set("carrinho", carrinho);
+              abrirCarrinho();
+            }
+          } else {
+            alert("Produto não cadastrado.");
+          }
+          $("barraValidacaoInner").style.width = "0%";
+          scannerAtivo = true;
+          buffer = [];
+          atualizarCarrinho();
+        }, 300);
+      } catch (e) {
+        console.error(e);
+        scannerAtivo = true;
+      }
+    }
+
+    function pararScanner() {
+      scannerAtivo = false;
+      if (reader) reader.reset();
+      if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+        stream = null;
+      }
+      $("video").srcObject = null;
+    }
+
+    // Gráfico de categorias
+    function atualizarScannerChart() {
+      const categorias = {};
+      produtos.forEach(p => {
+        categorias[p.categoria] = (categorias[p.categoria] || 0) + 1;
+      });
+      if (categoriaChart) categoriaChart.destroy();
+      const ctx = $("categoriaChart").getContext("2d");
+      categoriaChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(categorias),
+          datasets: [{
+            data: Object.values(categorias),
+            backgroundColor: ['#3b7ddd', '#ffb703', '#ff3b3b', '#6b6b6b', '#4caf50', '#9c27b0']
+          }]
+        },
+        options: {
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+    }
+
+    // Inicialização
+    atualizarHistorico();
+    atualizarProdutosTable();
+    atualizarCarrinho();
+    atualizarScannerChart();
   </script>
 </body>
 </html>
