@@ -82,7 +82,7 @@
     #splash {
       position: fixed;
       inset: 0;
-      background: linear-gradient(135deg, #2563eb, #1d4ed8); /* Azul mais escuro que o logo */
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
       color: white;
       display: flex;
       flex-direction: column;
@@ -789,8 +789,12 @@
 
     // Carregar tema salvo
     const temaSalvo = localStorage.getItem('tema') || 'padrao';
-    document.body.classList.add(`tema-${temaSalvo !== 'padrao' ? temaSalvo : ''}`.replace('tema-', ''));
-    $("temaSelector").value = temaSalvo;
+    if (temaSalvo !== 'padrao') {
+      document.body.classList.add(`tema-${temaSalvo}`);
+    }
+    if ($("temaSelector")) {
+      $("temaSelector").value = temaSalvo;
+    }
 
     function mudarTema(tema) {
       document.body.className = document.body.className.replace(/tema-\w+/g, '').trim();
@@ -830,13 +834,15 @@
         content.classList.toggle("full");
       };
 
-      $("orcamentoInput").value = orcamento;
-      $("orcamentoInput").addEventListener("input", () => {
-        orcamento = Number($("orcamentoInput").value);
-        localStorage.setItem("orcamento", orcamento);
-        atualizarOrcamento();
-        verificarOrcamento();
-      });
+      if ($("orcamentoInput")) {
+        $("orcamentoInput").value = orcamento;
+        $("orcamentoInput").addEventListener("input", () => {
+          orcamento = Number($("orcamentoInput").value);
+          localStorage.setItem("orcamento", orcamento);
+          atualizarOrcamento();
+          verificarOrcamento();
+        });
+      }
 
       function atualizarOrcamento() {
         const gasto = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
@@ -863,8 +869,9 @@
               </td>
             </tr>`;
         });
-        $("produtosTable").querySelector("tbody").innerHTML = html;
-        $("totalProdutos").innerText = produtos.length;
+        const tbody = $("produtosTable")?.querySelector("tbody");
+        if (tbody) tbody.innerHTML = html;
+        if ($("totalProdutos")) $("totalProdutos").innerText = produtos.length;
       }
 
       window.editarProduto = function(i) {
@@ -908,7 +915,9 @@
         irPara("produtos");
       };
 
-      $("salvarCadastro").onclick = salvarOriginal;
+      if ($("salvarCadastro")) {
+        $("salvarCadastro").onclick = salvarOriginal;
+      }
 
       function atualizarCarrinho() {
         let total = 0;
@@ -924,15 +933,17 @@
               <td><button class="deleteBtn" style="padding:4px 8px;font-size:14px;" onclick="removerDoCarrinho(${idx})">🗑️</button></td>
             </tr>`;
         });
-        $("tabelaCarrinho").innerHTML = html;
-        $("total").innerText = "Total: R$ " + total.toFixed(2);
-        $("badge").innerText = carrinho.length;
+        if ($("tabelaCarrinho")) $("tabelaCarrinho").innerHTML = html;
+        if ($("total")) $("total").innerText = "Total: R$ " + total.toFixed(2);
+        if ($("badge")) $("badge").innerText = carrinho.length;
         atualizarOrcamento();
         verificarOrcamento();
 
         const badge = $("badge");
-        badge.style.animation = "pulse 0.5s";
-        setTimeout(() => badge.style.animation = "", 500);
+        if (badge) {
+          badge.style.animation = "pulse 0.5s";
+          setTimeout(() => badge.style.animation = "", 500);
+        }
       }
 
       window.removerDoCarrinho = function(idx) {
@@ -959,7 +970,7 @@
         }
         const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
         historico.push({
-           new Date().toLocaleString("pt-BR"),
+          data: new Date().toLocaleString("pt-BR"),
           total,
           itens: [...carrinho]
         });
@@ -974,6 +985,7 @@
 
       function atualizarHistorico() {
         const area = $("historicoConteudo");
+        if (!area) return;
         area.innerHTML = "";
         if (!historico.length) {
           area.innerHTML = "<p style='text-align:center; color:var(--text-muted);'>Nenhuma compra registrada.</p>";
@@ -1003,19 +1015,23 @@
             const constraints = {
               video: {
                 facingMode: "environment",
-                // Tentar foco contínuo se suportado
                 advanced: [{ focusMode: "continuous" }]
               }
             };
             stream = await navigator.mediaDevices.getUserMedia(constraints);
-            $("video").srcObject = stream;
-            await $("video").play();
+            const video = $("video");
+            if (video) {
+              video.srcObject = stream;
+              await video.play();
+            }
           } catch (err) {
-            // Fallback sem foco
             try {
               stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-              $("video").srcObject = stream;
-              await $("video").play();
+              const video = $("video");
+              if (video) {
+                video.srcObject = stream;
+                await video.play();
+              }
             } catch (e2) {
               alert("⚠️ Permissão da câmera negada.");
               scannerAtivo = false;
@@ -1034,13 +1050,15 @@
           if (buffer.length > repeticoes) buffer.shift();
 
           const ultimosIguais = buffer.filter(v => v === codigoNormalizado).length;
-          $("detected").innerText = codigoBruto;
-          $("barraValidacaoInner").style.width = (ultimosIguais / repeticoes * 100) + "%";
-          $("barraValidacaoInner").setAttribute('data-pct', Math.round(ultimosIguais / repeticoes * 100) + '%');
+          if ($("detected")) $("detected").innerText = codigoBruto;
+          if ($("barraValidacaoInner")) {
+            $("barraValidacaoInner").style.width = (ultimosIguais / repeticoes * 100) + "%";
+            $("barraValidacaoInner").setAttribute('data-pct', Math.round(ultimosIguais / repeticoes * 100) + '%');
+          }
 
           if (ultimosIguais >= repeticoes) {
-            scannerAtivo = false; // 🔒 TRAVA TOTAL — só reativa ao entrar novamente na aba
-            reader.reset(); // Para leitura imediatamente
+            scannerAtivo = false;
+            reader.reset();
             processarCodigo(codigoNormalizado);
           }
         });
@@ -1060,8 +1078,10 @@
               Storage.set("carrinho", carrinho);
               abrirCarrinho();
             }
-            $("barraValidacaoInner").style.width = "0%";
-            $("barraValidacaoInner").setAttribute('data-pct', '0%');
+            if ($("barraValidacaoInner")) {
+              $("barraValidacaoInner").style.width = "0%";
+              $("barraValidacaoInner").setAttribute('data-pct', '0%');
+            }
             buffer = [];
           } else {
             $("codigoCadastro").value = codigoNormalizado;
@@ -1107,8 +1127,10 @@
             };
 
             $("salvarCadastro").onclick = handlerRapido;
-            $("barraValidacaoInner").style.width = "0%";
-            $("barraValidacaoInner").setAttribute('data-pct', '0%');
+            if ($("barraValidacaoInner")) {
+              $("barraValidacaoInner").style.width = "0%";
+              $("barraValidacaoInner").setAttribute('data-pct', '0%');
+            }
             buffer = [];
           }
         } catch (e) {
@@ -1124,9 +1146,10 @@
           stream.getTracks().forEach(t => t.stop());
           stream = null;
         }
-        if ($("video").srcObject) {
-          $("video").srcObject.getTracks?.().forEach(t => t.stop());
-          $("video").srcObject = null;
+        const video = $("video");
+        if (video && video.srcObject) {
+          video.srcObject.getTracks?.().forEach(t => t.stop());
+          video.srcObject = null;
         }
       }
 
@@ -1135,14 +1158,20 @@
         produtos.forEach(p => {
           categorias[p.categoria] = (categorias[p.categoria] || 0) + 1;
         });
-        const ctx = $("categoriaChart").getContext("2d");
-        if (categoriaChart) categoriaChart.destroy();
+
+        const ctx = $("categoriaChart")?.getContext("2d");
+        if (!ctx) return;
+
+        if (categoriaChart) {
+          categoriaChart.destroy();
+        }
+
         categoriaChart = new Chart(ctx, {
           type: 'doughnut',
-           {
+          data: {
             labels: Object.keys(categorias),
             datasets: [{
-               Object.values(categorias),
+              data: Object.values(categorias),
               backgroundColor: ['#4361ee', '#3a56d4', '#4895ef', '#f87171', '#6b6b6b', '#9c27b0']
             }]
           },
@@ -1156,38 +1185,46 @@
       }
 
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && $("modalCarrinho").classList.contains("active")) {
+        if (e.key === 'Escape' && $("modalCarrinho")?.classList.contains("active")) {
           fecharCarrinho();
         }
       });
 
-      $("modalCarrinho").addEventListener('click', (e) => {
-        if (e.target === $("modalCarrinho")) {
-          fecharCarrinho();
-        }
-      });
+      if ($("modalCarrinho")) {
+        $("modalCarrinho").addEventListener('click', (e) => {
+          if (e.target === $("modalCarrinho")) {
+            fecharCarrinho();
+          }
+        });
+      }
 
       atualizarHistorico();
       atualizarProdutosTable();
       atualizarCarrinho();
     }
 
-    const observer = new MutationObserver(() => {
-      if ($("scanner").classList.contains("active")) {
-        atualizarScannerChart();
-      }
-    });
-    observer.observe($("scanner"), { attributes: true, attributeFilter: ['class'] });
+    if ($("scanner")) {
+      const observer = new MutationObserver(() => {
+        if ($("scanner").classList.contains("active")) {
+          atualizarScannerChart();
+        }
+      });
+      observer.observe($("scanner"), { attributes: true, attributeFilter: ['class'] });
+    }
 
     window.addEventListener('DOMContentLoaded', () => {
       const splash = $("splash");
-      setTimeout(() => {
-        splash.style.opacity = '0';
+      if (splash) {
         setTimeout(() => {
-          splash.remove();
-          iniciarApp();
-        }, 500);
-      }, 1500);
+          splash.style.opacity = '0';
+          setTimeout(() => {
+            splash.remove();
+            iniciarApp();
+          }, 500);
+        }, 1500);
+      } else {
+        iniciarApp();
+      }
     });
   </script>
 </body>
