@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#4361ee" />
 
-  <!-- Bibliotecas externas -->
+  <!-- Bibliotecas externas (sem espaços nas URLs) -->
   <script src="https://unpkg.com/@zxing/library@0.21.2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -82,7 +82,8 @@
     #splash {
       position: fixed;
       inset: 0;
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      /* ✅ Cor mais escura e contrastante para destacar o logo branco */
+      background: linear-gradient(135deg, #1e3a8a, #1e40af);
       color: white;
       display: flex;
       flex-direction: column;
@@ -96,7 +97,8 @@
       width: 300px;
       height: 300px;
       object-fit: contain;
-      filter: drop-shadow(0 12px 24px rgba(0,0,0,0.3));
+      /* ✅ Melhor destaque com brilho e sombra */
+      filter: drop-shadow(0 12px 28px rgba(0,0,0,0.4)) brightness(1.1);
       z-index: 2001;
     }
     #splash p {
@@ -104,6 +106,7 @@
       font-size: 18px;
       font-weight: 600;
       z-index: 2001;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
     }
 
     #sidebar {
@@ -228,7 +231,6 @@
       letter-spacing: -0.5px;
     }
 
-    /* --- NOVO: Estilo para o container do seletor de tema --- */
     #temaContainer {
       margin: 16px auto 24px;
       max-width: 320px;
@@ -680,7 +682,6 @@
       <img src="logo.png" class="logo-home" alt="GoL BUY SMART – App de compras inteligente" />
       <h2>Bem-vindo ao GoL BUY SMART</h2>
       
-      <!-- --- SELETOR DE TEMA REPOSICIONADO --- -->
       <div id="temaContainer">
         <select id="temaSelector" onchange="mudarTema(this.value)">
           <option value="padrao">Tema Padrão (Azul)</option>
@@ -979,7 +980,7 @@
         }
         const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
         historico.push({
-           new Date().toLocaleString("pt-BR"),
+          data: new Date().toLocaleString("pt-BR"),
           total,
           itens: [...carrinho]
         });
@@ -1175,13 +1176,13 @@
           categoriaChart.destroy();
         }
 
-        // ✅ CORREÇÃO DEFINITIVA DO CHART.JS
+        // ✅ CORREÇÃO: estrutura do Chart.js corrigida
         categoriaChart = new Chart(ctx, {
           type: 'doughnut',
-           {
+          data: {
             labels: Object.keys(categorias),
             datasets: [{
-               Object.values(categorias),
+              data: Object.values(categorias),
               backgroundColor: ['#4361ee', '#3a56d4', '#4895ef', '#f87171', '#6b6b6b', '#9c27b0']
             }]
           },
@@ -1228,7 +1229,7 @@
         setTimeout(() => {
           splash.style.opacity = '0';
           setTimeout(() => {
-            splash.remove();
+            if (splash.parentNode) splash.remove();
             iniciarApp();
           }, 500);
         }, 1500);
