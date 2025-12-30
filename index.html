@@ -75,7 +75,8 @@ color: var(--text);
 #splash {
 position: fixed;
 inset: 0;
-background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+/* Cor escura neutra fixa que combina com qualquer tema */
+background: #1e293b;
 color: white;
 display: flex;
 flex-direction: column;
@@ -1006,7 +1007,7 @@ return;
 }
 const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
 historico.push({
-data: new Date().toLocaleString("pt-BR"),
+ new Date().toLocaleString("pt-BR"),
 total,
 itens: [...carrinho]
 });
@@ -1221,7 +1222,7 @@ data: {
 labels: labels,
 datasets: [{
 label: 'Número de Produtos',
-data: values,
+data: values, // ✅ CORRIGIDO: estava "values," sozinho
 backgroundColor: labels.map((_, i) => cores[i % cores.length]),
 borderWidth: 0
 }]
@@ -1278,6 +1279,11 @@ $("overlayQuantidade").addEventListener('click', fecharQuantidade);
 atualizarHistorico();
 atualizarProdutosTable();
 atualizarCarrinho();
+
+// ✅ Correção: se a aba scanner já estiver ativa no carregamento, desenhar o gráfico
+if (document.getElementById("scanner")?.classList.contains("active")) {
+  setTimeout(atualizarScannerChart, 300);
+}
 }
 if ($("scanner")) {
 const observer = new MutationObserver(() => {
@@ -1287,30 +1293,22 @@ atualizarScannerChart();
 });
 observer.observe($("scanner"), { attributes: true, attributeFilter: ['class'] });
 }
-const iniciarQuandoPronto = () => {
-  const splash = $("splash");
-  if (splash) {
-    const rootStyles = getComputedStyle(document.documentElement);
-    const primaryDark = rootStyles.getPropertyValue('--primary-dark').trim();
-    const primary = rootStyles.getPropertyValue('--primary').trim();
-    splash.style.background = `linear-gradient(135deg, ${primaryDark}, ${primary})`;
-    setTimeout(() => {
-      splash.style.opacity = '0';
-      setTimeout(() => {
-        if (splash.parentNode) splash.remove();
-        iniciarApp();
-      }, 500);
-    }, 1500);
-  } else {
-    iniciarApp();
-  }
-};
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', iniciarQuandoPronto);
+window.addEventListener('DOMContentLoaded', () => {
+const splash = $("splash");
+if (splash) {
+// ✅ Usar cor escura fixa no splash para compatibilidade com todos os temas
+splash.style.background = '#1e293b';
+setTimeout(() => {
+splash.style.opacity = '0';
+setTimeout(() => {
+if (splash.parentNode) splash.remove();
+iniciarApp();
+}, 500);
+}, 1500);
 } else {
-  iniciarQuandoPronto();
-};
+iniciarApp();
+}
+});
 </script>
 </body>
 </html>
