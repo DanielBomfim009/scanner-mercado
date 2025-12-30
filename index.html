@@ -752,6 +752,11 @@
     const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
     let categoriaChart;
 
+    // Função para normalizar códigos (remove espaços, quebras, etc.)
+    function normalizarCodigo(cod) {
+      return (cod || '').toString().trim().replace(/[\r\n\t\s]+/g, '');
+    }
+
     // Função principal de inicialização
     function iniciarApp() {
       // Roteamento
@@ -942,23 +947,32 @@
         reader = new ZXing.BrowserMultiFormatReader();
         reader.decodeFromVideoElementContinuously($("video"), (res) => {
           if (!res || !scannerAtivo) return;
-          const codigo = res.text.trim();
-          buffer.push(codigo);
+          const codigoBruto = res.text;
+          const codigoNormalizado = normalizarCodigo(codigoBruto);
+          if (!codigoNormalizado) return;
+
+          buffer.push(codigoNormalizado);
           if (buffer.length > repeticoes) buffer.shift();
-          const ok = buffer.filter(v => v === codigo).length;
-          $("detected").innerText = codigo;
-          $("barraValidacaoInner").style.width = (ok / repeticoes * 100) + "%";
-          $("barraValidacaoInner").setAttribute('data-pct', Math.round(ok / repeticoes * 100) + '%');
-          if (ok >= repeticoes) processarCodigo(codigo);
+
+          const ultimosIguais = buffer.filter(v => v === codigoNormalizado).length;
+          $("detected").innerText = codigoBruto;
+          $("barraValidacaoInner").style.width = (ultimosIguais / repeticoes * 100) + "%";
+          $("barraValidacaoInner").setAttribute('data-pct', Math.round(ultimosIguais / repeticoes * 100) + '%');
+
+          if (ultimosIguais >= repeticoes) {
+            scannerAtivo = false;
+            processarCodigo(codigoNormalizado);
+          }
         });
       }
 
-      function processarCodigo(codigo) {
+      function processarCodigo(codigoNormalizado) {
         try {
           navigator.vibrate?.(50);
-          scannerAtivo = false;
           beep.play();
-          const produto = produtos.find(x => x.codigo === codigo);
+
+          const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
+
           setTimeout(() => {
             if (produto) {
               const q = Number(prompt(`Produto: ${produto.nome}\nQuantidade:`));
@@ -968,16 +982,19 @@
                 abrirCarrinho();
               }
             } else {
-              alert("Produto não cadastrado.");
+              alert("Produto não cadastrado.\nCódigo: " + codigoNormalizado);
             }
+
+            // Reinicia o scanner
             $("barraValidacaoInner").style.width = "0%";
             $("barraValidacaoInner").setAttribute('data-pct', '0%');
-            scannerAtivo = true;
             buffer = [];
+            scannerAtivo = true;
             atualizarCarrinho();
           }, 300);
         } catch (e) {
-          console.error(e);
+          console.error("Erro ao processar código:", e);
+          buffer = [];
           scannerAtivo = true;
         }
       }
