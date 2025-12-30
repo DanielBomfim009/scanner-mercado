@@ -6,9 +6,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="theme-color" content="#4361ee" />
 <!-- Bibliotecas externas -->
-<script src="https://unpkg.com/@zxing/library@0.21.2  "></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js  "></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter  :wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/@zxing/library@0.21.2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
 :root {
 --primary: #4361ee;
@@ -75,7 +75,6 @@ color: var(--text);
 #splash {
 position: fixed;
 inset: 0;
-/* Cor escura neutra fixa que combina com qualquer tema */
 background: #1e293b;
 color: white;
 display: flex;
@@ -789,7 +788,6 @@ Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
 <button onclick="fecharCarrinho()">Fechar</button>
 </div>
 </div>
-<!-- Overlay e modal de quantidade personalizado -->
 <div id="overlayQuantidade"></div>
 <div id="quantidadeModal" class="quantidade-modal" style="display:none;">
 <h3 id="tituloQuantidade">Informe a quantidade</h3>
@@ -811,8 +809,9 @@ let historico = Storage.get("historicoCompras");
 let orcamento = Storage.get("orcamento") || 0;
 let reader = null, stream = null, buffer = [], scannerAtivo = false;
 const repeticoes = 3;
-const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg  ");
+const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 let categoriaChart;
+
 // Carregar tema salvo
 const temaSalvo = localStorage.getItem('tema') || 'padrao';
 if (temaSalvo !== 'padrao') {
@@ -821,22 +820,22 @@ document.body.classList.add(`tema-${temaSalvo}`);
 if ($("temaSelector")) {
 $("temaSelector").value = temaSalvo;
 }
+
 function mudarTema(tema) {
 document.body.className = document.body.className.replace(/tema-\w+/g, '').trim();
 if (tema !== 'padrao') {
 document.body.classList.add(`tema-${tema}`);
 }
 localStorage.setItem('tema', tema);
-// ✅ Correção: atualizar gráfico com delay para garantir layout estável
 if (document.getElementById("scanner").classList.contains("active")) {
-setTimeout(() => {
-atualizarScannerChart();
-}, 100);
+setTimeout(atualizarScannerChart, 100);
 }
 }
+
 function normalizarCodigo(cod) {
 return (cod || '').toString().trim().replace(/[\r\n\t\s]+/g, '');
 }
+
 function verificarOrcamento() {
 const gasto = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
 const pct = orcamento ? (gasto / orcamento) * 100 : 0;
@@ -846,7 +845,7 @@ alerta.classList.add('show');
 setTimeout(() => alerta.classList.remove('show'), 3000);
 }
 }
-// Função para solicitar quantidade com modal personalizado
+
 function solicitarQuantidade(produtoNome, callback) {
 $("tituloQuantidade").innerText = `Produto: ${produtoNome}\nInforme a quantidade`;
 $("inputQuantidade").value = "1";
@@ -859,10 +858,12 @@ $("btnCancelarQtd").onclick = fecharQuantidade;
 $("overlayQuantidade").style.display = "block";
 $("quantidadeModal").style.display = "block";
 }
+
 function fecharQuantidade() {
 $("overlayQuantidade").style.display = "none";
 $("quantidadeModal").style.display = "none";
 }
+
 function iniciarApp() {
 window.irPara = function(tela) {
 document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
@@ -949,7 +950,6 @@ produtos.push(novo);
 Storage.set("produtos", produtos);
 atualizarProdutosTable();
 atualizarScannerChart();
-// ✅ LIMPAR CAMPOS após salvar
 $("codigoCadastro").value = "";
 $("nomeCadastro").value = "";
 $("valorCadastro").value = "";
@@ -1041,6 +1041,7 @@ area.innerHTML += `
 </div>`;
 });
 }
+
 async function iniciarScanner() {
 if (scannerAtivo || !navigator.mediaDevices) return;
 scannerAtivo = true;
@@ -1101,7 +1102,6 @@ navigator.vibrate?.(50);
 beep.play().catch(e => console.warn("Beep não reproduzido:", e));
 const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
 if (produto) {
-// ✅ Evita múltiplos prompts
 if (window.quantidadeJaSolicitada) return;
 window.quantidadeJaSolicitada = true;
 solicitarQuantidade(produto.nome, (q) => {
@@ -1130,7 +1130,6 @@ return;
 }
 produtos.push(novo);
 Storage.set("produtos", produtos);
-// ✅ Evita múltiplos prompts
 if (window.quantidadeJaSolicitada) return;
 window.quantidadeJaSolicitada = true;
 solicitarQuantidade(novo.nome, (q) => {
@@ -1139,7 +1138,6 @@ if (q > 0) {
 carrinho.push({ ...novo, qtd: q });
 Storage.set("carrinho", carrinho);
 }
-// ✅ Limpar campos após cadastro rápido
 $("codigoCadastro").value = "";
 $("nomeCadastro").value = "";
 $("valorCadastro").value = "";
@@ -1181,83 +1179,95 @@ video.srcObject = null;
 }
 window.quantidadeJaSolicitada = false;
 }
+
+// ✅ FUNÇÃO CORRIGIDA: atualizarScannerChart
 function atualizarScannerChart() {
-const categorias = {};
-produtos.forEach(p => {
-categorias[p.categoria] = (categorias[p.categoria] || 0) + 1;
-});
-// ✅ Garantir que o container está visível
-const chartBox = $("scannerChartBox");
-if (!chartBox || chartBox.offsetHeight === 0) {
-// Se não estiver visível, agendar nova tentativa
-setTimeout(atualizarScannerChart, 100);
-return;
+    const categorias = {};
+    produtos.forEach(p => {
+        categorias[p.categoria] = (categorias[p.categoria] || 0) + 1;
+    });
+
+    const chartBox = $("scannerChartBox");
+    if (!chartBox || chartBox.offsetWidth === 0 || chartBox.offsetHeight === 0) {
+        setTimeout(atualizarScannerChart, 100);
+        return;
+    }
+
+    const canvas = $("categoriaChart");
+    if (!canvas) return;
+
+    // Ajusta dimensões do canvas
+    canvas.width = chartBox.offsetWidth;
+    canvas.height = chartBox.offsetHeight;
+
+    // Destrói gráfico anterior
+    if (categoriaChart) {
+        categoriaChart.destroy();
+        categoriaChart = null;
+    }
+
+    const categoriasOrdenadas = Object.entries(categorias).sort((a, b) => b[1] - a[1]);
+    const labels = categoriasOrdenadas.map(([cat]) => cat);
+    const values = categoriasOrdenadas.map(([, val]) => val);
+
+    const rootStyles = getComputedStyle(document.documentElement);
+    const textColor = rootStyles.getPropertyValue('--text').trim();
+    const textMutedColor = rootStyles.getPropertyValue('--text-muted').trim();
+
+    const cores = [
+        '#4361ee', '#3a56d4', '#4895ef', '#f87171', '#6b6b6b', '#9c27b0',
+        '#06b6d4', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444'
+    ];
+
+    try {
+        const ctx = canvas.getContext("2d");
+        categoriaChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Número de Produtos',
+                    data: values,
+                    backgroundColor: labels.map((_, i) => cores[i % cores.length]),
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        titleColor: textColor,
+                        bodyColor: textColor,
+                        backgroundColor: rootStyles.getPropertyValue('--card').trim(),
+                        borderColor: rootStyles.getPropertyValue('--border').trim(),
+                        borderWidth: 1,
+                        callbacks: {
+                            label: (ctx) => ` ${ctx.parsed.x} produtos`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0,0,0,0.05)' },
+                        ticks: { color: textMutedColor }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { color: textColor }
+                    }
+                }
+            }
+        });
+    } catch (e) {
+        console.error("Erro ao criar gráfico:", e);
+        setTimeout(atualizarScannerChart, 200);
+    }
 }
-// ✅ Resetar o canvas completamente
-const canvas = $("categoriaChart");
-if (!canvas) return;
-const ctx = canvas.getContext("2d");
-ctx.clearRect(0, 0, canvas.width, canvas.height);
-canvas.width = canvas.offsetWidth;
-canvas.height = canvas.offsetHeight;
-// ✅ Destruir gráfico existente
-if (categoriaChart) {
-categoriaChart.destroy();
-categoriaChart = null;
-}
-const categoriasOrdenadas = Object.entries(categorias).sort((a, b) => b[1] - a[1]);
-const labels = categoriasOrdenadas.map(([cat]) => cat);
-const values = categoriasOrdenadas.map(([, val]) => val);
-// ✅ Obter cores de texto dinamicamente do tema atual
-const rootStyles = getComputedStyle(document.documentElement);
-const textColor = rootStyles.getPropertyValue('--text').trim();
-const textMutedColor = rootStyles.getPropertyValue('--text-muted').trim();
-const cores = [
-'#4361ee', '#3a56d4', '#4895ef', '#f87171', '#6b6b6b', '#9c27b0',
-'#06b6d4', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444'
-];
-categoriaChart = new Chart(ctx, {
-type: 'bar',
-data: {  // ← CORREÇÃO: chave "data" estava faltando!
-labels: labels,
-datasets: [{
-label: 'Número de Produtos',
-data: values,
-backgroundColor: labels.map((_, i) => cores[i % cores.length]),
-borderWidth: 0
-}]
-},
-options: {
-indexAxis: 'y',
-responsive: true,
-maintainAspectRatio: false,
-plugins: {
-legend: { display: false },
-tooltip: {
-titleColor: textColor,
-bodyColor: textColor,
-backgroundColor: rootStyles.getPropertyValue('--card').trim(),
-borderColor: rootStyles.getPropertyValue('--border').trim(),
-borderWidth: 1,
-callbacks: {
-label: (ctx) => ` ${ctx.parsed.x} produtos`
-}
-}
-},
-scales: {
-x: {
-beginAtZero: true,
-grid: { color: 'rgba(0,0,0,0.05)' },
-ticks: { color: textMutedColor }
-},
-y: {
-grid: { display: false },
-ticks: { color: textColor }
-}
-}
-}
-});
-}
+
 document.addEventListener('keydown', (e) => {
 if (e.key === 'Escape') {
 if ($("modalCarrinho")?.classList.contains("active")) {
@@ -1280,29 +1290,37 @@ atualizarHistorico();
 atualizarProdutosTable();
 atualizarCarrinho();
 
-// ✅ Correção: se a aba scanner já estiver ativa no carregamento, desenhar o gráfico
-if (document.getElementById("scanner")?.classList.contains("active")) {
-  setTimeout(atualizarScannerChart, 300);
+// ✅ Inicializa gráfico ao carregar
+setTimeout(() => {
+    atualizarScannerChart();
+}, 500);
 }
-}
+
+// Observer para aba scanner
 if ($("scanner")) {
 const observer = new MutationObserver(() => {
 if ($("scanner").classList.contains("active")) {
-atualizarScannerChart();
+setTimeout(atualizarScannerChart, 100);
 }
 });
 observer.observe($("scanner"), { attributes: true, attributeFilter: ['class'] });
 }
+
+// ✅ Atualiza gráfico ao redimensionar a janela
+window.addEventListener('resize', () => {
+    if (document.getElementById("scanner")?.classList.contains("active")) {
+        setTimeout(atualizarScannerChart, 100);
+    }
+});
+
 window.addEventListener('DOMContentLoaded', () => {
 const splash = $("splash");
 if (splash) {
-// ✅ Usar cor escura fixa no splash para compatibilidade com todos os temas
 splash.style.background = '#1e293b';
 setTimeout(() => {
 splash.style.opacity = '0';
 setTimeout(() => {
 if (splash.parentNode) splash.remove();
-// ✅ Correção: iniciarApp() DEPOIS da remoção completa do splash
 iniciarApp();
 }, 500);
 }, 1500);
