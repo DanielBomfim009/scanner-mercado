@@ -12,12 +12,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <style>
-    /* ... seu CSS permanece exatamente igual ... */
     :root {
-      /* Cores claras */
+      /* Cores principais baseadas no logo */
       --primary: #4361ee;
+      --primary-dark: #3a56d4;
       --primary-light: #4895ef;
-      --secondary: #f72585;
+      --secondary: #3a56d4; /* Substituído o rosa por um azul mais escuro */
       --success: #4ade80;
       --danger: #f87171;
       --background: #f8f9ff;
@@ -27,7 +27,7 @@
       --border: #e2e8f0;
       --radius: 20px;
       --shadow: 0 10px 25px -5px rgba(67, 97, 238, 0.1);
-      --transition: all 0.2s ease;
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     @media (prefers-color-scheme: dark) {
@@ -60,7 +60,7 @@
     #splash {
       position: fixed;
       inset: 0;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
       color: white;
       display: flex;
       flex-direction: column;
@@ -230,7 +230,7 @@
     #orcamentoBarraInner {
       height: 100%;
       width: 0%;
-      background: linear-gradient(90deg, var(--secondary), #ff9a03);
+      background: linear-gradient(90deg, var(--secondary), #4895ef);
       border-radius: 7px;
       text-align: center;
       color: white;
@@ -258,15 +258,15 @@
       transition: var(--transition);
     }
     .box:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.15);
+      transform: translateY(-3px);
+      box-shadow: 0 14px 32px -8px rgba(0, 0, 0, 0.18);
     }
 
     #scannerInfo {
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      margin-top: 16px;
+      gap: 16px;
+      margin-top: 20px;
     }
     #camera {
       width: 100%;
@@ -289,7 +289,7 @@
       left: 15%;
       width: 70%;
       height: 70%;
-      border: 2px solid var(--secondary);
+      border: 3px solid var(--secondary);
       border-radius: 8px;
       pointer-events: none;
       box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.1);
@@ -298,17 +298,17 @@
     .scan-overlay::after {
       content: '';
       position: absolute;
-      width: 30px;
-      height: 30px;
-      border: 2px solid var(--secondary);
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--secondary);
     }
     .scan-overlay::before {
-      top: -2px; left: -2px;
+      top: -3px; left: -3px;
       border-right: none;
       border-bottom: none;
     }
     .scan-overlay::after {
-      bottom: -2px; right: -2px;
+      bottom: -3px; right: -3px;
       border-left: none;
       border-top: none;
     }
@@ -317,9 +317,9 @@
       top: 15%;
       left: 15%;
       width: 70%;
-      height: 3px;
+      height: 4px;
       background: var(--secondary);
-      box-shadow: 0 0 10px var(--secondary);
+      box-shadow: 0 0 12px var(--secondary);
       animation: scan 2.5s linear infinite;
     }
     @keyframes scan {
@@ -430,12 +430,12 @@
       font-size: 28px;
       cursor: pointer;
       z-index: 200;
-      box-shadow: 0 8px 20px rgba(247, 37, 133, 0.4);
+      box-shadow: 0 8px 20px rgba(58, 86, 212, 0.4);
       transition: var(--transition);
     }
     #carrinhoIcone:hover {
-      transform: scale(1.1) rotate(12deg);
-      box-shadow: 0 10px 25px rgba(247, 37, 133, 0.6);
+      transform: scale(1.12) rotate(10deg);
+      box-shadow: 0 10px 25px rgba(58, 86, 212, 0.6);
     }
     #carrinhoIcone span {
       position: absolute;
@@ -556,7 +556,7 @@
     #barraValidacaoInner {
       height: 100%;
       width: 0%;
-      background: linear-gradient(90deg, var(--secondary), #ff9a03);
+      background: linear-gradient(90deg, var(--secondary), #4895ef);
       border-radius: 7px;
       text-align: center;
       color: white;
@@ -922,7 +922,7 @@
           $("barraValidacaoInner").setAttribute('data-pct', Math.round(ultimosIguais / repeticoes * 100) + '%');
 
           if (ultimosIguais >= repeticoes) {
-            scannerAtivo = false;
+            scannerAtivo = false; // 🔒 TRAVA O SCANNER ATÉ NOVA ATIVAÇÃO
             processarCodigo(codigoNormalizado);
           }
         });
@@ -936,73 +936,68 @@
           const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
 
           if (produto) {
-            setTimeout(() => {
-              const q = Number(prompt(`Produto: ${produto.nome}\nQuantidade:`));
-              if (q > 0) {
-                carrinho.push({ ...produto, qtd: q });
-                Storage.set("carrinho", carrinho);
-                abrirCarrinho();
-              }
-              $("barraValidacaoInner").style.width = "0%";
-              $("barraValidacaoInner").setAttribute('data-pct', '0%');
-              buffer = [];
-              scannerAtivo = true;
-              atualizarCarrinho();
-            }, 300);
+            const q = Number(prompt(`Produto: ${produto.nome}\nQuantidade:`));
+            if (q > 0) {
+              carrinho.push({ ...produto, qtd: q });
+              Storage.set("carrinho", carrinho);
+              abrirCarrinho();
+            }
+            // Reseta UI
+            $("barraValidacaoInner").style.width = "0%";
+            $("barraValidacaoInner").setAttribute('data-pct', '0%');
+            buffer = [];
+            // ✅ NÃO REATIVA O SCANNER AQUI — só na próxima vez que entrar na aba
           } else {
-            setTimeout(() => {
-              $("codigoCadastro").value = codigoNormalizado;
-              $("nomeCadastro").value = "";
-              $("valorCadastro").value = "";
-              $("cadastro-title").innerText = "Cadastro Rápido";
+            $("codigoCadastro").value = codigoNormalizado;
+            $("nomeCadastro").value = "";
+            $("valorCadastro").value = "";
+            $("cadastro-title").innerText = "Cadastro Rápido";
 
-              irPara("cadastro");
+            irPara("cadastro");
 
-              $("salvarCadastro").onclick = () => {
-                const novo = {
-                  codigo: $("codigoCadastro").value.trim(),
-                  nome: $("nomeCadastro").value.trim(),
-                  categoria: $("categoriaCadastro").value,
-                  tipo: $("tipoCadastro").value,
-                  valor: Number($("valorCadastro").value)
-                };
-
-                if (!novo.nome || !novo.valor || isNaN(novo.valor)) {
-                  alert("Preencha nome e valor corretamente.");
-                  return;
-                }
-
-                produtos.push(novo);
-                Storage.set("produtos", produtos);
-
-                const q = Number(prompt(`Produto: ${novo.nome}\nQuantidade:`));
-                if (q > 0) {
-                  carrinho.push({ ...novo, qtd: q });
-                  Storage.set("carrinho", carrinho);
-                }
-
-                $("codigoCadastro").value = "";
-                $("nomeCadastro").value = "";
-                $("valorCadastro").value = "";
-                $("cadastro-title").innerText = "Cadastro de Produto";
-                $("salvarCadastro").onclick = salvarOriginal;
-
-                atualizarProdutosTable();
-                atualizarScannerChart();
-                atualizarCarrinho();
-                setTimeout(() => irPara("scanner"), 300);
+            const handlerRapido = () => {
+              const novo = {
+                codigo: $("codigoCadastro").value.trim(),
+                nome: $("nomeCadastro").value.trim(),
+                categoria: $("categoriaCadastro").value,
+                tipo: $("tipoCadastro").value,
+                valor: Number($("valorCadastro").value)
               };
 
-              $("barraValidacaoInner").style.width = "0%";
-              $("barraValidacaoInner").setAttribute('data-pct', '0%');
-              buffer = [];
-              scannerAtivo = false;
-            }, 300);
+              if (!novo.nome || !novo.valor || isNaN(novo.valor)) {
+                alert("Preencha nome e valor corretamente.");
+                return;
+              }
+
+              produtos.push(novo);
+              Storage.set("produtos", produtos);
+
+              const q = Number(prompt(`Produto: ${novo.nome}\nQuantidade:`));
+              if (q > 0) {
+                carrinho.push({ ...novo, qtd: q });
+                Storage.set("carrinho", carrinho);
+              }
+
+              $("codigoCadastro").value = "";
+              $("nomeCadastro").value = "";
+              $("valorCadastro").value = "";
+              $("cadastro-title").innerText = "Cadastro de Produto";
+              $("salvarCadastro").onclick = salvarOriginal;
+
+              atualizarProdutosTable();
+              atualizarScannerChart();
+              atualizarCarrinho();
+              setTimeout(() => irPara("scanner"), 300);
+            };
+
+            $("salvarCadastro").onclick = handlerRapido;
+            $("barraValidacaoInner").style.width = "0%";
+            $("barraValidacaoInner").setAttribute('data-pct', '0%');
+            buffer = [];
           }
         } catch (e) {
           console.error("Erro ao processar código:", e);
           buffer = [];
-          scannerAtivo = true;
         }
       }
 
@@ -1020,9 +1015,6 @@
       }
 
       function atualizarScannerChart() {
-        // Só atualiza gráfico se a view do scanner estiver ativa
-        if (!$("scanner").classList.contains("active")) return;
-
         const categorias = {};
         produtos.forEach(p => {
           categorias[p.categoria] = (categorias[p.categoria] || 0) + 1;
@@ -1031,11 +1023,11 @@
         if (categoriaChart) categoriaChart.destroy();
         categoriaChart = new Chart(ctx, {
           type: 'doughnut',
-          data: { // <<<< CORREÇÃO PRINCIPAL AQUI
+          data: {
             labels: Object.keys(categorias),
             datasets: [{
               data: Object.values(categorias),
-              backgroundColor: ['#4361ee', '#f72585', '#4ade80', '#f87171', '#6b6b6b', '#9c27b0']
+              backgroundColor: ['#4361ee', '#3a56d4', '#4895ef', '#f87171', '#6b6b6b', '#9c27b0']
             }]
           },
           options: {
@@ -1062,15 +1054,22 @@
       atualizarHistorico();
       atualizarProdutosTable();
       atualizarCarrinho();
-      atualizarScannerChart();
     }
+
+    // Atualiza gráfico sempre que a aba scanner for ativada
+    const observer = new MutationObserver(() => {
+      if ($("scanner").classList.contains("active")) {
+        atualizarScannerChart();
+      }
+    });
+    observer.observe($("scanner"), { attributes: true, attributeFilter: ['class'] });
 
     window.addEventListener('DOMContentLoaded', () => {
       const splash = $("splash");
       setTimeout(() => {
         splash.style.opacity = '0';
         setTimeout(() => {
-          splash.remove(); // Remove elemento realmente
+          splash.remove();
           iniciarApp();
         }, 500);
       }, 1500);
