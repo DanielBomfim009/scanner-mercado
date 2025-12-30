@@ -1007,7 +1007,7 @@ return;
 }
 const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
 historico.push({
- data: new Date().toLocaleString("pt-BR"),
+  new Date().toLocaleString("pt-BR"),
 total,
 itens: [...carrinho]
 });
@@ -1279,6 +1279,9 @@ $("overlayQuantidade").addEventListener('click', fecharQuantidade);
 atualizarHistorico();
 atualizarProdutosTable();
 atualizarCarrinho();
+
+// ✅ CORREÇÃO: Forçar renderização do gráfico ao carregar a página, mesmo se a aba ativa for Home
+atualizarScannerChart();  // ← LINHA ADICIONADA AQUI
 
 // ✅ Correção: se a aba scanner já estiver ativa no carregamento, desenhar o gráfico
 if (document.getElementById("scanner")?.classList.contains("active")) {
