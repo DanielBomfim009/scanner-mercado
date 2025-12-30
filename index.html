@@ -325,6 +325,26 @@ height: 100%;
 object-fit: cover;
 border-radius: var(--radius);
 }
+/* ✅ Estilo para a mensagem de reinício */
+#camera .reiniciando {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0, 0, 0, 0.85);
+color: white;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 16px;
+font-weight: 600;
+border-radius: var(--radius);
+z-index: 10;
+opacity: 0;
+pointer-events: none;
+transition: opacity 0.2s;
+}
 .scan-overlay {
 position: absolute;
 top: 15%;
@@ -720,6 +740,7 @@ Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
 <h2 style="text-align:center; margin-bottom:16px;">Scanner de Produtos</h2>
 <div id="camera">
 <video id="video" playsinline></video>
+<div class="reiniciando" id="reiniciandoMensagem">Reiniciando câmera...</div>
 <div class="scan-overlay"></div>
 <div class="scan-line"></div>
 </div>
@@ -996,9 +1017,29 @@ $("modalCarrinho").style.display = "flex";
 setTimeout(() => $("modalCarrinho").classList.add("active"), 10);
 atualizarCarrinho();
 };
+// ✅ Função atualizada com reinício automático + mensagem
 window.fecharCarrinho = function() {
-$("modalCarrinho").classList.remove("active");
-setTimeout(() => $("modalCarrinho").style.display = "none", 300);
+    $("modalCarrinho").classList.remove("active");
+    setTimeout(() => {
+        $("modalCarrinho").style.display = "none";
+        if (document.getElementById("scanner")?.classList.contains("active")) {
+            // Mostrar mensagem
+            const msg = $("reiniciandoMensagem");
+            if (msg) {
+                msg.style.opacity = "1";
+            }
+            setTimeout(() => {
+                pararScanner();
+                iniciarScanner();
+                // Esconder mensagem
+                if (msg) {
+                    setTimeout(() => {
+                        msg.style.opacity = "0";
+                    }, 200);
+                }
+            }, 300);
+        }
+    }, 300);
 };
 window.finalizarCompra = function() {
 if (!carrinho.length) {
@@ -1042,60 +1083,66 @@ area.innerHTML += `
 });
 }
 
+// ✅ Função atualizada com verificação extra de visibilidade
 async function iniciarScanner() {
-if (scannerAtivo || !navigator.mediaDevices) return;
-scannerAtivo = true;
-buffer = [];
-if (!stream) {
-try {
-const constraints = {
-video: {
-facingMode: "environment",
-advanced: [{ focusMode: "continuous" }]
+    if (!document.getElementById("scanner")?.classList.contains("active")) {
+        scannerAtivo = false;
+        return;
+    }
+    if (scannerAtivo || !navigator.mediaDevices) return;
+    scannerAtivo = true;
+    buffer = [];
+    if (!stream) {
+        try {
+            const constraints = {
+                video: {
+                    facingMode: "environment",
+                    advanced: [{ focusMode: "continuous" }]
+                }
+            };
+            stream = await navigator.mediaDevices.getUserMedia(constraints);
+            const video = $("video");
+            if (video) {
+                video.srcObject = stream;
+                await video.play().catch(e => console.warn("Erro ao play:", e));
+            }
+        } catch (err) {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                const video = $("video");
+                if (video) {
+                    video.srcObject = stream;
+                    await video.play().catch(e => console.warn("Erro fallback:", e));
+                }
+            } catch (e2) {
+                alert("⚠️ Permissão da câmera negada ou não suportada.");
+                scannerAtivo = false;
+                return;
+            }
+        }
+    }
+    reader = new ZXing.BrowserMultiFormatReader();
+    reader.decodeFromVideoElementContinuously($("video"), (res) => {
+        if (!res?.text || !scannerAtivo) return;
+        const codigoBruto = res.text;
+        const codigoNormalizado = normalizarCodigo(codigoBruto);
+        if (!codigoNormalizado) return;
+        buffer.push(codigoNormalizado);
+        if (buffer.length > repeticoes) buffer.shift();
+        const ultimosIguais = buffer.filter(v => v === codigoNormalizado).length;
+        if ($("detected")) $("detected").innerText = codigoBruto;
+        if ($("barraValidacaoInner")) {
+            $("barraValidacaoInner").style.width = (ultimosIguais / repeticoes * 100) + "%";
+            $("barraValidacaoInner").setAttribute('data-pct', Math.round(ultimosIguais / repeticoes * 100) + '%');
+        }
+        if (ultimosIguais >= repeticoes) {
+            scannerAtivo = false;
+            reader.reset();
+            processarCodigo(codigoNormalizado);
+        }
+    });
 }
-};
-stream = await navigator.mediaDevices.getUserMedia(constraints);
-const video = $("video");
-if (video) {
-video.srcObject = stream;
-await video.play().catch(e => console.warn("Erro ao play:", e));
-}
-} catch (err) {
-try {
-stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-const video = $("video");
-if (video) {
-video.srcObject = stream;
-await video.play().catch(e => console.warn("Erro fallback:", e));
-}
-} catch (e2) {
-alert("⚠️ Permissão da câmera negada ou não suportada.");
-scannerAtivo = false;
-return;
-}
-}
-}
-reader = new ZXing.BrowserMultiFormatReader();
-reader.decodeFromVideoElementContinuously($("video"), (res) => {
-if (!res?.text || !scannerAtivo) return;
-const codigoBruto = res.text;
-const codigoNormalizado = normalizarCodigo(codigoBruto);
-if (!codigoNormalizado) return;
-buffer.push(codigoNormalizado);
-if (buffer.length > repeticoes) buffer.shift();
-const ultimosIguais = buffer.filter(v => v === codigoNormalizado).length;
-if ($("detected")) $("detected").innerText = codigoBruto;
-if ($("barraValidacaoInner")) {
-$("barraValidacaoInner").style.width = (ultimosIguais / repeticoes * 100) + "%";
-$("barraValidacaoInner").setAttribute('data-pct', Math.round(ultimosIguais / repeticoes * 100) + '%');
-}
-if (ultimosIguais >= repeticoes) {
-scannerAtivo = false;
-reader.reset();
-processarCodigo(codigoNormalizado);
-}
-});
-}
+
 function processarCodigo(codigoNormalizado) {
 try {
 navigator.vibrate?.(50);
@@ -1165,6 +1212,7 @@ window.quantidadeJaSolicitada = false;
 buffer = [];
 }
 }
+
 function pararScanner() {
 scannerAtivo = false;
 if (reader) reader.reset();
@@ -1180,7 +1228,6 @@ video.srcObject = null;
 window.quantidadeJaSolicitada = false;
 }
 
-// ✅ FUNÇÃO CORRIGIDA: atualizarScannerChart
 function atualizarScannerChart() {
     const categorias = {};
     produtos.forEach(p => {
@@ -1196,11 +1243,9 @@ function atualizarScannerChart() {
     const canvas = $("categoriaChart");
     if (!canvas) return;
 
-    // Ajusta dimensões do canvas
     canvas.width = chartBox.offsetWidth;
     canvas.height = chartBox.offsetHeight;
 
-    // Destrói gráfico anterior
     if (categoriaChart) {
         categoriaChart.destroy();
         categoriaChart = null;
@@ -1223,11 +1268,11 @@ function atualizarScannerChart() {
         const ctx = canvas.getContext("2d");
         categoriaChart = new Chart(ctx, {
             type: 'bar',
-            data: {
+             {
                 labels: labels,
                 datasets: [{
                     label: 'Número de Produtos',
-                    data: values,
+                     values,
                     backgroundColor: labels.map((_, i) => cores[i % cores.length]),
                     borderWidth: 0
                 }]
@@ -1290,13 +1335,11 @@ atualizarHistorico();
 atualizarProdutosTable();
 atualizarCarrinho();
 
-// ✅ Inicializa gráfico ao carregar
 setTimeout(() => {
     atualizarScannerChart();
 }, 500);
 }
 
-// Observer para aba scanner
 if ($("scanner")) {
 const observer = new MutationObserver(() => {
 if ($("scanner").classList.contains("active")) {
@@ -1306,7 +1349,6 @@ setTimeout(atualizarScannerChart, 100);
 observer.observe($("scanner"), { attributes: true, attributeFilter: ['class'] });
 }
 
-// ✅ Atualiza gráfico ao redimensionar a janela
 window.addEventListener('resize', () => {
     if (document.getElementById("scanner")?.classList.contains("active")) {
         setTimeout(atualizarScannerChart, 100);
