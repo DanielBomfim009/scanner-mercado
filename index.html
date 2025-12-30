@@ -5,10 +5,10 @@
 <title>GoL BUY SMART</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="theme-color" content="#4361ee" />
-<!-- Bibliotecas externas (sem espaços extras) -->
-<script src="https://unpkg.com/@zxing/library@0.21.2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<!-- Bibliotecas externas -->
+<script src="https://unpkg.com/@zxing/library@0.21.2  "></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js  "></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter  :wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
 :root {
 --primary: #4361ee;
@@ -75,6 +75,7 @@ color: var(--text);
 #splash {
 position: fixed;
 inset: 0;
+/* Cor escura neutra fixa que combina com qualquer tema */
 background: #1e293b;
 color: white;
 display: flex;
@@ -84,7 +85,6 @@ justify-content: center;
 z-index: 2000;
 opacity: 1;
 transition: opacity 0.5s;
-pointer-events: none;
 }
 #splash img {
 width: 300px;
@@ -629,63 +629,51 @@ text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 0%, 100% { transform: scale(1); }
 50% { transform: scale(1.2); }
 }
-
-/* Modal de quantidade */
+/* Estilo para input de quantidade */
 .quantidade-modal {
 position: fixed;
 top: 50%;
 left: 50%;
 transform: translate(-50%, -50%);
 background: var(--card);
-padding: 28px;
-border-radius: 20px;
-box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+padding: 24px;
+border-radius: 16px;
+box-shadow: 0 12px 32px rgba(0,0,0,0.3);
 z-index: 1100;
 border: 1px solid var(--border);
 text-align: center;
-max-width: 340px;
-width: 92vw;
-font-family: 'Inter', sans-serif;
-}
-.quantidade-modal h3 {
-margin-bottom: 18px;
-color: var(--primary);
-font-weight: 700;
-font-size: 1.2rem;
+max-width: 320px;
+width: 90vw;
 }
 .quantidade-modal input {
 width: 100%;
-padding: 14px;
-margin: 14px 0;
+padding: 12px;
+margin: 12px 0;
 border: 1px solid var(--border);
-border-radius: 14px;
-font-size: 20px;
+border-radius: 12px;
+font-size: 18px;
 text-align: center;
 background: var(--card);
 color: var(--text);
-font-weight: 600;
 }
 .quantidade-modal button {
 background: var(--primary);
 color: white;
 border: none;
-border-radius: 14px;
-padding: 12px 24px;
+border-radius: 12px;
+padding: 10px 20px;
 font-weight: 600;
-margin: 0 8px;
+margin: 0 6px;
 cursor: pointer;
 transition: var(--transition);
-font-size: 16px;
-min-width: 100px;
 }
 .quantidade-modal button:hover {
 background: var(--primary-light);
-transform: translateY(-2px);
 }
 #overlayQuantidade {
 position: fixed;
 inset: 0;
-background: rgba(0,0,0,0.6);
+background: rgba(0,0,0,0.5);
 z-index: 1050;
 display: none;
 }
@@ -801,6 +789,7 @@ Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
 <button onclick="fecharCarrinho()">Fechar</button>
 </div>
 </div>
+<!-- Overlay e modal de quantidade personalizado -->
 <div id="overlayQuantidade"></div>
 <div id="quantidadeModal" class="quantidade-modal" style="display:none;">
 <h3 id="tituloQuantidade">Informe a quantidade</h3>
@@ -822,9 +811,8 @@ let historico = Storage.get("historicoCompras");
 let orcamento = Storage.get("orcamento") || 0;
 let reader = null, stream = null, buffer = [], scannerAtivo = false;
 const repeticoes = 3;
-const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg  ");
 let categoriaChart;
-
 // Carregar tema salvo
 const temaSalvo = localStorage.getItem('tema') || 'padrao';
 if (temaSalvo !== 'padrao') {
@@ -833,19 +821,22 @@ document.body.classList.add(`tema-${temaSalvo}`);
 if ($("temaSelector")) {
 $("temaSelector").value = temaSalvo;
 }
-
 function mudarTema(tema) {
 document.body.className = document.body.className.replace(/tema-\w+/g, '').trim();
 if (tema !== 'padrao') {
 document.body.classList.add(`tema-${tema}`);
 }
 localStorage.setItem('tema', tema);
+// ✅ Correção: atualizar gráfico com delay para garantir layout estável
+if (document.getElementById("scanner").classList.contains("active")) {
+setTimeout(() => {
+atualizarScannerChart();
+}, 100);
 }
-
+}
 function normalizarCodigo(cod) {
 return (cod || '').toString().trim().replace(/[\r\n\t\s]+/g, '');
 }
-
 function verificarOrcamento() {
 const gasto = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
 const pct = orcamento ? (gasto / orcamento) * 100 : 0;
@@ -855,55 +846,30 @@ alerta.classList.add('show');
 setTimeout(() => alerta.classList.remove('show'), 3000);
 }
 }
-
-let quantidadeEmAndamento = false;
-
+// Função para solicitar quantidade com modal personalizado
 function solicitarQuantidade(produtoNome, callback) {
-if (quantidadeEmAndamento) return;
-quantidadeEmAndamento = true;
-
-$("tituloQuantidade").innerText = `Produto: ${produtoNome}`;
+$("tituloQuantidade").innerText = `Produto: ${produtoNome}\nInforme a quantidade`;
 $("inputQuantidade").value = "1";
 $("btnConfirmarQtd").onclick = () => {
 const q = Number($("inputQuantidade").value);
 fecharQuantidade();
 if (q > 0) callback(q);
-quantidadeEmAndamento = false;
 };
-$("btnCancelarQtd").onclick = () => {
-fecharQuantidade();
-quantidadeEmAndamento = false;
-};
+$("btnCancelarQtd").onclick = fecharQuantidade;
 $("overlayQuantidade").style.display = "block";
 $("quantidadeModal").style.display = "block";
 }
-
 function fecharQuantidade() {
 $("overlayQuantidade").style.display = "none";
 $("quantidadeModal").style.display = "none";
-quantidadeEmAndamento = false;
 }
-
 function iniciarApp() {
 window.irPara = function(tela) {
 document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
-const alvo = $(tela);
-if (!alvo) return;
-alvo.classList.add("active");
-
-if (tela === "scanner") {
-iniciarScanner();
-// Atualiza gráfico com pequeno delay para garantir visibilidade
-setTimeout(() => {
-if (alvo.classList.contains("active")) {
-atualizarScannerChart();
-}
-}, 100);
-} else {
-pararScanner();
-}
+$(tela).classList.add("active");
+if (tela === "scanner") iniciarScanner();
+else pararScanner();
 };
-
 const sidebar = $("sidebar");
 const content = $("content");
 const hamburger = $("hamburger");
@@ -911,7 +877,6 @@ hamburger.onclick = () => {
 sidebar.classList.toggle("hide");
 content.classList.toggle("full");
 };
-
 if ($("orcamentoInput")) {
 $("orcamentoInput").value = orcamento;
 $("orcamentoInput").addEventListener("input", () => {
@@ -921,7 +886,6 @@ atualizarOrcamento();
 verificarOrcamento();
 });
 }
-
 function atualizarOrcamento() {
 const gasto = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
 $("orcamentoGasto").innerText = gasto.toFixed(2);
@@ -930,7 +894,6 @@ const bar = $("orcamentoBarraInner");
 bar.style.width = pct + "%";
 bar.setAttribute('data-pct', Math.round(pct) + '%');
 }
-
 function atualizarProdutosTable() {
 let html = "";
 produtos.forEach((p, i) => {
@@ -951,7 +914,6 @@ const tbody = $("produtosTable")?.querySelector("tbody");
 if (tbody) tbody.innerHTML = html;
 if ($("totalProdutos")) $("totalProdutos").innerText = produtos.length;
 }
-
 window.editarProduto = function(i) {
 $("cadastro-title").innerText = "Editar Produto";
 $("codigoCadastro").value = produtos[i].codigo;
@@ -963,7 +925,6 @@ produtos.splice(i, 1);
 Storage.set("produtos", produtos);
 irPara("cadastro");
 };
-
 window.excluirProduto = function(i) {
 if (confirm("Excluir produto?")) {
 produtos.splice(i, 1);
@@ -972,7 +933,6 @@ atualizarProdutosTable();
 atualizarScannerChart();
 }
 };
-
 const salvarOriginal = () => {
 const novo = {
 codigo: $("codigoCadastro").value.trim(),
@@ -989,6 +949,7 @@ produtos.push(novo);
 Storage.set("produtos", produtos);
 atualizarProdutosTable();
 atualizarScannerChart();
+// ✅ LIMPAR CAMPOS após salvar
 $("codigoCadastro").value = "";
 $("nomeCadastro").value = "";
 $("valorCadastro").value = "";
@@ -997,11 +958,9 @@ $("tipoCadastro").value = "UN";
 $("cadastro-title").innerText = "Cadastro de Produto";
 irPara("produtos");
 };
-
 if ($("salvarCadastro")) {
 $("salvarCadastro").onclick = salvarOriginal;
 }
-
 function atualizarCarrinho() {
 let total = 0;
 let html = `<tr><th>Nome</th><th>Qtd</th><th>Subtotal</th><th>Ação</th></tr>`;
@@ -1027,24 +986,20 @@ badge.style.animation = "pulse 0.5s";
 setTimeout(() => badge.style.animation = "", 500);
 }
 }
-
 window.removerDoCarrinho = function(idx) {
 carrinho.splice(idx, 1);
 Storage.set("carrinho", carrinho);
 atualizarCarrinho();
 };
-
 window.abrirCarrinho = function() {
 $("modalCarrinho").style.display = "flex";
 setTimeout(() => $("modalCarrinho").classList.add("active"), 10);
 atualizarCarrinho();
 };
-
 window.fecharCarrinho = function() {
 $("modalCarrinho").classList.remove("active");
 setTimeout(() => $("modalCarrinho").style.display = "none", 300);
 };
-
 window.finalizarCompra = function() {
 if (!carrinho.length) {
 alert("Carrinho vazio");
@@ -1052,7 +1007,7 @@ return;
 }
 const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
 historico.push({
-  new Date().toLocaleString("pt-BR"),
+ data: new Date().toLocaleString("pt-BR"),
 total,
 itens: [...carrinho]
 });
@@ -1064,7 +1019,6 @@ atualizarHistorico();
 fecharCarrinho();
 alert("Compra finalizada!");
 };
-
 function atualizarHistorico() {
 const area = $("historicoConteudo");
 if (!area) return;
@@ -1087,7 +1041,6 @@ area.innerHTML += `
 </div>`;
 });
 }
-
 async function iniciarScanner() {
 if (scannerAtivo || !navigator.mediaDevices) return;
 scannerAtivo = true;
@@ -1142,14 +1095,17 @@ processarCodigo(codigoNormalizado);
 }
 });
 }
-
 function processarCodigo(codigoNormalizado) {
 try {
 navigator.vibrate?.(50);
 beep.play().catch(e => console.warn("Beep não reproduzido:", e));
 const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
 if (produto) {
+// ✅ Evita múltiplos prompts
+if (window.quantidadeJaSolicitada) return;
+window.quantidadeJaSolicitada = true;
 solicitarQuantidade(produto.nome, (q) => {
+window.quantidadeJaSolicitada = false;
 carrinho.push({ ...produto, qtd: q });
 Storage.set("carrinho", carrinho);
 abrirCarrinho();
@@ -1160,7 +1116,6 @@ $("nomeCadastro").value = "";
 $("valorCadastro").value = "";
 $("cadastro-title").innerText = "Cadastro Rápido";
 irPara("cadastro");
-
 const handlerRapido = () => {
 const novo = {
 codigo: $("codigoCadastro").value.trim(),
@@ -1175,11 +1130,16 @@ return;
 }
 produtos.push(novo);
 Storage.set("produtos", produtos);
+// ✅ Evita múltiplos prompts
+if (window.quantidadeJaSolicitada) return;
+window.quantidadeJaSolicitada = true;
 solicitarQuantidade(novo.nome, (q) => {
+window.quantidadeJaSolicitada = false;
 if (q > 0) {
 carrinho.push({ ...novo, qtd: q });
 Storage.set("carrinho", carrinho);
 }
+// ✅ Limpar campos após cadastro rápido
 $("codigoCadastro").value = "";
 $("nomeCadastro").value = "";
 $("valorCadastro").value = "";
@@ -1194,7 +1154,6 @@ fecharQuantidade();
 irPara("scanner");
 });
 };
-
 $("salvarCadastro").onclick = handlerRapido;
 if ($("barraValidacaoInner")) {
 $("barraValidacaoInner").style.width = "0%";
@@ -1204,11 +1163,10 @@ buffer = [];
 }
 } catch (e) {
 console.error("Erro ao processar código:", e);
-quantidadeEmAndamento = false;
+window.quantidadeJaSolicitada = false;
 buffer = [];
 }
 }
-
 function pararScanner() {
 scannerAtivo = false;
 if (reader) reader.reset();
@@ -1221,144 +1179,136 @@ if (video && video.srcObject) {
 video.srcObject.getTracks?.().forEach(t => t.stop());
 video.srcObject = null;
 }
-quantidadeEmAndamento = false;
+window.quantidadeJaSolicitada = false;
 }
-
-// ✅ Função robusta: só cria gráfico se canvas estiver visível
 function atualizarScannerChart() {
-  const canvas = $("categoriaChart");
-  if (!canvas) return;
-
-  // Verifica se o canvas tem dimensões reais (está visível)
-  if (canvas.offsetWidth === 0 || canvas.offsetHeight === 0) {
-    setTimeout(() => {
-      if ($("scanner")?.classList.contains("active")) {
-        atualizarScannerChart();
-      }
-    }, 200);
-    return;
-  }
-
-  // Ajusta tamanho do canvas
-  const displayWidth = canvas.offsetWidth;
-  const displayHeight = canvas.offsetHeight;
-  if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
-    canvas.width = displayWidth;
-    canvas.height = displayHeight;
-  }
-
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-
-  // Destrói gráfico anterior
-  if (categoriaChart) {
-    categoriaChart.destroy();
-    categoriaChart = null;
-  }
-
-  // Calcula dados
-  const categorias = {};
-  produtos.forEach(p => {
-    categorias[p.categoria] = (categorias[p.categoria] || 0) + 1;
-  });
-
-  const categoriasOrdenadas = Object.entries(categorias).sort((a, b) => b[1] - a[1]);
-  const labels = categoriasOrdenadas.map(([cat]) => cat);
-  const values = categoriasOrdenadas.map(([, val]) => val);
-
-  const rootStyles = getComputedStyle(document.documentElement);
-  const textColor = rootStyles.getPropertyValue('--text').trim();
-  const textMutedColor = rootStyles.getPropertyValue('--text-muted').trim();
-  const cores = [
-    '#4361ee', '#3a56d4', '#4895ef', '#f87171', '#6b6b6b', '#9c27b0',
-    '#06b6d4', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444'
-  ];
-
-  // ✅ Sintaxe correta do Chart.js
-  categoriaChart = new Chart(ctx, {
-    type: 'bar',
-    ,
-    options: {
-      indexAxis: 'y',
-      responsive: false,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          titleColor: textColor,
-          bodyColor: textColor,
-          backgroundColor: rootStyles.getPropertyValue('--card').trim(),
-          borderColor: rootStyles.getPropertyValue('--border').trim(),
-          borderWidth: 1,
-          callbacks: {
-            label: (ctx) => ` ${ctx.parsed.x} produtos`
-          }
-        }
-      },
-      scales: {
-        x: {
-          beginAtZero: true,
-          grid: { color: 'rgba(0,0,0,0.05)' },
-          ticks: { color: textMutedColor }
-        },
-        y: {
-          grid: { display: false },
-          ticks: { color: textColor }
-        }
-      }
-    }
-  });
+const categorias = {};
+produtos.forEach(p => {
+categorias[p.categoria] = (categorias[p.categoria] || 0) + 1;
+});
+// ✅ Garantir que o container está visível
+const chartBox = $("scannerChartBox");
+if (!chartBox || chartBox.offsetHeight === 0) {
+// Se não estiver visível, agendar nova tentativa
+setTimeout(atualizarScannerChart, 100);
+return;
 }
-
-// Eventos globais
+// ✅ Resetar o canvas completamente
+const canvas = $("categoriaChart");
+if (!canvas) return;
+const ctx = canvas.getContext("2d");
+ctx.clearRect(0, 0, canvas.width, canvas.height);
+canvas.width = canvas.offsetWidth;
+canvas.height = canvas.offsetHeight;
+// ✅ Destruir gráfico existente
+if (categoriaChart) {
+categoriaChart.destroy();
+categoriaChart = null;
+}
+const categoriasOrdenadas = Object.entries(categorias).sort((a, b) => b[1] - a[1]);
+const labels = categoriasOrdenadas.map(([cat]) => cat);
+const values = categoriasOrdenadas.map(([, val]) => val);
+// ✅ Obter cores de texto dinamicamente do tema atual
+const rootStyles = getComputedStyle(document.documentElement);
+const textColor = rootStyles.getPropertyValue('--text').trim();
+const textMutedColor = rootStyles.getPropertyValue('--text-muted').trim();
+const cores = [
+'#4361ee', '#3a56d4', '#4895ef', '#f87171', '#6b6b6b', '#9c27b0',
+'#06b6d4', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444'
+];
+categoriaChart = new Chart(ctx, {
+type: 'bar',
+data: {  // ← CORREÇÃO: chave "data" estava faltando!
+labels: labels,
+datasets: [{
+label: 'Número de Produtos',
+data: values,
+backgroundColor: labels.map((_, i) => cores[i % cores.length]),
+borderWidth: 0
+}]
+},
+options: {
+indexAxis: 'y',
+responsive: true,
+maintainAspectRatio: false,
+plugins: {
+legend: { display: false },
+tooltip: {
+titleColor: textColor,
+bodyColor: textColor,
+backgroundColor: rootStyles.getPropertyValue('--card').trim(),
+borderColor: rootStyles.getPropertyValue('--border').trim(),
+borderWidth: 1,
+callbacks: {
+label: (ctx) => ` ${ctx.parsed.x} produtos`
+}
+}
+},
+scales: {
+x: {
+beginAtZero: true,
+grid: { color: 'rgba(0,0,0,0.05)' },
+ticks: { color: textMutedColor }
+},
+y: {
+grid: { display: false },
+ticks: { color: textColor }
+}
+}
+}
+});
+}
 document.addEventListener('keydown', (e) => {
 if (e.key === 'Escape') {
-if ($("modalCarrinho")?.classList.contains("active")) fecharCarrinho();
-if ($("quantidadeModal").style.display === "block") fecharQuantidade();
+if ($("modalCarrinho")?.classList.contains("active")) {
+fecharCarrinho();
+}
+if ($("quantidadeModal").style.display === "block") {
+fecharQuantidade();
+}
 }
 });
-
 if ($("modalCarrinho")) {
 $("modalCarrinho").addEventListener('click', (e) => {
-if (e.target === $("modalCarrinho")) fecharCarrinho();
+if (e.target === $("modalCarrinho")) {
+fecharCarrinho();
+}
 });
 }
-
 $("overlayQuantidade").addEventListener('click', fecharQuantidade);
-
-// Inicialização segura
 atualizarHistorico();
 atualizarProdutosTable();
 atualizarCarrinho();
 
-// ✅ Inicialização principal com tratamento de erro
+// ✅ Correção: se a aba scanner já estiver ativa no carregamento, desenhar o gráfico
+if (document.getElementById("scanner")?.classList.contains("active")) {
+  setTimeout(atualizarScannerChart, 300);
+}
+}
+if ($("scanner")) {
+const observer = new MutationObserver(() => {
+if ($("scanner").classList.contains("active")) {
+atualizarScannerChart();
+}
+});
+observer.observe($("scanner"), { attributes: true, attributeFilter: ['class'] });
+}
 window.addEventListener('DOMContentLoaded', () => {
-  const splash = $("splash");
-  if (splash) {
-    splash.style.opacity = '1';
-    splash.style.pointerEvents = 'none';
-
-    setTimeout(() => {
-      splash.style.opacity = '0';
-      setTimeout(() => {
-        if (splash.parentNode) splash.remove();
-        try {
-          iniciarApp();
-        } catch (e) {
-          console.error("Erro crítico ao iniciar app:", e);
-          // Mesmo com erro, o app tenta funcionar
-          alert("Erro ao iniciar. Verifique o console (F12).");
-        }
-      }, 500);
-    }, 1500);
-  } else {
-    try {
-      iniciarApp();
-    } catch (e) {
-      console.error("Erro ao iniciar app:", e);
-      alert("Erro ao iniciar. Verifique o console (F12).");
-    }
-  }
+const splash = $("splash");
+if (splash) {
+// ✅ Usar cor escura fixa no splash para compatibilidade com todos os temas
+splash.style.background = '#1e293b';
+setTimeout(() => {
+splash.style.opacity = '0';
+setTimeout(() => {
+if (splash.parentNode) splash.remove();
+// ✅ Correção: iniciarApp() DEPOIS da remoção completa do splash
+iniciarApp();
+}, 500);
+}, 1500);
+} else {
+iniciarApp();
+}
 });
 </script>
 </body>
