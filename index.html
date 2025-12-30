@@ -857,7 +857,7 @@
     const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
     let categoriaChart;
 
-    // ✅ Aplicar tema ao splash antes de iniciar
+    // Carregar tema salvo
     const temaSalvo = localStorage.getItem('tema') || 'padrao';
     if (temaSalvo !== 'padrao') {
       document.body.classList.add(`tema-${temaSalvo}`);
@@ -872,9 +872,11 @@
         document.body.classList.add(`tema-${tema}`);
       }
       localStorage.setItem('tema', tema);
-      // ✅ Força atualização do gráfico após mudança de tema
+      // ✅ Correção: atualizar gráfico com delay para garantir layout estável
       if (document.getElementById("scanner").classList.contains("active")) {
-        atualizarScannerChart();
+        setTimeout(() => {
+          atualizarScannerChart();
+        }, 100);
       }
     }
 
@@ -1268,14 +1270,27 @@
           categorias[p.categoria] = (categorias[p.categoria] || 0) + 1;
         });
 
-        // ✅ DESTROIR ANTES de acessar o canvas
+        // ✅ Garantir que o container está visível
+        const chartBox = $("scannerChartBox");
+        if (!chartBox || chartBox.offsetHeight === 0) {
+          // Se não estiver visível, agendar nova tentativa
+          setTimeout(atualizarScannerChart, 100);
+          return;
+        }
+
+        // ✅ Resetar o canvas completamente
+        const canvas = $("categoriaChart");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+
+        // ✅ Destruir gráfico existente
         if (categoriaChart) {
           categoriaChart.destroy();
           categoriaChart = null;
         }
-
-        const ctx = $("categoriaChart")?.getContext("2d");
-        if (!ctx) return;
 
         const categoriasOrdenadas = Object.entries(categorias).sort((a, b) => b[1] - a[1]);
         const labels = categoriasOrdenadas.map(([cat]) => cat);
