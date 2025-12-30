@@ -6,10 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#3b7ddd" />
 
-  <!-- Bibliotecas externas -->
-  <script src="https://unpkg.com/@zxing/library@0.21.2  "></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js  "></script>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto  :wght@400;500;700&display=swap" rel="stylesheet" />
+  <!-- Bibliotecas externas (ESPAÇOS REMOVIDOS!) -->
+  <script src="https://unpkg.com/@zxing/library@0.21.2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
 
   <style>
     :root {
@@ -34,7 +34,7 @@
     }
 
     body {
-      background: url('https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPOSITORIO/main/fungo.png  ') no-repeat center top;
+      background: url('https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPOSITORIO/main/fungo.png') no-repeat center top;
       background-size: cover;
       display: flex;
       min-height: 100vh;
@@ -421,7 +421,7 @@
 <body>
   <!-- Splash Screen -->
   <div id="splash">
-    <img src="logo.png" alt="Logo" />
+    <img src="logo.png" alt="GoL BUY SMART – App de compras inteligente" />
     <p>Bem-vindo ao seu app de compras inteligente</p>
   </div>
 
@@ -441,7 +441,7 @@
   <div id="content">
     <!-- Home -->
     <section id="home" class="view active">
-      <img src="logo.png" class="logo-home" alt="Logo" />
+      <img src="logo.png" class="logo-home" alt="GoL BUY SMART – App de compras inteligente" />
       <h2>Bem-vindo ao GoL BUY SMART</h2>
 
       <div id="orcamento" class="box">
@@ -497,7 +497,7 @@
     <!-- Cadastro -->
     <section id="cadastro" class="view">
       <div id="cadastroBox" class="box">
-        <h2>Cadastro de Produto</h2>
+        <h2 id="cadastro-title">Cadastro de Produto</h2>
         <input id="codigoCadastro" placeholder="Código" />
         <input id="nomeCadastro" placeholder="Nome" />
         <select id="categoriaCadastro">
@@ -551,7 +551,7 @@
     let orcamento = Storage.get("orcamento") || 0;
     let reader = null, stream = null, buffer = [], scannerAtivo = false;
     const repeticoes = 3;
-    const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg  ");
+    const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
     let categoriaChart;
 
     // Splash Screen
@@ -597,10 +597,9 @@
 
     // Produtos
     function atualizarProdutosTable() {
-      const tbody = $("produtosTable").querySelector("tbody");
-      tbody.innerHTML = "";
+      let html = "";
       produtos.forEach((p, i) => {
-        tbody.innerHTML += `
+        html += `
           <tr>
             <td>${p.codigo}</td>
             <td>${p.nome}</td>
@@ -613,18 +612,27 @@
             </td>
           </tr>`;
       });
+      $("produtosTable").querySelector("tbody").innerHTML = html;
       $("totalProdutos").innerText = produtos.length;
     }
 
     function editarProduto(i) {
-      irPara("cadastro");
+      // Atualiza o título para "Editar Produto"
+      $("cadastro-title").innerText = "Editar Produto";
+      
+      // Preenche os campos com os dados do produto
       $("codigoCadastro").value = produtos[i].codigo;
       $("nomeCadastro").value = produtos[i].nome;
       $("categoriaCadastro").value = produtos[i].categoria;
       $("tipoCadastro").value = produtos[i].tipo;
       $("valorCadastro").value = produtos[i].valor;
+      
+      // Remove o produto da lista temporariamente
       produtos.splice(i, 1);
       Storage.set("produtos", produtos);
+      
+      // Vai para a view de cadastro
+      irPara("cadastro");
     }
 
     function excluirProduto(i) {
@@ -652,19 +660,22 @@
       Storage.set("produtos", produtos);
       atualizarProdutosTable();
       atualizarScannerChart();
+      
+      // Reseta o título e volta para produtos
+      $("cadastro-title").innerText = "Cadastro de Produto";
       irPara("produtos");
     };
 
     // Carrinho
     function atualizarCarrinho() {
       let total = 0;
-      const table = $("tabelaCarrinho");
-      table.innerHTML = "<tr><th>Nome</th><th>Qtd</th><th>Subtotal</th></tr>";
+      let html = "<tr><th>Nome</th><th>Qtd</th><th>Subtotal</th></tr>";
       carrinho.forEach(p => {
         const sub = p.valor * p.qtd;
         total += sub;
-        table.innerHTML += `<tr><td>${p.nome}</td><td>${p.qtd}</td><td>R$ ${sub.toFixed(2)}</td></tr>`;
+        html += `<tr><td>${p.nome}</td><td>${p.qtd}</td><td>R$ ${sub.toFixed(2)}</td></tr>`;
       });
+      $("tabelaCarrinho").innerHTML = html;
       $("total").innerText = "Total: R$ " + total.toFixed(2);
       $("badge").innerText = carrinho.length;
       atualizarOrcamento();
@@ -808,6 +819,19 @@
         }
       });
     }
+
+    // Fechar modal com tecla Esc e clique fora
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && $("modalCarrinho").style.display === 'block') {
+        fecharCarrinho();
+      }
+    });
+
+    $("modalCarrinho").addEventListener('click', (e) => {
+      if (e.target === $("modalCarrinho")) {
+        fecharCarrinho();
+      }
+    });
 
     // Inicialização
     atualizarHistorico();
