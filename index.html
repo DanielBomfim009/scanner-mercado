@@ -1007,7 +1007,7 @@ return;
 }
 const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
 historico.push({
- new Date().toLocaleString("pt-BR"),
+ data: new Date().toLocaleString("pt-BR"),
 total,
 itens: [...carrinho]
 });
@@ -1222,7 +1222,7 @@ data: {
 labels: labels,
 datasets: [{
 label: 'Número de Produtos',
-data: values, // ✅ CORRIGIDO: estava "values," sozinho
+data: values,
 backgroundColor: labels.map((_, i) => cores[i % cores.length]),
 borderWidth: 0
 }]
@@ -1302,9 +1302,10 @@ setTimeout(() => {
 splash.style.opacity = '0';
 setTimeout(() => {
 if (splash.parentNode) splash.remove();
+// ✅ Correção: iniciarApp() DEPOIS da remoção completa do splash
 iniciarApp();
 }, 500);
-}, 1500);
+}, 2000);
 } else {
 iniciarApp();
 }
