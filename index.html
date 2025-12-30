@@ -228,6 +228,23 @@
       letter-spacing: -0.5px;
     }
 
+    /* --- NOVO: Estilo para o container do seletor de tema --- */
+    #temaContainer {
+      margin: 16px auto 24px;
+      max-width: 320px;
+    }
+
+    #temaSelector {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      font-size: 15px;
+      box-shadow: var(--shadow);
+    }
+
     #orcamento {
       position: relative;
       max-width: 400px;
@@ -304,19 +321,6 @@
     .box:hover {
       transform: translateY(-3px);
       box-shadow: 0 14px 32px -8px rgba(0, 0, 0, 0.18);
-    }
-
-    #temaSelector {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 6px 12px;
-      color: var(--text);
-      font-size: 14px;
-      box-shadow: var(--shadow);
     }
 
     #scannerInfo {
@@ -673,14 +677,19 @@
 
   <div id="content">
     <section id="home" class="view active">
-      <select id="temaSelector" onchange="mudarTema(this.value)">
-        <option value="padrao">Tema Padrão (Azul)</option>
-        <option value="verde">Tema Verde</option>
-        <option value="roxo">Tema Roxo</option>
-        <option value="laranja">Tema Laranja</option>
-      </select>
       <img src="logo.png" class="logo-home" alt="GoL BUY SMART – App de compras inteligente" />
       <h2>Bem-vindo ao GoL BUY SMART</h2>
+      
+      <!-- --- SELETOR DE TEMA REPOSICIONADO --- -->
+      <div id="temaContainer">
+        <select id="temaSelector" onchange="mudarTema(this.value)">
+          <option value="padrao">Tema Padrão (Azul)</option>
+          <option value="verde">Tema Verde</option>
+          <option value="roxo">Tema Roxo</option>
+          <option value="laranja">Tema Laranja</option>
+        </select>
+      </div>
+      
       <div id="orcamento" class="box">
         <h3>💰 Orçamento Mensal</h3>
         <input type="number" id="orcamentoInput" placeholder="Digite seu orçamento" />
@@ -970,7 +979,7 @@
         }
         const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
         historico.push({
-          data: new Date().toLocaleString("pt-BR"),
+           new Date().toLocaleString("pt-BR"),
           total,
           itens: [...carrinho]
         });
@@ -1022,7 +1031,7 @@
             const video = $("video");
             if (video) {
               video.srcObject = stream;
-              await video.play();
+              await video.play().catch(e => console.warn("Erro ao play:", e));
             }
           } catch (err) {
             try {
@@ -1030,10 +1039,10 @@
               const video = $("video");
               if (video) {
                 video.srcObject = stream;
-                await video.play();
+                await video.play().catch(e => console.warn("Erro fallback:", e));
               }
             } catch (e2) {
-              alert("⚠️ Permissão da câmera negada.");
+              alert("⚠️ Permissão da câmera negada ou não suportada.");
               scannerAtivo = false;
               return;
             }
@@ -1166,12 +1175,13 @@
           categoriaChart.destroy();
         }
 
+        // ✅ CORREÇÃO DEFINITIVA DO CHART.JS
         categoriaChart = new Chart(ctx, {
           type: 'doughnut',
-          data: {
+           {
             labels: Object.keys(categorias),
             datasets: [{
-              data: Object.values(categorias),
+               Object.values(categorias),
               backgroundColor: ['#4361ee', '#3a56d4', '#4895ef', '#f87171', '#6b6b6b', '#9c27b0']
             }]
           },
