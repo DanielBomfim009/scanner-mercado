@@ -536,7 +536,7 @@
         <p><strong>Código detectado:</strong> <span id="detected" aria-live="polite">—</span></p>
         <p><strong>Total de produtos:</strong> <span id="totalProdutos">0</span></p>
         <div id="scannerChartBox">
-          <canvas id="categoriaChart" aria-label="Distribuição de categorias"></canvas>
+          <canvas id="categoriaChart" aria-label="Distribuição de categorias" height="150"></canvas>
         </div>
       </div>
     </section>
@@ -646,11 +646,6 @@
     let modoEdicao = false;
     let indiceEdicao = -1;
 
-    // Splash
-    window.addEventListener('load', () => {
-      setTimeout(() => $("splash").style.display = "none", 1800);
-    });
-
     // Sidebar toggle
     const sidebar = $("sidebar");
     const content = $("content");
@@ -672,8 +667,13 @@
         $("tipoCadastro").value = "UN";
       }
       
-      if (tela === "scanner") iniciarScanner();
-      else pararScanner();
+      if (tela === "scanner") {
+        iniciarScanner();
+        // Atualiza o gráfico SOMENTE ao entrar na view do scanner
+        setTimeout(() => atualizarScannerChart(), 100);
+      } else {
+        pararScanner();
+      }
     }
 
     // Orçamento
@@ -732,7 +732,7 @@
         produtos.splice(i, 1);
         Storage.set("produtos", produtos);
         atualizarProdutosTable();
-        atualizarScannerChart();
+        // Não chama atualizarScannerChart aqui — só quando entrar na view
       }
     }
 
@@ -760,7 +760,6 @@
 
       Storage.set("produtos", produtos);
       atualizarProdutosTable();
-      atualizarScannerChart();
       $("cadastro-title").textContent = "Cadastro de Produto";
       irPara("produtos");
     });
@@ -901,10 +900,11 @@
       $("video").srcObject = null;
     }
 
-    // Gráfico
+    // Gráfico - Só executa se canvas existir e houver produtos
     function atualizarScannerChart() {
       const ctx = $("categoriaChart");
-      if (!ctx || !ctx.getContext) return;
+      if (!ctx || !produtos || produtos.length === 0) return;
+
       if (categoriaChart) categoriaChart.destroy();
 
       const categorias = {};
@@ -913,6 +913,8 @@
       });
 
       const labels = Object.keys(categorias);
+      if (labels.length === 0) return;
+
       const data = Object.values(categorias);
       const cores = ['#4361ee', '#f72585', '#4cc9f0', '#7209b7', '#3a0ca3', '#4361ee'];
 
@@ -940,11 +942,24 @@
       if (e.target === $("modalCarrinho")) fecharCarrinho();
     });
 
-    // Inicialização
-    atualizarHistorico();
-    atualizarProdutosTable();
-    atualizarCarrinho();
-    atualizarScannerChart();
+    // 🚀 Inicialização segura
+    function inicializarApp() {
+      atualizarHistorico();
+      atualizarProdutosTable();
+      atualizarCarrinho();
+
+      // Remove o splash após tudo estar pronto
+      setTimeout(() => {
+        $("splash").style.display = "none";
+      }, 1200);
+    }
+
+    // Espera o DOM carregar
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", inicializarApp);
+    } else {
+      inicializarApp();
+    }
   </script>
 </body>
 </html>
