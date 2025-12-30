@@ -5,7 +5,7 @@
 <title>GoL BUY SMART</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="theme-color" content="#4361ee" />
-<!-- Bibliotecas externas (sem espaços extras nas URLs) -->
+<!-- Bibliotecas externas (sem espaços extras) -->
 <script src="https://unpkg.com/@zxing/library@0.21.2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -84,6 +84,7 @@ justify-content: center;
 z-index: 2000;
 opacity: 1;
 transition: opacity 0.5s;
+pointer-events: none;
 }
 #splash img {
 width: 300px;
@@ -629,7 +630,7 @@ text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 50% { transform: scale(1.2); }
 }
 
-/* ✅ Estilo aprimorado do modal de quantidade */
+/* Modal de quantidade */
 .quantidade-modal {
 position: fixed;
 top: 50%;
@@ -800,7 +801,6 @@ Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
 <button onclick="fecharCarrinho()">Fechar</button>
 </div>
 </div>
-<!-- Overlay e modal de quantidade personalizado -->
 <div id="overlayQuantidade"></div>
 <div id="quantidadeModal" class="quantidade-modal" style="display:none;">
 <h3 id="tituloQuantidade">Informe a quantidade</h3>
@@ -840,11 +840,6 @@ if (tema !== 'padrao') {
 document.body.classList.add(`tema-${tema}`);
 }
 localStorage.setItem('tema', tema);
-if (document.getElementById("scanner").classList.contains("active")) {
-setTimeout(() => {
-atualizarScannerChart();
-}, 100);
-}
 }
 
 function normalizarCodigo(cod) {
@@ -892,9 +887,21 @@ quantidadeEmAndamento = false;
 function iniciarApp() {
 window.irPara = function(tela) {
 document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
-$(tela).classList.add("active");
-if (tela === "scanner") iniciarScanner();
-else pararScanner();
+const alvo = $(tela);
+if (!alvo) return;
+alvo.classList.add("active");
+
+if (tela === "scanner") {
+iniciarScanner();
+// Atualiza gráfico com pequeno delay para garantir visibilidade
+setTimeout(() => {
+if (alvo.classList.contains("active")) {
+atualizarScannerChart();
+}
+}, 100);
+} else {
+pararScanner();
+}
 };
 
 const sidebar = $("sidebar");
@@ -1217,138 +1224,141 @@ video.srcObject = null;
 quantidadeEmAndamento = false;
 }
 
+// ✅ Função robusta: só cria gráfico se canvas estiver visível
 function atualizarScannerChart() {
-const categorias = {};
-produtos.forEach(p => {
-categorias[p.categoria] = (categorias[p.categoria] || 0) + 1;
-});
-const chartBox = $("scannerChartBox");
-if (!chartBox || chartBox.offsetHeight === 0) {
-setTimeout(atualizarScannerChart, 100);
-return;
-}
-const canvas = $("categoriaChart");
-if (!canvas) return;
-const ctx = canvas.getContext("2d");
-ctx.clearRect(0, 0, canvas.width, canvas.height);
-canvas.width = canvas.offsetWidth;
-canvas.height = canvas.offsetHeight;
-if (categoriaChart) {
-categoriaChart.destroy();
-categoriaChart = null;
-}
-const categoriasOrdenadas = Object.entries(categorias).sort((a, b) => b[1] - a[1]);
-const labels = categoriasOrdenadas.map(([cat]) => cat);
-const values = categoriasOrdenadas.map(([, val]) => val);
-const rootStyles = getComputedStyle(document.documentElement);
-const textColor = rootStyles.getPropertyValue('--text').trim();
-const textMutedColor = rootStyles.getPropertyValue('--text-muted').trim();
-const cores = [
-'#4361ee', '#3a56d4', '#4895ef', '#f87171', '#6b6b6b', '#9c27b0',
-'#06b6d4', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444'
-];
+  const canvas = $("categoriaChart");
+  if (!canvas) return;
 
-// ✅ CORREÇÃO PRINCIPAL: sintaxe válida do Chart.js
-categoriaChart = new Chart(ctx, {
-  type: 'bar',
-  data: {
-    labels: labels,
-    datasets: [{
-      label: 'Número de Produtos',
-      data: values,
-      backgroundColor: labels.map((_, i) => cores[i % cores.length]),
-      borderWidth: 0
-    }]
-  },
-  options: {
-    indexAxis: 'y',
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        titleColor: textColor,
-        bodyColor: textColor,
-        backgroundColor: rootStyles.getPropertyValue('--card').trim(),
-        borderColor: rootStyles.getPropertyValue('--border').trim(),
-        borderWidth: 1,
-        callbacks: {
-          label: (ctx) => ` ${ctx.parsed.x} produtos`
+  // Verifica se o canvas tem dimensões reais (está visível)
+  if (canvas.offsetWidth === 0 || canvas.offsetHeight === 0) {
+    setTimeout(() => {
+      if ($("scanner")?.classList.contains("active")) {
+        atualizarScannerChart();
+      }
+    }, 200);
+    return;
+  }
+
+  // Ajusta tamanho do canvas
+  const displayWidth = canvas.offsetWidth;
+  const displayHeight = canvas.offsetHeight;
+  if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
+    canvas.width = displayWidth;
+    canvas.height = displayHeight;
+  }
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  // Destrói gráfico anterior
+  if (categoriaChart) {
+    categoriaChart.destroy();
+    categoriaChart = null;
+  }
+
+  // Calcula dados
+  const categorias = {};
+  produtos.forEach(p => {
+    categorias[p.categoria] = (categorias[p.categoria] || 0) + 1;
+  });
+
+  const categoriasOrdenadas = Object.entries(categorias).sort((a, b) => b[1] - a[1]);
+  const labels = categoriasOrdenadas.map(([cat]) => cat);
+  const values = categoriasOrdenadas.map(([, val]) => val);
+
+  const rootStyles = getComputedStyle(document.documentElement);
+  const textColor = rootStyles.getPropertyValue('--text').trim();
+  const textMutedColor = rootStyles.getPropertyValue('--text-muted').trim();
+  const cores = [
+    '#4361ee', '#3a56d4', '#4895ef', '#f87171', '#6b6b6b', '#9c27b0',
+    '#06b6d4', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444'
+  ];
+
+  // ✅ Sintaxe correta do Chart.js
+  categoriaChart = new Chart(ctx, {
+    type: 'bar',
+    ,
+    options: {
+      indexAxis: 'y',
+      responsive: false,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          titleColor: textColor,
+          bodyColor: textColor,
+          backgroundColor: rootStyles.getPropertyValue('--card').trim(),
+          borderColor: rootStyles.getPropertyValue('--border').trim(),
+          borderWidth: 1,
+          callbacks: {
+            label: (ctx) => ` ${ctx.parsed.x} produtos`
+          }
+        }
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          grid: { color: 'rgba(0,0,0,0.05)' },
+          ticks: { color: textMutedColor }
+        },
+        y: {
+          grid: { display: false },
+          ticks: { color: textColor }
         }
       }
-    },
-    scales: {
-      x: {
-        beginAtZero: true,
-        grid: { color: 'rgba(0,0,0,0.05)' },
-        ticks: { color: textMutedColor }
-      },
-      y: {
-        grid: { display: false },
-        ticks: { color: textColor }
-      }
     }
-  }
-});
+  });
 }
 
+// Eventos globais
 document.addEventListener('keydown', (e) => {
 if (e.key === 'Escape') {
-if ($("modalCarrinho")?.classList.contains("active")) {
-fecharCarrinho();
-}
-if ($("quantidadeModal").style.display === "block") {
-fecharQuantidade();
-}
+if ($("modalCarrinho")?.classList.contains("active")) fecharCarrinho();
+if ($("quantidadeModal").style.display === "block") fecharQuantidade();
 }
 });
 
 if ($("modalCarrinho")) {
 $("modalCarrinho").addEventListener('click', (e) => {
-if (e.target === $("modalCarrinho")) {
-fecharCarrinho();
-}
+if (e.target === $("modalCarrinho")) fecharCarrinho();
 });
 }
 
 $("overlayQuantidade").addEventListener('click', fecharQuantidade);
 
-// ✅ Inicialização dos dados
+// Inicialização segura
 atualizarHistorico();
 atualizarProdutosTable();
 atualizarCarrinho();
 
-// ✅ Garantir que o gráfico seja renderizado ao carregar
-setTimeout(() => {
-if (document.getElementById("categoriaChart")) {
-atualizarScannerChart();
-}
-}, 300);
-}
-
-if ($("scanner")) {
-const observer = new MutationObserver(() => {
-if ($("scanner").classList.contains("active")) {
-atualizarScannerChart();
-}
-});
-observer.observe($("scanner"), { attributes: true, attributeFilter: ['class'] });
-}
-
+// ✅ Inicialização principal com tratamento de erro
 window.addEventListener('DOMContentLoaded', () => {
-const splash = $("splash");
-if (splash) {
-splash.style.background = '#1e293b';
-setTimeout(() => {
-splash.style.opacity = '0';
-setTimeout(() => {
-if (splash.parentNode) splash.remove();
-iniciarApp();
-}, 500);
-}, 1500);
-} else {
-iniciarApp();
-}
+  const splash = $("splash");
+  if (splash) {
+    splash.style.opacity = '1';
+    splash.style.pointerEvents = 'none';
+
+    setTimeout(() => {
+      splash.style.opacity = '0';
+      setTimeout(() => {
+        if (splash.parentNode) splash.remove();
+        try {
+          iniciarApp();
+        } catch (e) {
+          console.error("Erro crítico ao iniciar app:", e);
+          // Mesmo com erro, o app tenta funcionar
+          alert("Erro ao iniciar. Verifique o console (F12).");
+        }
+      }, 500);
+    }, 1500);
+  } else {
+    try {
+      iniciarApp();
+    } catch (e) {
+      console.error("Erro ao iniciar app:", e);
+      alert("Erro ao iniciar. Verifique o console (F12).");
+    }
+  }
 });
 </script>
 </body>
