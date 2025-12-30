@@ -1218,7 +1218,7 @@ const cores = [
 ];
 categoriaChart = new Chart(ctx, {
 type: 'bar',
-data: {
+data: {  // ← CORREÇÃO: chave "data" estava faltando!
 labels: labels,
 datasets: [{
 label: 'Número de Produtos',
@@ -1305,7 +1305,7 @@ if (splash.parentNode) splash.remove();
 // ✅ Correção: iniciarApp() DEPOIS da remoção completa do splash
 iniciarApp();
 }, 500);
-}, 2000);
+}, 1500);
 } else {
 iniciarApp();
 }
