@@ -12,6 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <style>
+    /* ... seu CSS permanece exatamente igual ... */
     :root {
       /* Cores claras */
       --primary: #4361ee;
@@ -797,7 +798,6 @@
         }
       };
 
-      // Comportamento original do botão Salvar
       const salvarOriginal = () => {
         const novo = {
           codigo: $("codigoCadastro").value.trim(),
@@ -856,7 +856,7 @@
         }
         const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
         historico.push({
-           new Date().toLocaleString("pt-BR"),
+          data: new Date().toLocaleString("pt-BR"),
           total,
           itens: [...carrinho]
         });
@@ -908,7 +908,7 @@
         }
         reader = new ZXing.BrowserMultiFormatReader();
         reader.decodeFromVideoElementContinuously($("video"), (res) => {
-          if (!res || !scannerAtivo) return;
+          if (!res?.text || !scannerAtivo) return;
           const codigoBruto = res.text;
           const codigoNormalizado = normalizarCodigo(codigoBruto);
           if (!codigoNormalizado) return;
@@ -931,7 +931,7 @@
       function processarCodigo(codigoNormalizado) {
         try {
           navigator.vibrate?.(50);
-          beep.play();
+          beep.play().catch(e => console.warn("Beep não reproduzido:", e));
 
           const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
 
@@ -958,7 +958,6 @@
 
               irPara("cadastro");
 
-              // Substitui temporariamente o handler
               $("salvarCadastro").onclick = () => {
                 const novo = {
                   codigo: $("codigoCadastro").value.trim(),
@@ -982,7 +981,6 @@
                   Storage.set("carrinho", carrinho);
                 }
 
-                // Limpa e restaura
                 $("codigoCadastro").value = "";
                 $("nomeCadastro").value = "";
                 $("valorCadastro").value = "";
@@ -1015,19 +1013,25 @@
           stream.getTracks().forEach(t => t.stop());
           stream = null;
         }
-        $("video").srcObject = null;
+        if ($("video").srcObject) {
+          $("video").srcObject.getTracks?.().forEach(t => t.stop());
+          $("video").srcObject = null;
+        }
       }
 
       function atualizarScannerChart() {
+        // Só atualiza gráfico se a view do scanner estiver ativa
+        if (!$("scanner").classList.contains("active")) return;
+
         const categorias = {};
         produtos.forEach(p => {
           categorias[p.categoria] = (categorias[p.categoria] || 0) + 1;
         });
-        if (categoriaChart) categoriaChart.destroy();
         const ctx = $("categoriaChart").getContext("2d");
+        if (categoriaChart) categoriaChart.destroy();
         categoriaChart = new Chart(ctx, {
           type: 'doughnut',
-           {
+          data: { // <<<< CORREÇÃO PRINCIPAL AQUI
             labels: Object.keys(categorias),
             datasets: [{
               data: Object.values(categorias),
@@ -1066,7 +1070,7 @@
       setTimeout(() => {
         splash.style.opacity = '0';
         setTimeout(() => {
-          splash.style.display = 'none';
+          splash.remove(); // Remove elemento realmente
           iniciarApp();
         }, 500);
       }, 1500);
