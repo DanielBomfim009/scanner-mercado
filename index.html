@@ -6,9 +6,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="theme-color" content="#4361ee" />
 <!-- Bibliotecas externas -->
-<script src="https://unpkg.com/@zxing/library@0.21.2    "></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js    "></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter    :wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/@zxing/library@0.21.2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
 :root {
 --primary: #4361ee;
@@ -811,7 +811,7 @@ let historico = Storage.get("historicoCompras");
 let orcamento = Storage.get("orcamento") || 0;
 let reader = null, stream = null, buffer = [], scannerAtivo = false;
 const repeticoes = 3;
-const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg    ");
+const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 let categoriaChart;
 // Carregar tema salvo
 const temaSalvo = localStorage.getItem('tema') || 'padrao';
@@ -1007,7 +1007,7 @@ return;
 }
 const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
 historico.push({
-  new Date().toLocaleString("pt-BR"),
+ data: new Date().toLocaleString("pt-BR"),
 total,
 itens: [...carrinho]
 });
@@ -1218,7 +1218,7 @@ const cores = [
 ];
 categoriaChart = new Chart(ctx, {
 type: 'bar',
- {  // ← CORREÇÃO: chave "data" estava faltando!
+data: {  // ← CORREÇÃO: chave "data" estava faltando!
 labels: labels,
 datasets: [{
 label: 'Número de Produtos',
