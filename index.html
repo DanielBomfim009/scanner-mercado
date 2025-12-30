@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#4361ee" />
 
-  <!-- Bibliotecas externas (ESPAÇOS REMOVIDOS!) -->
+  <!-- Bibliotecas externas -->
   <script src="https://unpkg.com/@zxing/library@0.21.2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -29,7 +29,6 @@
       --transition: all 0.2s ease;
     }
 
-    /* Modo escuro automático */
     @media (prefers-color-scheme: dark) {
       :root {
         --background: #0f172a;
@@ -41,7 +40,6 @@
       }
     }
 
-    /* Reset */
     * {
       margin: 0;
       padding: 0;
@@ -58,7 +56,6 @@
       color: var(--text);
     }
 
-    /* Splash Screen */
     #splash {
       position: fixed;
       inset: 0;
@@ -84,7 +81,6 @@
       font-weight: 600;
     }
 
-    /* Sidebar */
     #sidebar {
       position: fixed;
       top: 0;
@@ -123,7 +119,6 @@
       padding-left: 28px;
     }
 
-    /* Hamburger */
     #hamburger {
       position: fixed;
       top: 16px;
@@ -147,7 +142,6 @@
       background: var(--primary-light);
     }
 
-    /* Content */
     #content {
       margin-left: 220px;
       flex: 1;
@@ -158,7 +152,6 @@
       margin-left: 0;
     }
 
-    /* Views */
     .view {
       display: none;
       animation: fadeIn 0.3s ease;
@@ -171,7 +164,6 @@
       to { opacity: 1; transform: none; }
     }
 
-    /* Home */
     #home {
       text-align: center;
       padding-top: 20px;
@@ -191,7 +183,6 @@
       letter-spacing: -0.5px;
     }
 
-    /* Orçamento */
     #orcamento {
       position: relative;
       max-width: 400px;
@@ -256,7 +247,6 @@
       text-shadow: 0 1px 2px rgba(0,0,0,0.3);
     }
 
-    /* Box */
     .box {
       background: var(--card);
       border-radius: var(--radius);
@@ -271,7 +261,6 @@
       box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.15);
     }
 
-    /* Scanner */
     #scannerInfo {
       display: flex;
       flex-direction: column;
@@ -338,7 +327,6 @@
       100% { top: 15%; }
     }
 
-    /* Produtos */
     #produtosBox {
       overflow-x: auto;
     }
@@ -398,7 +386,6 @@
       transform: translateY(-2px);
     }
 
-    /* Histórico */
     .historico-card {
       background: var(--card);
       border-radius: 14px;
@@ -427,7 +414,6 @@
       overflow-y: auto;
     }
 
-    /* Carrinho */
     #carrinhoIcone {
       position: fixed;
       bottom: 24px;
@@ -515,7 +501,6 @@
       transform: translateY(-2px);
     }
 
-    /* Cadastro */
     #cadastroBox {
       max-width: 420px;
       margin: 20px auto;
@@ -556,7 +541,6 @@
       transform: translateY(-2px);
     }
 
-    /* Gráfico scanner */
     #scannerChartBox {
       margin-top: 24px;
     }
@@ -589,7 +573,6 @@
       text-shadow: 0 1px 2px rgba(0,0,0,0.3);
     }
 
-    /* Responsividade */
     @media (max-width: 768px) {
       #sidebar { width: 200px; }
       #content { margin-left: 200px; padding: 20px 16px; }
@@ -604,7 +587,6 @@
       #orcamento input { font-size: 15px; }
     }
 
-    /* Animação de badge no carrinho */
     @keyframes pulse {
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.2); }
@@ -613,16 +595,13 @@
 </head>
 
 <body>
-  <!-- Splash Screen -->
   <div id="splash">
     <img src="logo.png" alt="GoL BUY SMART – App de compras inteligente" />
     <p>Bem-vindo ao seu app de compras inteligente</p>
   </div>
 
-  <!-- Menu Hamburger -->
   <div id="hamburger">☰</div>
 
-  <!-- Sidebar -->
   <div id="sidebar">
     <button onclick="irPara('home')">🏠 Home</button>
     <button onclick="irPara('scanner')">📷 Scanner</button>
@@ -631,13 +610,10 @@
     <button onclick="irPara('historico')">🧾 Histórico</button>
   </div>
 
-  <!-- Conteúdo Principal -->
   <div id="content">
-    <!-- Home -->
     <section id="home" class="view active">
       <img src="logo.png" class="logo-home" alt="GoL BUY SMART – App de compras inteligente" />
       <h2>Bem-vindo ao GoL BUY SMART</h2>
-
       <div id="orcamento" class="box">
         <h3>💰 Orçamento Mensal</h3>
         <input type="number" id="orcamentoInput" placeholder="Digite seu orçamento" />
@@ -650,7 +626,6 @@
       </div>
     </section>
 
-    <!-- Scanner -->
     <section id="scanner" class="view">
       <div class="box">
         <h2 style="text-align:center; margin-bottom:16px;">Scanner de Produtos</h2>
@@ -672,7 +647,6 @@
       </div>
     </section>
 
-    <!-- Produtos -->
     <section id="produtos" class="view">
       <div id="produtosBox" class="box">
         <h2 style="margin-bottom:16px;">Produtos Cadastrados</h2>
@@ -692,7 +666,6 @@
       </div>
     </section>
 
-    <!-- Cadastro -->
     <section id="cadastro" class="view">
       <div id="cadastroBox" class="box">
         <h2 id="cadastro-title">Cadastro de Produto</h2>
@@ -715,13 +688,11 @@
       </div>
     </section>
 
-    <!-- Histórico -->
     <section id="historico" class="view">
       <div class="box" id="historicoConteudo"></div>
     </section>
   </div>
 
-  <!-- Carrinho -->
   <div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️<span id="badge">0</span></div>
   <div id="modalCarrinho">
     <div class="modal-content">
@@ -733,16 +704,13 @@
     </div>
   </div>
 
-  <!-- JavaScript -->
   <script>
-    // Utilitários
     const $ = id => document.getElementById(id);
     const Storage = {
       get: (k, f = []) => JSON.parse(localStorage.getItem(k)) || f,
       set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
     };
 
-    // Dados iniciais
     let produtos = Storage.get("produtos");
     let carrinho = Storage.get("carrinho");
     let historico = Storage.get("historicoCompras");
@@ -752,14 +720,11 @@
     const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
     let categoriaChart;
 
-    // Função para normalizar códigos (remove espaços, quebras, etc.)
     function normalizarCodigo(cod) {
       return (cod || '').toString().trim().replace(/[\r\n\t\s]+/g, '');
     }
 
-    // Função principal de inicialização
     function iniciarApp() {
-      // Roteamento
       window.irPara = function(tela) {
         document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
         $(tela).classList.add("active");
@@ -767,7 +732,6 @@
         else pararScanner();
       };
 
-      // Toggle Sidebar
       const sidebar = $("sidebar");
       const content = $("content");
       const hamburger = $("hamburger");
@@ -776,7 +740,6 @@
         content.classList.toggle("full");
       };
 
-      // Orçamento
       $("orcamentoInput").value = orcamento;
       $("orcamentoInput").addEventListener("input", () => {
         orcamento = Number($("orcamentoInput").value);
@@ -793,7 +756,6 @@
         bar.setAttribute('data-pct', Math.round(pct) + '%');
       }
 
-      // Produtos
       function atualizarProdutosTable() {
         let html = "";
         produtos.forEach((p, i) => {
@@ -835,7 +797,8 @@
         }
       };
 
-      $("salvarCadastro").onclick = () => {
+      // Comportamento original do botão Salvar
+      const salvarOriginal = () => {
         const novo = {
           codigo: $("codigoCadastro").value.trim(),
           nome: $("nomeCadastro").value.trim(),
@@ -843,8 +806,8 @@
           tipo: $("tipoCadastro").value,
           valor: Number($("valorCadastro").value)
         };
-        if (!novo.codigo || !novo.nome || !novo.valor) {
-          alert("Preencha todos os campos");
+        if (!novo.codigo || !novo.nome || !novo.valor || isNaN(novo.valor)) {
+          alert("Preencha todos os campos corretamente");
           return;
         }
         produtos.push(novo);
@@ -855,7 +818,8 @@
         irPara("produtos");
       };
 
-      // Carrinho
+      $("salvarCadastro").onclick = salvarOriginal;
+
       function atualizarCarrinho() {
         let total = 0;
         let html = "<tr><th>Nome</th><th>Qtd</th><th>Subtotal</th></tr>";
@@ -892,7 +856,7 @@
         }
         const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
         historico.push({
-          data: new Date().toLocaleString("pt-BR"),
+           new Date().toLocaleString("pt-BR"),
           total,
           itens: [...carrinho]
         });
@@ -905,7 +869,6 @@
         alert("Compra finalizada!");
       };
 
-      // Histórico
       function atualizarHistorico() {
         const area = $("historicoConteudo");
         area.innerHTML = "";
@@ -928,7 +891,6 @@
         });
       }
 
-      // Scanner
       async function iniciarScanner() {
         if (scannerAtivo || !navigator.mediaDevices) return;
         scannerAtivo = true;
@@ -973,25 +935,72 @@
 
           const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
 
-          setTimeout(() => {
-            if (produto) {
+          if (produto) {
+            setTimeout(() => {
               const q = Number(prompt(`Produto: ${produto.nome}\nQuantidade:`));
               if (q > 0) {
                 carrinho.push({ ...produto, qtd: q });
                 Storage.set("carrinho", carrinho);
                 abrirCarrinho();
               }
-            } else {
-              alert("Produto não cadastrado.\nCódigo: " + codigoNormalizado);
-            }
+              $("barraValidacaoInner").style.width = "0%";
+              $("barraValidacaoInner").setAttribute('data-pct', '0%');
+              buffer = [];
+              scannerAtivo = true;
+              atualizarCarrinho();
+            }, 300);
+          } else {
+            setTimeout(() => {
+              $("codigoCadastro").value = codigoNormalizado;
+              $("nomeCadastro").value = "";
+              $("valorCadastro").value = "";
+              $("cadastro-title").innerText = "Cadastro Rápido";
 
-            // Reinicia o scanner
-            $("barraValidacaoInner").style.width = "0%";
-            $("barraValidacaoInner").setAttribute('data-pct', '0%');
-            buffer = [];
-            scannerAtivo = true;
-            atualizarCarrinho();
-          }, 300);
+              irPara("cadastro");
+
+              // Substitui temporariamente o handler
+              $("salvarCadastro").onclick = () => {
+                const novo = {
+                  codigo: $("codigoCadastro").value.trim(),
+                  nome: $("nomeCadastro").value.trim(),
+                  categoria: $("categoriaCadastro").value,
+                  tipo: $("tipoCadastro").value,
+                  valor: Number($("valorCadastro").value)
+                };
+
+                if (!novo.nome || !novo.valor || isNaN(novo.valor)) {
+                  alert("Preencha nome e valor corretamente.");
+                  return;
+                }
+
+                produtos.push(novo);
+                Storage.set("produtos", produtos);
+
+                const q = Number(prompt(`Produto: ${novo.nome}\nQuantidade:`));
+                if (q > 0) {
+                  carrinho.push({ ...novo, qtd: q });
+                  Storage.set("carrinho", carrinho);
+                }
+
+                // Limpa e restaura
+                $("codigoCadastro").value = "";
+                $("nomeCadastro").value = "";
+                $("valorCadastro").value = "";
+                $("cadastro-title").innerText = "Cadastro de Produto";
+                $("salvarCadastro").onclick = salvarOriginal;
+
+                atualizarProdutosTable();
+                atualizarScannerChart();
+                atualizarCarrinho();
+                setTimeout(() => irPara("scanner"), 300);
+              };
+
+              $("barraValidacaoInner").style.width = "0%";
+              $("barraValidacaoInner").setAttribute('data-pct', '0%');
+              buffer = [];
+              scannerAtivo = false;
+            }, 300);
+          }
         } catch (e) {
           console.error("Erro ao processar código:", e);
           buffer = [];
@@ -1009,7 +1018,6 @@
         $("video").srcObject = null;
       }
 
-      // Gráfico de categorias
       function atualizarScannerChart() {
         const categorias = {};
         produtos.forEach(p => {
@@ -1019,7 +1027,7 @@
         const ctx = $("categoriaChart").getContext("2d");
         categoriaChart = new Chart(ctx, {
           type: 'doughnut',
-          data: {
+           {
             labels: Object.keys(categorias),
             datasets: [{
               data: Object.values(categorias),
@@ -1035,7 +1043,6 @@
         });
       }
 
-      // Fechar modal com tecla Esc e clique fora
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && $("modalCarrinho").classList.contains("active")) {
           fecharCarrinho();
@@ -1048,14 +1055,12 @@
         }
       });
 
-      // Inicialização final
       atualizarHistorico();
       atualizarProdutosTable();
       atualizarCarrinho();
       atualizarScannerChart();
     }
 
-    // Inicialização após o DOM carregar
     window.addEventListener('DOMContentLoaded', () => {
       const splash = $("splash");
       setTimeout(() => {
