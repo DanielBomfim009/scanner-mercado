@@ -13,11 +13,10 @@
 
   <style>
     :root {
-      /* Cores principais baseadas no logo */
       --primary: #4361ee;
       --primary-dark: #3a56d4;
       --primary-light: #4895ef;
-      --secondary: #3a56d4; /* Substituído o rosa por um azul mais escuro */
+      --secondary: #3a56d4;
       --success: #4ade80;
       --danger: #f87171;
       --background: #f8f9ff;
@@ -30,8 +29,31 @@
       --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
+    /* Temas personalizáveis */
+    body.tema-verde {
+      --primary: #22c55e;
+      --primary-dark: #16a34a;
+      --primary-light: #4ade80;
+      --secondary: #16a34a;
+    }
+    body.tema-roxo {
+      --primary: #8b5cf6;
+      --primary-dark: #7c3aed;
+      --primary-light: #a78bfa;
+      --secondary: #7c3aed;
+    }
+    body.tema-laranja {
+      --primary: #fb923c;
+      --primary-dark: #f97316;
+      --primary-light: #fdba74;
+      --secondary: #f97316;
+    }
+
     @media (prefers-color-scheme: dark) {
-      :root {
+      :root,
+      body.tema-verde,
+      body.tema-roxo,
+      body.tema-laranja {
         --background: #0f172a;
         --card: #1e293b;
         --text: #f1f5f9;
@@ -60,7 +82,7 @@
     #splash {
       position: fixed;
       inset: 0;
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      background: linear-gradient(135deg, #2563eb, #1d4ed8); /* Azul mais escuro que o logo */
       color: white;
       display: flex;
       flex-direction: column;
@@ -74,12 +96,14 @@
       width: 300px;
       height: 300px;
       object-fit: contain;
-      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.2));
+      filter: drop-shadow(0 12px 24px rgba(0,0,0,0.3));
+      z-index: 2001;
     }
     #splash p {
       margin-top: 15px;
       font-size: 18px;
       font-weight: 600;
+      z-index: 2001;
     }
 
     #sidebar {
@@ -165,6 +189,26 @@
       to { opacity: 1; transform: none; }
     }
 
+    #orcamentoAlerta {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--danger);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-weight: 600;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+      z-index: 1000;
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    #orcamentoAlerta.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
     #home {
       text-align: center;
       padding-top: 20px;
@@ -230,7 +274,7 @@
     #orcamentoBarraInner {
       height: 100%;
       width: 0%;
-      background: linear-gradient(90deg, var(--secondary), #4895ef);
+      background: linear-gradient(90deg, var(--secondary), var(--primary-light));
       border-radius: 7px;
       text-align: center;
       color: white;
@@ -260,6 +304,19 @@
     .box:hover {
       transform: translateY(-3px);
       box-shadow: 0 14px 32px -8px rgba(0, 0, 0, 0.18);
+    }
+
+    #temaSelector {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 6px 12px;
+      color: var(--text);
+      font-size: 14px;
+      box-shadow: var(--shadow);
     }
 
     #scannerInfo {
@@ -505,6 +562,7 @@
     #cadastroBox {
       max-width: 420px;
       margin: 20px auto;
+      position: relative;
     }
     #cadastroBox h2 {
       margin-bottom: 20px;
@@ -556,7 +614,7 @@
     #barraValidacaoInner {
       height: 100%;
       width: 0%;
-      background: linear-gradient(90deg, var(--secondary), #4895ef);
+      background: linear-gradient(90deg, var(--secondary), var(--primary-light));
       border-radius: 7px;
       text-align: center;
       color: white;
@@ -611,8 +669,16 @@
     <button onclick="irPara('historico')">🧾 Histórico</button>
   </div>
 
+  <div id="orcamentoAlerta">⚠️ Orçamento excedido!</div>
+
   <div id="content">
     <section id="home" class="view active">
+      <select id="temaSelector" onchange="mudarTema(this.value)">
+        <option value="padrao">Tema Padrão (Azul)</option>
+        <option value="verde">Tema Verde</option>
+        <option value="roxo">Tema Roxo</option>
+        <option value="laranja">Tema Laranja</option>
+      </select>
       <img src="logo.png" class="logo-home" alt="GoL BUY SMART – App de compras inteligente" />
       <h2>Bem-vindo ao GoL BUY SMART</h2>
       <div id="orcamento" class="box">
@@ -721,8 +787,31 @@
     const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
     let categoriaChart;
 
+    // Carregar tema salvo
+    const temaSalvo = localStorage.getItem('tema') || 'padrao';
+    document.body.classList.add(`tema-${temaSalvo !== 'padrao' ? temaSalvo : ''}`.replace('tema-', ''));
+    $("temaSelector").value = temaSalvo;
+
+    function mudarTema(tema) {
+      document.body.className = document.body.className.replace(/tema-\w+/g, '').trim();
+      if (tema !== 'padrao') {
+        document.body.classList.add(`tema-${tema}`);
+      }
+      localStorage.setItem('tema', tema);
+    }
+
     function normalizarCodigo(cod) {
       return (cod || '').toString().trim().replace(/[\r\n\t\s]+/g, '');
+    }
+
+    function verificarOrcamento() {
+      const gasto = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
+      const pct = orcamento ? (gasto / orcamento) * 100 : 0;
+      const alerta = $("orcamentoAlerta");
+      if (pct >= 90 && orcamento > 0) {
+        alerta.classList.add('show');
+        setTimeout(() => alerta.classList.remove('show'), 3000);
+      }
     }
 
     function iniciarApp() {
@@ -746,6 +835,7 @@
         orcamento = Number($("orcamentoInput").value);
         localStorage.setItem("orcamento", orcamento);
         atualizarOrcamento();
+        verificarOrcamento();
       });
 
       function atualizarOrcamento() {
@@ -822,21 +912,34 @@
 
       function atualizarCarrinho() {
         let total = 0;
-        let html = "<tr><th>Nome</th><th>Qtd</th><th>Subtotal</th></tr>";
-        carrinho.forEach(p => {
+        let html = `<tr><th>Nome</th><th>Qtd</th><th>Subtotal</th><th>Ação</th></tr>`;
+        carrinho.forEach((p, idx) => {
           const sub = p.valor * p.qtd;
           total += sub;
-          html += `<tr><td>${p.nome}</td><td>${p.qtd}</td><td>R$ ${sub.toFixed(2)}</td></tr>`;
+          html += `
+            <tr>
+              <td>${p.nome}</td>
+              <td>${p.qtd}</td>
+              <td>R$ ${sub.toFixed(2)}</td>
+              <td><button class="deleteBtn" style="padding:4px 8px;font-size:14px;" onclick="removerDoCarrinho(${idx})">🗑️</button></td>
+            </tr>`;
         });
         $("tabelaCarrinho").innerHTML = html;
         $("total").innerText = "Total: R$ " + total.toFixed(2);
         $("badge").innerText = carrinho.length;
         atualizarOrcamento();
+        verificarOrcamento();
 
         const badge = $("badge");
         badge.style.animation = "pulse 0.5s";
         setTimeout(() => badge.style.animation = "", 500);
       }
+
+      window.removerDoCarrinho = function(idx) {
+        carrinho.splice(idx, 1);
+        Storage.set("carrinho", carrinho);
+        atualizarCarrinho();
+      };
 
       window.abrirCarrinho = function() {
         $("modalCarrinho").style.display = "flex";
@@ -856,7 +959,7 @@
         }
         const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
         historico.push({
-          data: new Date().toLocaleString("pt-BR"),
+           new Date().toLocaleString("pt-BR"),
           total,
           itens: [...carrinho]
         });
@@ -897,13 +1000,27 @@
         buffer = [];
         if (!stream) {
           try {
-            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            const constraints = {
+              video: {
+                facingMode: "environment",
+                // Tentar foco contínuo se suportado
+                advanced: [{ focusMode: "continuous" }]
+              }
+            };
+            stream = await navigator.mediaDevices.getUserMedia(constraints);
             $("video").srcObject = stream;
             await $("video").play();
           } catch (err) {
-            alert("⚠️ Permissão da câmera negada.");
-            scannerAtivo = false;
-            return;
+            // Fallback sem foco
+            try {
+              stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+              $("video").srcObject = stream;
+              await $("video").play();
+            } catch (e2) {
+              alert("⚠️ Permissão da câmera negada.");
+              scannerAtivo = false;
+              return;
+            }
           }
         }
         reader = new ZXing.BrowserMultiFormatReader();
@@ -922,7 +1039,8 @@
           $("barraValidacaoInner").setAttribute('data-pct', Math.round(ultimosIguais / repeticoes * 100) + '%');
 
           if (ultimosIguais >= repeticoes) {
-            scannerAtivo = false; // 🔒 TRAVA O SCANNER ATÉ NOVA ATIVAÇÃO
+            scannerAtivo = false; // 🔒 TRAVA TOTAL — só reativa ao entrar novamente na aba
+            reader.reset(); // Para leitura imediatamente
             processarCodigo(codigoNormalizado);
           }
         });
@@ -942,11 +1060,9 @@
               Storage.set("carrinho", carrinho);
               abrirCarrinho();
             }
-            // Reseta UI
             $("barraValidacaoInner").style.width = "0%";
             $("barraValidacaoInner").setAttribute('data-pct', '0%');
             buffer = [];
-            // ✅ NÃO REATIVA O SCANNER AQUI — só na próxima vez que entrar na aba
           } else {
             $("codigoCadastro").value = codigoNormalizado;
             $("nomeCadastro").value = "";
@@ -1023,10 +1139,10 @@
         if (categoriaChart) categoriaChart.destroy();
         categoriaChart = new Chart(ctx, {
           type: 'doughnut',
-          data: {
+           {
             labels: Object.keys(categorias),
             datasets: [{
-              data: Object.values(categorias),
+               Object.values(categorias),
               backgroundColor: ['#4361ee', '#3a56d4', '#4895ef', '#f87171', '#6b6b6b', '#9c27b0']
             }]
           },
@@ -1056,7 +1172,6 @@
       atualizarCarrinho();
     }
 
-    // Atualiza gráfico sempre que a aba scanner for ativada
     const observer = new MutationObserver(() => {
       if ($("scanner").classList.contains("active")) {
         atualizarScannerChart();
