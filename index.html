@@ -230,67 +230,85 @@ font-size: 15px;
 box-shadow: var(--shadow);
 }
 #orcamento {
-position: relative;
-max-width: 400px;
-margin: 20px auto;
+  position: relative;
+  max-width: 400px;
+  margin: 20px auto;
 }
+
 #orcamento h3 {
-margin-bottom: 12px;
-font-weight: 700;
-color: var(--text);
+  margin-bottom: 12px;
+  font-weight: 700;
+  color: var(--text);
 }
+
 #orcamento input {
-width: 100%;
-padding: 14px 14px 14px 52px;
-border-radius: 14px;
-border: 1px solid var(--border);
-font-size: 16px;
-background: var(--card);
-color: var(--text);
-transition: var(--transition);
+  width: 100%;
+  height: 52px;
+  padding-left: 52px;
+  padding-right: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  font-size: 16px;
+  background: var(--card);
+  color: var(--text);
+  transition: var(--transition);
 }
+
 #orcamento input:focus {
-outline: none;
-border-color: var(--primary);
-box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
 }
+
+/* R$ FIXO E CENTRALIZADO */
 #orcamento::before {
-content: 'R$';
-position: absolute;
-left: 18px;
-top: 42px;
-color: var(--text-muted);
-font-weight: 700;
-font-size: 18px;
+  content: 'R$';
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 16px;
+  pointer-events: none;
 }
+
+/* BARRA */
 #orcamentoBarra {
-height: 14px;
-background: #e2e8f0;
-border-radius: 7px;
-margin-top: 12px;
-overflow: hidden;
-border: 1px solid var(--border);
+  height: 14px;
+  background: #e2e8f0;
+  border-radius: 7px;
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
 }
+
 #orcamentoBarraInner {
-height: 100%;
-width: 0%;
-background: linear-gradient(90deg, var(--secondary), var(--primary-light));
-border-radius: 7px;
-text-align: center;
-color: white;
-font-weight: 700;
-transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-position: relative;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(
+    90deg,
+    var(--secondary),
+    var(--primary-light)
+  );
+  border-radius: 7px;
+  color: white;
+  font-weight: 700;
+  transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
 }
+
+/* PORCENTAGEM */
 #orcamentoBarraInner::after {
-content: attr(data-pct);
-position: absolute;
-right: 8px;
-top: 50%;
-transform: translateY(-50%);
-font-size: 11px;
-text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  content: attr(data-pct);
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
+
 .box {
 background: var(--card);
 border-radius: var(--radius);
@@ -325,7 +343,7 @@ height: 100%;
 object-fit: cover;
 border-radius: var(--radius);
 }
-/* Estilo para a mensagem de reinício */
+/* ✅ Estilo para a mensagem de reinício */
 #camera .reiniciando {
 position: absolute;
 top: 0;
@@ -833,10 +851,6 @@ const repeticoes = 3;
 const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 let categoriaChart;
 
-// Variáveis para evitar processamento repetido
-let ultimoCodigoProcessado = null;
-let ultimoTimestampProcessado = 0;
-
 // Carregar tema salvo
 const temaSalvo = localStorage.getItem('tema') || 'padrao';
 if (temaSalvo !== 'padrao') {
@@ -1022,6 +1036,7 @@ setTimeout(() => $("modalCarrinho").classList.add("active"), 10);
 atualizarCarrinho();
 };
 
+// ✅ Função fecharCarrinho CORRIGIDA e com mensagem
 window.fecharCarrinho = function() {
     $("modalCarrinho").classList.remove("active");
     setTimeout(() => {
@@ -1051,7 +1066,7 @@ return;
 }
 const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
 historico.push({
-  new Date().toLocaleString("pt-BR"),
+ data: new Date().toLocaleString("pt-BR"),
 total,
 itens: [...carrinho]
 });
@@ -1087,6 +1102,7 @@ area.innerHTML += `
 });
 }
 
+// ✅ Função iniciarScanner com verificação extra
 async function iniciarScanner() {
     if (!document.getElementById("scanner")?.classList.contains("active")) {
         scannerAtivo = false;
@@ -1140,71 +1156,80 @@ async function iniciarScanner() {
         }
         if (ultimosIguais >= repeticoes) {
             scannerAtivo = false;
-            if (reader) {
-                reader.reset();
-            }
-            buffer = [];
-            setTimeout(() => processarCodigo(codigoNormalizado), 50);
-            return;
+            reader.reset();
+            processarCodigo(codigoNormalizado);
         }
     });
 }
 
 function processarCodigo(codigoNormalizado) {
-    const agora = Date.now();
-    if (ultimoCodigoProcessado === codigoNormalizado && (agora - ultimoTimestampProcessado) < 2000) {
-        return;
-    }
-    ultimoCodigoProcessado = codigoNormalizado;
-    ultimoTimestampProcessado = agora;
-
-    try {
-        navigator.vibrate?.(50);
-        beep.play().catch(e => console.warn("Beep não reproduzido:", e));
-        
-        const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
-        let novoProduto = null;
-
-        const handleQuantidade = (q) => {
-            if (q > 0) {
-                carrinho.push({ ...produto || novoProduto, qtd: q });
-                Storage.set("carrinho", carrinho);
-            }
-            abrirCarrinho();
-        };
-
-        if (produto) {
-            solicitarQuantidade(produto.nome, handleQuantidade);
-        } else {
-            $("codigoCadastro").value = codigoNormalizado;
-            $("nomeCadastro").value = "";
-            $("valorCadastro").value = "";
-            $("cadastro-title").innerText = "Cadastro Rápido";
-            irPara("cadastro");
-
-            const handlerRapido = () => {
-                const novo = {
-                    codigo: $("codigoCadastro").value.trim(),
-                    nome: $("nomeCadastro").value.trim(),
-                    categoria: $("categoriaCadastro").value,
-                    tipo: $("tipoCadastro").value,
-                    valor: Number($("valorCadastro").value)
-                };
-                if (!novo.nome || !novo.valor || isNaN(novo.valor)) {
-                    alert("Preencha nome e valor corretamente.");
-                    return;
-                }
-                produtos.push(novo);
-                Storage.set("produtos", produtos);
-                novoProduto = novo;
-                solicitarQuantidade(novo.nome, handleQuantidade);
-            };
-            $("salvarCadastro").onclick = handlerRapido;
-        }
-    } catch (e) {
-        console.error("Erro ao processar código:", e);
-        buffer = [];
-    }
+try {
+navigator.vibrate?.(50);
+beep.play().catch(e => console.warn("Beep não reproduzido:", e));
+const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
+if (produto) {
+if (window.quantidadeJaSolicitada) return;
+window.quantidadeJaSolicitada = true;
+solicitarQuantidade(produto.nome, (q) => {
+window.quantidadeJaSolicitada = false;
+carrinho.push({ ...produto, qtd: q });
+Storage.set("carrinho", carrinho);
+abrirCarrinho();
+});
+} else {
+$("codigoCadastro").value = codigoNormalizado;
+$("nomeCadastro").value = "";
+$("valorCadastro").value = "";
+$("cadastro-title").innerText = "Cadastro Rápido";
+irPara("cadastro");
+const handlerRapido = () => {
+const novo = {
+codigo: $("codigoCadastro").value.trim(),
+nome: $("nomeCadastro").value.trim(),
+categoria: $("categoriaCadastro").value,
+tipo: $("tipoCadastro").value,
+valor: Number($("valorCadastro").value)
+};
+if (!novo.nome || !novo.valor || isNaN(novo.valor)) {
+alert("Preencha nome e valor corretamente.");
+return;
+}
+produtos.push(novo);
+Storage.set("produtos", produtos);
+if (window.quantidadeJaSolicitada) return;
+window.quantidadeJaSolicitada = true;
+solicitarQuantidade(novo.nome, (q) => {
+window.quantidadeJaSolicitada = false;
+if (q > 0) {
+carrinho.push({ ...novo, qtd: q });
+Storage.set("carrinho", carrinho);
+}
+$("codigoCadastro").value = "";
+$("nomeCadastro").value = "";
+$("valorCadastro").value = "";
+$("categoriaCadastro").value = "Alimentos";
+$("tipoCadastro").value = "UN";
+$("cadastro-title").innerText = "Cadastro de Produto";
+$("salvarCadastro").onclick = salvarOriginal;
+atualizarProdutosTable();
+atualizarScannerChart();
+atualizarCarrinho();
+fecharQuantidade();
+irPara("scanner");
+});
+};
+$("salvarCadastro").onclick = handlerRapido;
+if ($("barraValidacaoInner")) {
+$("barraValidacaoInner").style.width = "0%";
+$("barraValidacaoInner").setAttribute('data-pct', '0%');
+}
+buffer = [];
+}
+} catch (e) {
+console.error("Erro ao processar código:", e);
+window.quantidadeJaSolicitada = false;
+buffer = [];
+}
 }
 
 function pararScanner() {
@@ -1219,9 +1244,10 @@ if (video && video.srcObject) {
 video.srcObject.getTracks?.().forEach(t => t.stop());
 video.srcObject = null;
 }
+window.quantidadeJaSolicitada = false;
 }
 
-// ✅ FUNÇÃO TOTALMENTE CORRIGIDA - SEM ERROS DE SINTAXE
+// ✅ FUNÇÃO CORRIGIDA: sintaxe do Chart.js válida
 function atualizarScannerChart() {
     const categorias = {};
     produtos.forEach(p => {
@@ -1262,11 +1288,11 @@ function atualizarScannerChart() {
         const ctx = canvas.getContext("2d");
         categoriaChart = new Chart(ctx, {
             type: 'bar',
-            data: {  // ✅ CHAVE "data:" CORRETA
+            data: {  // ✅ CHAVE "data:" adicionada corretamente
                 labels: labels,
                 datasets: [{
                     label: 'Número de Produtos',
-                     values,  // ✅ SINTAXE VÁLIDA
+                    data: values,  // ✅ "data: values" e não "values" sozinho
                     backgroundColor: labels.map((_, i) => cores[i % cores.length]),
                     borderWidth: 0
                 }]
@@ -1359,7 +1385,7 @@ setTimeout(() => {
 if (splash.parentNode) splash.remove();
 iniciarApp();
 }, 500);
-}, 1500);
+}, 2000);
 } else {
 iniciarApp();
 }
