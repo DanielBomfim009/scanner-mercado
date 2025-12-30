@@ -2,11 +2,11 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>GoL BUY SMART</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#3b7ddd" />
+  <title>GoL BUY SMART</title>
 
-  <!-- Bibliotecas externas -->
+  <!-- Bibliotecas externas (sem espaços!) -->
   <script src="https://unpkg.com/@zxing/library@0.21.2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -25,7 +25,6 @@
       --shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
     }
 
-    /* Reset */
     * {
       margin: 0;
       padding: 0;
@@ -34,7 +33,9 @@
     }
 
     body {
-      background: url('https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPOSITORIO/main/fungo.png') no-repeat center top;
+      background-color: var(--background);
+      /* Substitua pela URL correta ou remova */
+      /* background-image: url('https://raw.githubusercontent.com/seu_usuario/seu_repositorio/main/fungo.png'); */
       background-size: cover;
       display: flex;
       min-height: 100vh;
@@ -94,12 +95,14 @@
       gap: 8px;
       cursor: pointer;
       border-radius: 8px;
+      width: 100%;
     }
-    #sidebar button:hover {
+    #sidebar button:hover, #sidebar button:focus {
       background: rgba(255, 255, 255, 0.2);
+      outline: 2px solid white;
     }
 
-    /* Hamburger */
+    /* Hamburger - agora é um botão acessível */
     #hamburger {
       position: fixed;
       top: 12px;
@@ -116,6 +119,7 @@
       cursor: pointer;
       font-size: 28px;
       box-shadow: var(--shadow);
+      border: none;
     }
 
     /* Content */
@@ -138,14 +142,8 @@
       display: block;
     }
     @keyframes fade {
-      from {
-        opacity: 0;
-        transform: translateY(6px);
-      }
-      to {
-        opacity: 1;
-        transform: none;
-      }
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: none; }
     }
 
     /* Home */
@@ -153,7 +151,7 @@
       text-align: center;
       padding-top: 20px;
     }
-    #home .logo-home {
+    .logo-home {
       width: 300px;
       height: 300px;
       object-fit: contain;
@@ -166,30 +164,31 @@
       font-size: 1.5rem;
     }
 
+    .box {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    /* Orçamento */
     #orcamento {
-      position: relative;
       max-width: 400px;
       margin: 20px auto;
     }
-    #orcamento h3 {
+    #orcamento label {
+      display: block;
       margin-bottom: 8px;
+      font-weight: 500;
     }
     #orcamento input {
       width: 100%;
-      padding: 12px 12px 12px 50px;
+      padding: 12px;
       border-radius: 12px;
       border: 1px solid #ccc;
       font-size: 16px;
     }
-    #orcamento::before {
-      content: 'R$';
-      position: absolute;
-      left: 15px;
-      top: 38px;
-      color: #555;
-      font-weight: bold;
-    }
-
     #orcamentoBarra {
       height: 22px;
       background: #ccc;
@@ -207,22 +206,7 @@
       transition: width 0.5s;
     }
 
-    /* Box */
-    .box {
-      background: var(--card);
-      border-radius: var(--radius);
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: var(--shadow);
-    }
-
     /* Scanner */
-    #scannerInfo {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 10px;
-    }
     #camera {
       width: 100%;
       height: 250px;
@@ -269,22 +253,20 @@
     tr:nth-child(even) {
       background: #f3f3f3;
     }
-    button.editBtn {
+    .editBtn, .deleteBtn {
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 2px;
+    }
+    .editBtn {
       background: var(--secondary);
       color: #000;
-      margin-right: 5px;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 6px;
-      cursor: pointer;
     }
-    button.deleteBtn {
+    .deleteBtn {
       background: var(--danger);
       color: white;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 6px;
-      cursor: pointer;
     }
 
     /* Histórico */
@@ -325,6 +307,7 @@
       font-size: 28px;
       cursor: pointer;
       z-index: 200;
+      border: none;
     }
     #carrinhoIcone span {
       position: absolute;
@@ -378,12 +361,17 @@
       max-width: 400px;
       margin: 20px auto;
     }
+    #cadastroBox label {
+      display: block;
+      margin-top: 12px;
+      font-weight: 500;
+    }
     #cadastroBox input,
     #cadastroBox select,
     #cadastroBox button {
       width: 100%;
       padding: 12px;
-      margin-top: 8px;
+      margin-top: 4px;
       border-radius: 12px;
       border: 1px solid #ccc;
       font-size: 16px;
@@ -393,9 +381,10 @@
       color: white;
       border: none;
       font-weight: 700;
+      margin-top: 16px;
     }
 
-    /* Gráfico scanner */
+    /* Gráfico */
     #scannerChartBox {
       margin-top: 20px;
     }
@@ -415,39 +404,47 @@
       font-weight: bold;
       transition: width 0.5s;
     }
+
+    /* Reduz animações se solicitado */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
   </style>
 </head>
 
 <body>
   <!-- Splash Screen -->
-  <div id="splash">
-    <img src="logo.png" alt="Logo" />
+  <div id="splash" role="alert" aria-live="polite">
+    <img src="logo.png" alt="GoL BUY SMART – App de compras inteligente" />
     <p>Bem-vindo ao seu app de compras inteligente</p>
   </div>
 
-  <!-- Menu Hamburger -->
-  <div id="hamburger">☰</div>
+  <!-- Menu Hamburger (agora é um botão!) -->
+  <button id="hamburger" aria-label="Abrir menu">☰</button>
 
   <!-- Sidebar -->
-  <div id="sidebar">
+  <nav id="sidebar" aria-label="Navegação principal">
     <button onclick="irPara('home')">🏠 Home</button>
     <button onclick="irPara('scanner')">📷 Scanner</button>
     <button onclick="irPara('produtos')">📦 Produtos</button>
     <button onclick="irPara('cadastro')">📝 Cadastro</button>
     <button onclick="irPara('historico')">🧾 Histórico</button>
-  </div>
+  </nav>
 
   <!-- Conteúdo Principal -->
-  <div id="content">
+  <main id="content" role="main">
     <!-- Home -->
-    <section id="home" class="view active">
-      <img src="logo.png" class="logo-home" alt="Logo" />
-      <h2>Bem-vindo ao GoL BUY SMART</h2>
+    <section id="home" class="view active" aria-labelledby="home-title">
+      <img src="logo.png" class="logo-home" alt="GoL BUY SMART – App de compras inteligente" />
+      <h2 id="home-title">Bem-vindo ao GoL BUY SMART</h2>
 
       <div id="orcamento" class="box">
-        <h3>💰 Orçamento Mensal</h3>
-        <input type="number" id="orcamentoInput" placeholder="Digite seu orçamento" />
-        <div id="orcamentoBarra">
+        <label for="orcamentoInput">💰 Orçamento Mensal (R$)</label>
+        <input type="number" id="orcamentoInput" placeholder="Ex: 500" min="0" step="0.01" />
+        <div id="orcamentoBarra" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
           <div id="orcamentoBarraInner">0%</div>
         </div>
         <p style="margin-top: 8px;">Gasto atual: R$ <span id="orcamentoGasto">0.00</span></p>
@@ -455,29 +452,30 @@
     </section>
 
     <!-- Scanner -->
-    <section id="scanner" class="view">
+    <section id="scanner" class="view" aria-labelledby="scanner-title">
       <div class="box">
+        <h2 id="scanner-title">Scanner de Produtos</h2>
         <div id="camera">
           <video id="video" playsinline></video>
           <div class="scan-line"></div>
         </div>
         <div id="scannerInfo">
-          <p>Código detectado: <span id="detected">—</span></p>
+          <p>Código detectado: <span id="detected" aria-live="polite">—</span></p>
           <p>Total produtos cadastrados: <span id="totalProdutos">0</span></p>
           <div id="scannerChartBox">
-            <canvas id="categoriaChart"></canvas>
+            <canvas id="categoriaChart" aria-label="Gráfico de distribuição por categoria"></canvas>
           </div>
         </div>
-        <div id="barraValidacao">
+        <div id="barraValidacao" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
           <div id="barraValidacaoInner">0%</div>
         </div>
       </div>
     </section>
 
     <!-- Produtos -->
-    <section id="produtos" class="view">
+    <section id="produtos" class="view" aria-labelledby="produtos-title">
       <div id="produtosBox" class="box">
-        <h2>Produtos Cadastrados</h2>
+        <h2 id="produtos-title">Produtos Cadastrados</h2>
         <table id="produtosTable">
           <thead>
             <tr>
@@ -495,11 +493,16 @@
     </section>
 
     <!-- Cadastro -->
-    <section id="cadastro" class="view">
+    <section id="cadastro" class="view" aria-labelledby="cadastro-title">
       <div id="cadastroBox" class="box">
-        <h2>Cadastro de Produto</h2>
-        <input id="codigoCadastro" placeholder="Código" />
-        <input id="nomeCadastro" placeholder="Nome" />
+        <h2 id="cadastro-title">Cadastro de Produto</h2>
+        <label for="codigoCadastro">Código</label>
+        <input id="codigoCadastro" placeholder="Ex: 123456" />
+
+        <label for="nomeCadastro">Nome</label>
+        <input id="nomeCadastro" placeholder="Ex: Arroz 1kg" />
+
+        <label for="categoriaCadastro">Categoria</label>
         <select id="categoriaCadastro">
           <option value="Alimentos">Alimentos</option>
           <option value="Limpeza">Limpeza</option>
@@ -508,69 +511,84 @@
           <option value="Higiene">Higiene</option>
           <option value="Outros">Outros</option>
         </select>
+
+        <label for="tipoCadastro">Tipo</label>
         <select id="tipoCadastro">
           <option>UN</option>
           <option>KG</option>
         </select>
-        <input id="valorCadastro" type="number" step="0.01" placeholder="Valor" />
+
+        <label for="valorCadastro">Valor (R$)</label>
+        <input id="valorCadastro" type="number" step="0.01" placeholder="Ex: 12.99" min="0" />
+
         <button id="salvarCadastro">Salvar Produto</button>
       </div>
     </section>
 
     <!-- Histórico -->
-    <section id="historico" class="view">
-      <div class="box" id="historicoConteudo"></div>
+    <section id="historico" class="view" aria-labelledby="historico-title">
+      <div class="box">
+        <h2 id="historico-title">Histórico de Compras</h2>
+        <div id="historicoConteudo"></div>
+      </div>
     </section>
-  </div>
+  </main>
 
   <!-- Carrinho -->
-  <div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️<span id="badge">0</span></div>
-  <div id="modalCarrinho">
+  <button id="carrinhoIcone" aria-label="Abrir carrinho">
+    🛍️<span id="badge" aria-label="Itens no carrinho">0</span>
+  </button>
+
+  <div id="modalCarrinho" role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="modal-content">
-      <h3>Carrinho</h3>
-      <table id="tabelaCarrinho"></table>
+      <h3 id="modal-title">Carrinho</h3>
+      <table id="tabelaCarrinho">
+        <thead>
+          <tr><th>Nome</th><th>Qtd</th><th>Subtotal</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
       <p id="total">Total: R$ 0,00</p>
-      <button onclick="finalizarCompra()">Finalizar</button>
+      <button onclick="finalizarCompra()">Finalizar Compra</button>
       <button onclick="fecharCarrinho()">Fechar</button>
     </div>
   </div>
 
-  <!-- JavaScript -->
   <script>
-    // Utilitários
+    // =============== UTILITÁRIOS ===============
     const $ = id => document.getElementById(id);
     const Storage = {
       get: (k, f = []) => JSON.parse(localStorage.getItem(k)) || f,
       set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
     };
 
-    // Dados iniciais
+    // =============== DADOS ===============
     let produtos = Storage.get("produtos");
     let carrinho = Storage.get("carrinho");
     let historico = Storage.get("historicoCompras");
-    let orcamento = Storage.get("orcamento") || 0;
+    let orcamento = parseFloat(Storage.get("orcamento")) || 0;
     let reader = null, stream = null, buffer = [], scannerAtivo = false;
     const repeticoes = 3;
     const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
     let categoriaChart;
 
-    // Splash Screen
-    window.onload = () => {
+    // =============== SPLASH ===============
+    window.addEventListener('load', () => {
       setTimeout(() => {
         $("splash").style.display = "none";
       }, 1500);
-    };
+    });
 
-    // Toggle Sidebar
+    // =============== SIDEBAR ===============
     const sidebar = $("sidebar");
     const content = $("content");
     const hamburger = $("hamburger");
-    hamburger.onclick = () => {
+    hamburger.addEventListener('click', () => {
       sidebar.classList.toggle("hide");
       content.classList.toggle("full");
-    };
+    });
 
-    // Roteamento
+    // =============== ROTEAMENTO ===============
     function irPara(tela) {
       document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
       $(tela).classList.add("active");
@@ -578,51 +596,59 @@
       else pararScanner();
     }
 
-    // Orçamento
-    $("orcamentoInput").value = orcamento;
+    // =============== ORÇAMENTO ===============
+    $("orcamentoInput").value = orcamento || '';
     $("orcamentoInput").addEventListener("input", () => {
-      orcamento = Number($("orcamentoInput").value);
-      localStorage.setItem("orcamento", orcamento);
+      orcamento = parseFloat($("orcamentoInput").value) || 0;
+      Storage.set("orcamento", orcamento);
       atualizarOrcamento();
     });
 
     function atualizarOrcamento() {
-      const gasto = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
-      $("orcamentoGasto").innerText = gasto.toFixed(2);
+      const gasto = carrinho.reduce((a, b) => a + (b.valor * (b.qtd || 1)), 0);
+      $("orcamentoGasto").textContent = gasto.toFixed(2);
       const pct = orcamento ? Math.min(100, (gasto / orcamento) * 100) : 0;
       const bar = $("orcamentoBarraInner");
       bar.style.width = pct + "%";
-      bar.innerText = Math.round(pct) + "%";
+      bar.textContent = Math.round(pct) + "%";
+      $("orcamentoBarra").setAttribute("aria-valuenow", Math.round(pct));
     }
 
-    // Produtos
+    // =============== PRODUTOS ===============
     function atualizarProdutosTable() {
       const tbody = $("produtosTable").querySelector("tbody");
       tbody.innerHTML = "";
       produtos.forEach((p, i) => {
-        tbody.innerHTML += `
-          <tr>
-            <td>${p.codigo}</td>
-            <td>${p.nome}</td>
-            <td>${p.categoria}</td>
-            <td>${p.tipo}</td>
-            <td>R$ ${p.valor.toFixed(2)}</td>
-            <td>
-              <button class="editBtn" onclick="editarProduto(${i})">✏️</button>
-              <button class="deleteBtn" onclick="excluirProduto(${i})">❌</button>
-            </td>
-          </tr>`;
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${escapeHtml(p.codigo)}</td>
+          <td>${escapeHtml(p.nome)}</td>
+          <td>${escapeHtml(p.categoria)}</td>
+          <td>${escapeHtml(p.tipo)}</td>
+          <td>R$ ${p.valor.toFixed(2)}</td>
+          <td>
+            <button class="editBtn" onclick="editarProduto(${i})" aria-label="Editar ${p.nome}">✏️</button>
+            <button class="deleteBtn" onclick="excluirProduto(${i})" aria-label="Excluir ${p.nome}">❌</button>
+          </td>`;
+        tbody.appendChild(row);
       });
-      $("totalProdutos").innerText = produtos.length;
+      $("totalProdutos").textContent = produtos.length;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
     }
 
     function editarProduto(i) {
       irPara("cadastro");
-      $("codigoCadastro").value = produtos[i].codigo;
-      $("nomeCadastro").value = produtos[i].nome;
-      $("categoriaCadastro").value = produtos[i].categoria;
-      $("tipoCadastro").value = produtos[i].tipo;
-      $("valorCadastro").value = produtos[i].valor;
+      const p = produtos[i];
+      $("codigoCadastro").value = p.codigo;
+      $("nomeCadastro").value = p.nome;
+      $("categoriaCadastro").value = p.categoria;
+      $("tipoCadastro").value = p.tipo;
+      $("valorCadastro").value = p.valor;
       produtos.splice(i, 1);
       Storage.set("produtos", produtos);
     }
@@ -636,16 +662,16 @@
       }
     }
 
-    $("salvarCadastro").onclick = () => {
+    $("salvarCadastro").addEventListener('click', () => {
       const novo = {
         codigo: $("codigoCadastro").value.trim(),
         nome: $("nomeCadastro").value.trim(),
         categoria: $("categoriaCadastro").value,
         tipo: $("tipoCadastro").value,
-        valor: Number($("valorCadastro").value)
+        valor: parseFloat($("valorCadastro").value)
       };
-      if (!novo.codigo || !novo.nome || !novo.valor) {
-        alert("Preencha todos os campos");
+      if (!novo.codigo || !novo.nome || !novo.valor || isNaN(novo.valor)) {
+        alert("Preencha todos os campos corretamente.");
         return;
       }
       produtos.push(novo);
@@ -653,20 +679,26 @@
       atualizarProdutosTable();
       atualizarScannerChart();
       irPara("produtos");
-    };
+    });
 
-    // Carrinho
+    // =============== CARRINHO ===============
     function atualizarCarrinho() {
+      const tbody = $("tabelaCarrinho").querySelector("tbody");
+      tbody.innerHTML = "";
       let total = 0;
-      const table = $("tabelaCarrinho");
-      table.innerHTML = "<tr><th>Nome</th><th>Qtd</th><th>Subtotal</th></tr>";
       carrinho.forEach(p => {
-        const sub = p.valor * p.qtd;
+        const qtd = p.qtd || 1;
+        const sub = p.valor * qtd;
         total += sub;
-        table.innerHTML += `<tr><td>${p.nome}</td><td>${p.qtd}</td><td>R$ ${sub.toFixed(2)}</td></tr>`;
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${escapeHtml(p.nome)}</td>
+          <td>${qtd}</td>
+          <td>R$ ${sub.toFixed(2)}</td>`;
+        tbody.appendChild(row);
       });
-      $("total").innerText = "Total: R$ " + total.toFixed(2);
-      $("badge").innerText = carrinho.length;
+      $("total").textContent = "Total: R$ " + total.toFixed(2);
+      $("badge").textContent = carrinho.length;
       atualizarOrcamento();
     }
 
@@ -684,9 +716,9 @@
         alert("Carrinho vazio");
         return;
       }
-      const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
+      const total = carrinho.reduce((a, b) => a + b.valor * (b.qtd || 1), 0);
       historico.push({
-        data: new Date().toLocaleString("pt-BR"),
+         new Date().toLocaleString("pt-BR"),
         total,
         itens: [...carrinho]
       });
@@ -699,7 +731,7 @@
       alert("Compra finalizada!");
     }
 
-    // Histórico
+    // =============== HISTÓRICO ===============
     function atualizarHistorico() {
       const area = $("historicoConteudo");
       area.innerHTML = "";
@@ -707,30 +739,40 @@
         area.innerHTML = "<p>Nenhuma compra registrada.</p>";
         return;
       }
-      historico.forEach((c, i) => {
-        let itens = "";
-        c.itens.forEach(it => {
-          itens += `<li>${it.nome} — ${it.qtd} x R$ ${it.valor.toFixed(2)} = R$ ${(it.qtd * it.valor).toFixed(2)}</li>`;
+      historico.forEach((compra, idx) => {
+        const card = document.createElement('div');
+        card.className = 'historico-card';
+        card.innerHTML = `
+          <h4>Compra ${idx + 1}</h4>
+          <small>${escapeHtml(compra.data)}</small>
+          <p>Total: R$ ${compra.total.toFixed(2)}</p>
+          <details><summary>Ver itens</summary><ul id="itens-${idx}"></ul></details>`;
+        area.appendChild(card);
+
+        const ul = card.querySelector(`#itens-${idx}`);
+        compra.itens.forEach(it => {
+          const li = document.createElement('li');
+          li.textContent = `${it.nome} — ${it.qtd || 1} x R$ ${it.valor.toFixed(2)} = R$ ${(it.qtd * it.valor).toFixed(2)}`;
+          ul.appendChild(li);
         });
-        area.innerHTML += `
-          <div class="historico-card">
-            <h4>Compra ${i + 1}</h4>
-            <small>${c.data}</small>
-            <p>Total: R$ ${c.total.toFixed(2)}</p>
-            <details><summary>Ver itens</summary><ul>${itens}</ul></details>
-          </div>`;
       });
     }
 
-    // Scanner
+    // =============== SCANNER ===============
     async function iniciarScanner() {
       if (scannerAtivo) return;
       scannerAtivo = true;
       buffer = [];
       if (!stream) {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        $("video").srcObject = stream;
-        await $("video").play();
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+          $("video").srcObject = stream;
+          await $("video").play();
+        } catch (err) {
+          alert("Permissão da câmera negada. O scanner não funcionará.");
+          console.error(err);
+          return;
+        }
       }
       reader = new ZXing.BrowserMultiFormatReader();
       reader.decodeFromVideoElementContinuously($("video"), (res) => {
@@ -738,40 +780,41 @@
         const codigo = res.text.trim();
         buffer.push(codigo);
         if (buffer.length > repeticoes) buffer.shift();
-        const ok = buffer.filter(v => v === codigo).length;
-        $("detected").innerText = codigo;
-        $("barraValidacaoInner").style.width = (ok / repeticoes * 100) + "%";
-        $("barraValidacaoInner").innerText = Math.round(ok / repeticoes * 100) + "%";
-        if (ok >= repeticoes) processarCodigo(codigo);
+        const count = buffer.filter(v => v === codigo).length;
+        $("detected").textContent = codigo;
+        const pct = (count / repeticoes) * 100;
+        const bar = $("barraValidacaoInner");
+        bar.style.width = pct + "%";
+        bar.textContent = Math.round(pct) + "%";
+        $("barraValidacao").setAttribute("aria-valuenow", Math.round(pct));
+        if (count >= repeticoes) processarCodigo(codigo);
       });
     }
 
     function processarCodigo(codigo) {
-      try {
-        navigator.vibrate?.(50);
-        scannerAtivo = false;
-        beep.play();
-        const produto = produtos.find(x => x.codigo === codigo);
-        setTimeout(() => {
-          if (produto) {
-            const q = Number(prompt(`Produto: ${produto.nome}\nQuantidade:`));
-            if (q > 0) {
-              carrinho.push({ ...produto, qtd: q });
-              Storage.set("carrinho", carrinho);
-              abrirCarrinho();
-            }
-          } else {
-            alert("Produto não cadastrado.");
+      navigator.vibrate?.(50);
+      scannerAtivo = false;
+      beep.play().catch(e => console.warn("Beep não reproduzido:", e));
+      const produto = produtos.find(x => x.codigo === codigo);
+      setTimeout(() => {
+        if (produto) {
+          // Substituir prompt por modal no futuro
+          const q = prompt(`Produto: ${produto.nome}\nQuantidade:`);
+          const qtd = parseInt(q);
+          if (qtd > 0) {
+            carrinho.push({ ...produto, qtd });
+            Storage.set("carrinho", carrinho);
+            abrirCarrinho();
           }
-          $("barraValidacaoInner").style.width = "0%";
-          scannerAtivo = true;
-          buffer = [];
-          atualizarCarrinho();
-        }, 300);
-      } catch (e) {
-        console.error(e);
+        } else {
+          alert("Produto não cadastrado.");
+        }
+        $("barraValidacaoInner").style.width = "0%";
+        $("barraValidacao").setAttribute("aria-valuenow", "0");
         scannerAtivo = true;
-      }
+        buffer = [];
+        atualizarCarrinho();
+      }, 300);
     }
 
     function pararScanner() {
@@ -784,24 +827,33 @@
       $("video").srcObject = null;
     }
 
-    // Gráfico de categorias
+    // =============== GRÁFICO ===============
     function atualizarScannerChart() {
+      const ctx = $("categoriaChart");
+      if (!ctx) return;
+
       const categorias = {};
       produtos.forEach(p => {
         categorias[p.categoria] = (categorias[p.categoria] || 0) + 1;
       });
+
       if (categoriaChart) categoriaChart.destroy();
-      const ctx = $("categoriaChart").getContext("2d");
+
+      const labels = Object.keys(categorias);
+      const data = Object.values(categorias);
+      const cores = ['#3b7ddd', '#ffb703', '#ff3b3b', '#6b6b6b', '#4caf50', '#9c27b0'];
+
       categoriaChart = new Chart(ctx, {
         type: 'doughnut',
-        data: {
-          labels: Object.keys(categorias),
+         {
+          labels,
           datasets: [{
-            data: Object.values(categorias),
-            backgroundColor: ['#3b7ddd', '#ffb703', '#ff3b3b', '#6b6b6b', '#4caf50', '#9c27b0']
+            data,
+            backgroundColor: cores.slice(0, labels.length)
           }]
         },
         options: {
+          responsive: true,
           plugins: {
             legend: { position: 'bottom' }
           }
@@ -809,7 +861,20 @@
       });
     }
 
-    // Inicialização
+    // =============== MODAL CARRINHO (FECHAR COM ESC/CLIQUE FORA) ===============
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && $("modalCarrinho").style.display === 'block') {
+        fecharCarrinho();
+      }
+    });
+
+    $("modalCarrinho").addEventListener('click', (e) => {
+      if (e.target === $("modalCarrinho")) {
+        fecharCarrinho();
+      }
+    });
+
+    // =============== INICIALIZAÇÃO ===============
     atualizarHistorico();
     atualizarProdutosTable();
     atualizarCarrinho();
