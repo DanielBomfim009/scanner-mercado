@@ -4,32 +4,37 @@
   <meta charset="UTF-8" />
   <title>GoL BUY SMART</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#4361ee" />
+  <meta name="theme-color" content="#3b7ddd" />
 
-  <!-- Bibliotecas externas (ESPAÇOS REMOVIDOS!) -->
+  <!-- Bibliotecas externas -->
   <script src="https://unpkg.com/@zxing/library@0.21.2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Substituí Roboto por Inter (mais moderna) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
 
   <style>
     :root {
-      /* Cores claras */
-      --primary: #4361ee;
-      --primary-light: #4895ef;
-      --secondary: #f72585;
+      --primary: #3b7ddd;
+      --secondary: #ffb703;
+      --background: #eef3ff;
+      --card: #fff;
+      --danger: #ff3b3b;
+      --sidebar-width: 220px;
+      --transition-speed: 0.3s;
+      --font-base: 16px;
+      --radius: 18px;
+      --shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+      
+      /* === NOVAS VARIÁVEIS PARA MELHORIAS VISUAIS === */
+      --primary-new: #4361ee;
+      --secondary-new: #f72585;
       --success: #4ade80;
-      --danger: #f87171;
-      --background: #f8f9ff;
-      --card: #ffffff;
       --text: #1e293b;
       --text-muted: #64748b;
       --border: #e2e8f0;
-      --radius: 20px;
-      --shadow: 0 10px 25px -5px rgba(67, 97, 238, 0.1);
-      --transition: all 0.2s ease;
     }
 
-    /* Modo escuro automático */
+    /* === MODO ESCURO AUTOMÁTICO === */
     @media (prefers-color-scheme: dark) {
       :root {
         --background: #0f172a;
@@ -37,7 +42,7 @@
         --text: #f1f5f9;
         --text-muted: #94a3b8;
         --border: #334155;
-        --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        --shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
       }
     }
 
@@ -46,15 +51,17 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      /* Substituí Roboto por Inter */
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
     body {
-      background: var(--background);
+      background: url('https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPOSITORIO/main/fungo.png') no-repeat center top;
+      background-size: cover;
       display: flex;
       min-height: 100vh;
       overflow-x: hidden;
-      font-size: 16px;
+      font-size: var(--font-base);
       color: var(--text);
     }
 
@@ -62,7 +69,7 @@
     #splash {
       position: fixed;
       inset: 0;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      background: #1a1a1a;
       color: white;
       display: flex;
       flex-direction: column;
@@ -74,12 +81,10 @@
       width: 300px;
       height: 300px;
       object-fit: contain;
-      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.2));
     }
     #splash p {
       margin-top: 15px;
       font-size: 18px;
-      font-weight: 600;
     }
 
     /* Sidebar */
@@ -88,13 +93,13 @@
       top: 0;
       left: 0;
       bottom: 0;
-      width: 220px;
-      background: var(--primary);
+      width: var(--sidebar-width);
+      background: var(--primary-new); /* Cor mais moderna */
       color: white;
       display: flex;
       flex-direction: column;
       padding-top: 60px;
-      transition: transform 0.3s;
+      transition: transform var(--transition-speed);
       z-index: 100;
     }
     #sidebar.hide {
@@ -105,52 +110,43 @@
       border: none;
       color: white;
       text-align: left;
-      padding: 16px 20px;
-      font-size: 17px;
-      font-weight: 600;
+      padding: 14px 20px;
+      font-size: 16px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
       cursor: pointer;
-      border-radius: 0 12px 12px 0;
-      width: 100%;
-      transition: var(--transition);
+      border-radius: 8px;
     }
     #sidebar button:hover {
-      background: rgba(255, 255, 255, 0.15);
-      padding-left: 28px;
+      background: rgba(255, 255, 255, 0.2);
     }
 
     /* Hamburger */
     #hamburger {
       position: fixed;
-      top: 16px;
-      left: 16px;
-      width: 52px;
-      height: 52px;
-      background: var(--primary);
+      top: 12px;
+      left: 12px;
+      width: 50px;
+      height: 50px;
+      background: var(--primary-new); /* Cor mais moderna */
       color: white;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 14px;
+      border-radius: 12px;
       z-index: 101;
       cursor: pointer;
       font-size: 28px;
       box-shadow: var(--shadow);
-      transition: var(--transition);
-    }
-    #hamburger:hover {
-      transform: rotate(90deg);
-      background: var(--primary-light);
     }
 
     /* Content */
     #content {
-      margin-left: 220px;
+      margin-left: var(--sidebar-width);
       flex: 1;
-      padding: 24px 20px;
-      transition: margin-left 0.3s;
+      padding: 20px 10px;
+      transition: margin-left var(--transition-speed);
     }
     #content.full {
       margin-left: 0;
@@ -159,14 +155,20 @@
     /* Views */
     .view {
       display: none;
-      animation: fadeIn 0.3s ease;
+      animation: fade 0.3s ease;
     }
     .view.active {
       display: block;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: none; }
+    @keyframes fade {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: none;
+      }
     }
 
     /* Home */
@@ -175,110 +177,91 @@
       padding-top: 20px;
     }
     #home .logo-home {
-      width: 280px;
-      height: 280px;
+      width: 300px;
+      height: 300px;
       object-fit: contain;
-      margin: 0 auto 20px;
-      filter: drop-shadow(0 8px 16px rgba(67, 97, 238, 0.15));
+      margin: 0 auto 10px;
     }
     #home h2 {
       margin: 10px 0;
-      color: var(--primary);
-      font-weight: 800;
-      font-size: 1.8rem;
-      letter-spacing: -0.5px;
+      color: var(--primary-new); /* Cor mais moderna */
+      font-weight: 700;
+      font-size: 1.5rem;
     }
 
-    /* Orçamento */
     #orcamento {
       position: relative;
       max-width: 400px;
       margin: 20px auto;
     }
     #orcamento h3 {
-      margin-bottom: 12px;
-      font-weight: 700;
+      margin-bottom: 8px;
       color: var(--text);
     }
     #orcamento input {
       width: 100%;
-      padding: 14px 14px 14px 52px;
-      border-radius: 14px;
+      padding: 12px 12px 12px 50px;
+      border-radius: 12px;
       border: 1px solid var(--border);
       font-size: 16px;
       background: var(--card);
       color: var(--text);
-      transition: var(--transition);
-    }
-    #orcamento input:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
     }
     #orcamento::before {
       content: 'R$';
       position: absolute;
-      left: 18px;
-      top: 42px;
+      left: 15px;
+      top: 38px;
       color: var(--text-muted);
-      font-weight: 700;
-      font-size: 18px;
+      font-weight: bold;
     }
 
     #orcamentoBarra {
-      height: 14px;
-      background: #e2e8f0;
-      border-radius: 7px;
-      margin-top: 12px;
+      height: 22px;
+      background: #ccc;
+      border-radius: 12px;
+      margin-top: 8px;
       overflow: hidden;
       border: 1px solid var(--border);
     }
     #orcamentoBarraInner {
       height: 100%;
       width: 0%;
-      background: linear-gradient(90deg, var(--secondary), #ff9a03);
-      border-radius: 7px;
+      /* Gradiente moderno */
+      background: linear-gradient(90deg, var(--secondary-new), #ff9a03);
       text-align: center;
       color: white;
-      font-weight: 700;
-      transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-      position: relative;
-    }
-    #orcamentoBarraInner::after {
-      content: attr(data-pct);
-      position: absolute;
-      right: 8px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 11px;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      font-weight: bold;
+      transition: width 0.5s;
+      border-radius: 12px;
     }
 
     /* Box */
     .box {
       background: var(--card);
       border-radius: var(--radius);
-      padding: 24px;
-      margin-bottom: 24px;
+      padding: 20px;
+      margin-bottom: 20px;
       box-shadow: var(--shadow);
       border: 1px solid var(--border);
-      transition: var(--transition);
+      /* Efeito hover suave */
+      transition: transform 0.2s, box-shadow 0.2s;
     }
     .box:hover {
       transform: translateY(-2px);
-      box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
     }
 
     /* Scanner */
     #scannerInfo {
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      margin-top: 16px;
+      gap: 10px;
+      margin-top: 10px;
     }
     #camera {
       width: 100%;
-      height: 260px;
+      height: 250px;
       background: #000;
       border-radius: var(--radius);
       overflow: hidden;
@@ -291,13 +274,29 @@
       object-fit: cover;
       border-radius: var(--radius);
     }
+    .scan-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--secondary-new); /* Cor mais moderna */
+      animation: scan 2s linear infinite;
+      box-shadow: 0 0 10px var(--secondary-new);
+    }
+    @keyframes scan {
+      0% { top: 10%; }
+      50% { top: 90%; }
+      100% { top: 10%; }
+    }
+    
+    /* === OVERLAY PROFISSIONAL NO SCANNER === */
     .scan-overlay {
       position: absolute;
       top: 15%;
       left: 15%;
       width: 70%;
       height: 70%;
-      border: 2px solid var(--secondary);
+      border: 2px solid var(--secondary-new);
       border-radius: 8px;
       pointer-events: none;
       box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.1);
@@ -308,7 +307,7 @@
       position: absolute;
       width: 30px;
       height: 30px;
-      border: 2px solid var(--secondary);
+      border: 2px solid var(--secondary-new);
     }
     .scan-overlay::before {
       top: -2px; left: -2px;
@@ -320,21 +319,6 @@
       border-left: none;
       border-top: none;
     }
-    .scan-line {
-      position: absolute;
-      top: 15%;
-      left: 15%;
-      width: 70%;
-      height: 3px;
-      background: var(--secondary);
-      box-shadow: 0 0 10px var(--secondary);
-      animation: scan 2.5s linear infinite;
-    }
-    @keyframes scan {
-      0% { top: 15%; }
-      50% { top: 85%; }
-      100% { top: 15%; }
-    }
 
     /* Produtos */
     #produtosBox {
@@ -343,84 +327,64 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 12px;
-      font-size: 15px;
+      margin-top: 10px;
+      font-size: 16px;
     }
     th, td {
-      padding: 12px 10px;
+      padding: 10px;
       text-align: center;
-      border-bottom: 1px solid var(--border);
-    }
-    th {
-      font-weight: 700;
       color: var(--text);
     }
-    tr:last-child td {
-      border-bottom: none;
-    }
     tr:nth-child(even) {
-      background: rgba(67, 97, 238, 0.03);
-    }
-    @media (prefers-color-scheme: dark) {
-      tr:nth-child(even) {
-        background: rgba(67, 97, 238, 0.08);
-      }
+      background: #f3f3f3;
     }
     button.editBtn {
-      background: var(--success);
+      background: var(--secondary-new); /* Cor mais moderna */
       color: #000;
-      margin-right: 6px;
+      margin-right: 5px;
       border: none;
-      padding: 8px 14px;
-      border-radius: 8px;
+      padding: 6px 10px;
+      border-radius: 6px;
       cursor: pointer;
-      font-weight: 600;
-      transition: var(--transition);
+      /* Microinteração */
+      transition: transform 0.2s;
     }
     button.editBtn:hover {
-      background: #ffcc33;
       transform: translateY(-2px);
     }
     button.deleteBtn {
       background: var(--danger);
       color: white;
       border: none;
-      padding: 8px 14px;
-      border-radius: 8px;
+      padding: 6px 10px;
+      border-radius: 6px;
       cursor: pointer;
-      font-weight: 600;
-      transition: var(--transition);
+      /* Microinteração */
+      transition: transform 0.2s;
     }
     button.deleteBtn:hover {
-      background: #ff6b6b;
       transform: translateY(-2px);
     }
 
     /* Histórico */
     .historico-card {
       background: var(--card);
-      border-radius: 14px;
-      padding: 18px;
-      margin-bottom: 16px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
       border: 1px solid var(--border);
     }
     .historico-card h4 {
-      margin-bottom: 8px;
-      color: var(--primary);
-      font-weight: 700;
-    }
-    .historico-card small {
-      color: var(--text-muted);
-      display: block;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
+      color: var(--primary-new); /* Cor mais moderna */
     }
     .historico-card details {
-      margin-top: 8px;
+      margin-top: 6px;
     }
     .historico-card details ul {
-      padding-left: 24px;
-      margin: 8px 0;
+      padding-left: 20px;
+      margin: 0;
       max-height: 150px;
       overflow-y: auto;
     }
@@ -428,178 +392,137 @@
     /* Carrinho */
     #carrinhoIcone {
       position: fixed;
-      bottom: 24px;
-      right: 24px;
-      width: 72px;
-      height: 72px;
-      background: var(--secondary);
+      bottom: 20px;
+      right: 20px;
+      width: 70px;
+      height: 70px;
+      background: var(--primary-new); /* Cor mais moderna */
       border-radius: 50%;
-      color: white;
+      color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 28px;
       cursor: pointer;
       z-index: 200;
-      box-shadow: 0 8px 20px rgba(247, 37, 133, 0.4);
-      transition: var(--transition);
+      box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+      /* Microinteração */
+      transition: transform 0.3s;
     }
     #carrinhoIcone:hover {
       transform: scale(1.1) rotate(12deg);
-      box-shadow: 0 10px 25px rgba(247, 37, 133, 0.6);
+      box-shadow: 0 8px 25px rgba(67, 97, 238, 0.6);
     }
     #carrinhoIcone span {
       position: absolute;
-      top: -4px;
-      right: -4px;
-      width: 24px;
-      height: 24px;
-      background: var(--primary);
-      color: white;
+      top: -5px;
+      right: -5px;
+      width: 22px;
+      height: 22px;
+      background: var(--secondary-new); /* Cor mais moderna */
+      color: #fff;
       border-radius: 50%;
       font-size: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      /* === ANIMAÇÃO DE BADGE === */
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
     }
 
     #modalCarrinho {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.7);
+      background: rgba(0, 0, 0, 0.6);
       display: none;
       z-index: 1000;
-      align-items: center;
-      justify-content: center;
     }
     #modalCarrinho .modal-content {
       background: var(--card);
       width: 95%;
       max-width: 480px;
       margin: 40px auto;
-      padding: 28px;
+      padding: 20px;
       border-radius: var(--radius);
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      box-shadow: var(--shadow);
       border: 1px solid var(--border);
-      transform: scale(0.95);
-      opacity: 0;
-      transition: transform 0.3s, opacity 0.3s;
-    }
-    #modalCarrinho.active .modal-content {
-      transform: scale(1);
-      opacity: 1;
     }
     #modalCarrinho table {
       width: 100%;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
     #modalCarrinho button {
       width: 100%;
-      padding: 14px;
-      margin-top: 12px;
+      padding: 12px;
+      margin-top: 8px;
       border: none;
-      border-radius: 14px;
+      border-radius: 12px;
       color: white;
-      background: var(--primary);
+      background: var(--primary-new); /* Cor mais moderna */
       cursor: pointer;
       font-weight: 700;
-      font-size: 17px;
-      transition: var(--transition);
+      /* Microinteração */
+      transition: transform 0.2s;
     }
     #modalCarrinho button:hover {
-      background: var(--primary-light);
       transform: translateY(-2px);
     }
 
     /* Cadastro */
     #cadastroBox {
-      max-width: 420px;
+      max-width: 400px;
       margin: 20px auto;
-    }
-    #cadastroBox h2 {
-      margin-bottom: 20px;
-      color: var(--primary);
-      text-align: center;
     }
     #cadastroBox input,
     #cadastroBox select,
     #cadastroBox button {
       width: 100%;
-      padding: 14px;
-      margin-top: 10px;
-      border-radius: 14px;
+      padding: 12px;
+      margin-top: 8px;
+      border-radius: 12px;
       border: 1px solid var(--border);
       font-size: 16px;
       background: var(--card);
       color: var(--text);
-      transition: var(--transition);
-    }
-    #cadastroBox input:focus,
-    #cadastroBox select:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
     }
     #cadastroBox button {
-      background: var(--primary);
+      background: var(--primary-new); /* Cor mais moderna */
       color: white;
       border: none;
       font-weight: 700;
-      transition: var(--transition);
+      /* Microinteração */
+      transition: transform 0.2s;
     }
     #cadastroBox button:hover {
-      background: var(--primary-light);
       transform: translateY(-2px);
     }
 
     /* Gráfico scanner */
     #scannerChartBox {
-      margin-top: 24px;
+      margin-top: 20px;
     }
     #barraValidacao {
-      height: 14px;
-      background: #e2e8f0;
-      border-radius: 7px;
-      margin-top: 12px;
+      height: 22px;
+      background: #ccc;
+      border-radius: 12px;
+      margin-top: 8px;
       overflow: hidden;
       border: 1px solid var(--border);
     }
     #barraValidacaoInner {
       height: 100%;
       width: 0%;
-      background: linear-gradient(90deg, var(--secondary), #ff9a03);
-      border-radius: 7px;
+      /* Gradiente moderno */
+      background: linear-gradient(90deg, var(--secondary-new), #ff9a03);
       text-align: center;
       color: white;
-      font-weight: 700;
+      font-weight: bold;
       transition: width 0.5s;
-      position: relative;
-    }
-    #barraValidacaoInner::after {
-      content: attr(data-pct);
-      position: absolute;
-      right: 8px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 11px;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-    }
-
-    /* Responsividade */
-    @media (max-width: 768px) {
-      #sidebar { width: 200px; }
-      #content { margin-left: 200px; padding: 20px 16px; }
-      .box { padding: 20px; }
-    }
-    @media (max-width: 480px) {
-      #sidebar { width: 180px; transform: translateX(-100%); }
-      #sidebar.hide { transform: translateX(-100%); }
-      #content { margin-left: 180px; padding: 16px 12px; }
-      #home .logo-home { width: 240px; height: 240px; }
-      #hamburger { width: 48px; height: 48px; }
-      #orcamento input { font-size: 15px; }
+      border-radius: 12px;
     }
   </style>
 </head>
@@ -607,7 +530,7 @@
 <body>
   <!-- Splash Screen -->
   <div id="splash">
-    <img src="logo.png" alt="GoL BUY SMART – App de compras inteligente" />
+    <img src="logo.png" alt="Logo" />
     <p>Bem-vindo ao seu app de compras inteligente</p>
   </div>
 
@@ -627,39 +550,37 @@
   <div id="content">
     <!-- Home -->
     <section id="home" class="view active">
-      <img src="logo.png" class="logo-home" alt="GoL BUY SMART – App de compras inteligente" />
+      <img src="logo.png" class="logo-home" alt="Logo" />
       <h2>Bem-vindo ao GoL BUY SMART</h2>
 
       <div id="orcamento" class="box">
         <h3>💰 Orçamento Mensal</h3>
         <input type="number" id="orcamentoInput" placeholder="Digite seu orçamento" />
         <div id="orcamentoBarra">
-          <div id="orcamentoBarraInner" data-pct="0%"></div>
+          <div id="orcamentoBarraInner">0%</div>
         </div>
-        <p style="margin-top: 12px; color: var(--text-muted);">
-          Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
-        </p>
+        <p style="margin-top: 8px;">Gasto atual: R$ <span id="orcamentoGasto">0.00</span></p>
       </div>
     </section>
 
     <!-- Scanner -->
     <section id="scanner" class="view">
       <div class="box">
-        <h2 style="text-align:center; margin-bottom:16px;">Scanner de Produtos</h2>
         <div id="camera">
           <video id="video" playsinline></video>
+          <!-- === ADICIONEI O OVERLAY PROFISSIONAL === -->
           <div class="scan-overlay"></div>
           <div class="scan-line"></div>
         </div>
         <div id="scannerInfo">
-          <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
-          <p><strong>Total produtos cadastrados:</strong> <span id="totalProdutos">0</span></p>
+          <p>Código detectado: <span id="detected">—</span></p>
+          <p>Total produtos cadastrados: <span id="totalProdutos">0</span></p>
           <div id="scannerChartBox">
             <canvas id="categoriaChart"></canvas>
           </div>
         </div>
         <div id="barraValidacao">
-          <div id="barraValidacaoInner" data-pct="0%"></div>
+          <div id="barraValidacaoInner">0%</div>
         </div>
       </div>
     </section>
@@ -667,7 +588,7 @@
     <!-- Produtos -->
     <section id="produtos" class="view">
       <div id="produtosBox" class="box">
-        <h2 style="margin-bottom:16px;">Produtos Cadastrados</h2>
+        <h2>Produtos Cadastrados</h2>
         <table id="produtosTable">
           <thead>
             <tr>
@@ -687,7 +608,7 @@
     <!-- Cadastro -->
     <section id="cadastro" class="view">
       <div id="cadastroBox" class="box">
-        <h2 id="cadastro-title">Cadastro de Produto</h2>
+        <h2>Cadastro de Produto</h2>
         <input id="codigoCadastro" placeholder="Código" />
         <input id="nomeCadastro" placeholder="Nome" />
         <select id="categoriaCadastro">
@@ -717,9 +638,9 @@
   <div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️<span id="badge">0</span></div>
   <div id="modalCarrinho">
     <div class="modal-content">
-      <h3 style="margin-bottom:16px; color: var(--primary);">Carrinho</h3>
+      <h3>Carrinho</h3>
       <table id="tabelaCarrinho"></table>
-      <p id="total" style="font-weight:700; color: var(--primary); margin:16px 0;">Total: R$ 0,00</p>
+      <p id="total">Total: R$ 0,00</p>
       <button onclick="finalizarCompra()">Finalizar</button>
       <button onclick="fecharCarrinho()">Fechar</button>
     </div>
@@ -782,14 +703,15 @@
       const pct = orcamento ? Math.min(100, (gasto / orcamento) * 100) : 0;
       const bar = $("orcamentoBarraInner");
       bar.style.width = pct + "%";
-      bar.setAttribute('data-pct', Math.round(pct) + '%');
+      bar.innerText = Math.round(pct) + "%";
     }
 
     // Produtos
     function atualizarProdutosTable() {
-      let html = "";
+      const tbody = $("produtosTable").querySelector("tbody");
+      tbody.innerHTML = "";
       produtos.forEach((p, i) => {
-        html += `
+        tbody.innerHTML += `
           <tr>
             <td>${p.codigo}</td>
             <td>${p.nome}</td>
@@ -802,12 +724,11 @@
             </td>
           </tr>`;
       });
-      $("produtosTable").querySelector("tbody").innerHTML = html;
       $("totalProdutos").innerText = produtos.length;
     }
 
     function editarProduto(i) {
-      $("cadastro-title").innerText = "Editar Produto";
+      irPara("cadastro");
       $("codigoCadastro").value = produtos[i].codigo;
       $("nomeCadastro").value = produtos[i].nome;
       $("categoriaCadastro").value = produtos[i].categoria;
@@ -815,7 +736,6 @@
       $("valorCadastro").value = produtos[i].valor;
       produtos.splice(i, 1);
       Storage.set("produtos", produtos);
-      irPara("cadastro");
     }
 
     function excluirProduto(i) {
@@ -843,39 +763,36 @@
       Storage.set("produtos", produtos);
       atualizarProdutosTable();
       atualizarScannerChart();
-      $("cadastro-title").innerText = "Cadastro de Produto";
       irPara("produtos");
     };
 
     // Carrinho
     function atualizarCarrinho() {
       let total = 0;
-      let html = "<tr><th>Nome</th><th>Qtd</th><th>Subtotal</th></tr>";
+      const table = $("tabelaCarrinho");
+      table.innerHTML = "<tr><th>Nome</th><th>Qtd</th><th>Subtotal</th></tr>";
       carrinho.forEach(p => {
         const sub = p.valor * p.qtd;
         total += sub;
-        html += `<tr><td>${p.nome}</td><td>${p.qtd}</td><td>R$ ${sub.toFixed(2)}</td></tr>`;
+        table.innerHTML += `<tr><td>${p.nome}</td><td>${p.qtd}</td><td>R$ ${sub.toFixed(2)}</td></tr>`;
       });
-      $("tabelaCarrinho").innerHTML = html;
       $("total").innerText = "Total: R$ " + total.toFixed(2);
       $("badge").innerText = carrinho.length;
       atualizarOrcamento();
-
-      // Animação de badge
+      
+      // === ANIMAÇÃO DE BADGE AO ATUALIZAR CARRINHO ===
       const badge = $("badge");
       badge.style.animation = "pulse 0.5s";
       setTimeout(() => badge.style.animation = "", 500);
     }
 
     function abrirCarrinho() {
-      $("modalCarrinho").style.display = "flex";
-      setTimeout(() => $("modalCarrinho").classList.add("active"), 10);
+      $("modalCarrinho").style.display = "block";
       atualizarCarrinho();
     }
 
     function fecharCarrinho() {
-      $("modalCarrinho").classList.remove("active");
-      setTimeout(() => $("modalCarrinho").style.display = "none", 300);
+      $("modalCarrinho").style.display = "none";
     }
 
     function finalizarCompra() {
@@ -903,7 +820,7 @@
       const area = $("historicoConteudo");
       area.innerHTML = "";
       if (!historico.length) {
-        area.innerHTML = "<p style='text-align:center; color:var(--text-muted);'>Nenhuma compra registrada.</p>";
+        area.innerHTML = "<p>Nenhuma compra registrada.</p>";
         return;
       }
       historico.forEach((c, i) => {
@@ -915,8 +832,8 @@
           <div class="historico-card">
             <h4>Compra ${i + 1}</h4>
             <small>${c.data}</small>
-            <p><strong>Total:</strong> R$ ${c.total.toFixed(2)}</p>
-            <details><summary style="color:var(--primary); cursor:pointer;">Ver itens</summary><ul>${itens}</ul></details>
+            <p>Total: R$ ${c.total.toFixed(2)}</p>
+            <details><summary>Ver itens</summary><ul>${itens}</ul></details>
           </div>`;
       });
     }
@@ -927,14 +844,9 @@
       scannerAtivo = true;
       buffer = [];
       if (!stream) {
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-          $("video").srcObject = stream;
-          await $("video").play();
-        } catch (err) {
-          alert("⚠️ Permissão da câmera negada.");
-          return;
-        }
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        $("video").srcObject = stream;
+        await $("video").play();
       }
       reader = new ZXing.BrowserMultiFormatReader();
       reader.decodeFromVideoElementContinuously($("video"), (res) => {
@@ -945,7 +857,7 @@
         const ok = buffer.filter(v => v === codigo).length;
         $("detected").innerText = codigo;
         $("barraValidacaoInner").style.width = (ok / repeticoes * 100) + "%";
-        $("barraValidacaoInner").setAttribute('data-pct', Math.round(ok / repeticoes * 100) + '%');
+        $("barraValidacaoInner").innerText = Math.round(ok / repeticoes * 100) + "%";
         if (ok >= repeticoes) processarCodigo(codigo);
       });
     }
@@ -968,7 +880,6 @@
             alert("Produto não cadastrado.");
           }
           $("barraValidacaoInner").style.width = "0%";
-          $("barraValidacaoInner").setAttribute('data-pct', '0%');
           scannerAtivo = true;
           buffer = [];
           atualizarCarrinho();
@@ -1003,11 +914,10 @@
           labels: Object.keys(categorias),
           datasets: [{
              Object.values(categorias),
-            backgroundColor: ['#4361ee', '#f72585', '#4ade80', '#f87171', '#6b6b6b', '#9c27b0']
+            backgroundColor: ['#4361ee', '#f72585', '#ff3b3b', '#6b6b6b', '#4caf50', '#9c27b0']
           }]
         },
         options: {
-          responsive: true,
           plugins: {
             legend: { position: 'bottom' }
           }
@@ -1015,9 +925,9 @@
       });
     }
 
-    // Fechar modal com tecla Esc e clique fora
+    // === FECHAR MODAL COM ESC E CLIQUE FORA ===
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && $("modalCarrinho").style.display === 'flex') {
+      if (e.key === 'Escape' && $("modalCarrinho").style.display === 'block') {
         fecharCarrinho();
       }
     });
@@ -1027,12 +937,6 @@
         fecharCarrinho();
       }
     });
-
-    // Animação de badge
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.2); }
-    }
 
     // Inicialização
     atualizarHistorico();
