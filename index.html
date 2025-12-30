@@ -6,26 +6,19 @@
   <meta name="theme-color" content="#4361ee" />
   <title>GoL BUY SMART</title>
 
-  <!-- Bibliotecas externas -->
-  <script src="https://unpkg.com/@zxing/library@0.21.2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Bibliotecas externas com fallback -->
+  <script src="https://unpkg.com/@zxing/library@0.21.2" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <style>
     :root {
-      /* Claro */
       --primary: #4361ee;
-      --primary-light: #4895ef;
-      --primary-dark: #3a56d4;
       --secondary: #f72585;
       --background: #f8f9ff;
       --card: #ffffff;
       --text: #212529;
-      --text-muted: #6c757d;
-      --border: #e0e6f0;
-      --danger: #f87171;
       --radius: 20px;
-      --radius-sm: 12px;
       --shadow: 0 6px 20px rgba(67, 97, 238, 0.12), 0 2px 6px rgba(0, 0, 0, 0.06);
     }
 
@@ -34,9 +27,6 @@
         --background: #121826;
         --card: #1e293b;
         --text: #f1f5f9;
-        --text-muted: #94a3b8;
-        --border: #334155;
-        --shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.2);
       }
     }
 
@@ -57,7 +47,7 @@
       line-height: 1.6;
     }
 
-    /* Splash */
+    /* Splash - FORÇA sumir em 1.5s */
     #splash {
       position: fixed;
       inset: 0;
@@ -68,10 +58,15 @@
       align-items: center;
       justify-content: center;
       z-index: 2000;
+      animation: fadeOut 1.5s forwards;
     }
+    @keyframes fadeOut {
+      to { opacity: 0; pointer-events: none; }
+    }
+
     #splash img {
-      width: 240px;
-      height: 240px;
+      width: 300px; /* AUMENTADO de 240px */
+      height: 300px;
       object-fit: contain;
       filter: drop-shadow(0 8px 20px rgba(0,0,0,0.2));
     }
@@ -102,10 +97,16 @@
       align-items: center;
       justify-content: center;
       transition: all 0.25s;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.5s 1.5s forwards;
+    }
+    @keyframes fadeInUp {
+      to { opacity: 1; transform: translateY(0); }
     }
     #hamburger:hover {
       background: var(--primary-light);
-      transform: rotate(90deg);
+      transform: rotate(90deg) translateY(0);
     }
 
     /* Sidebar */
@@ -123,6 +124,12 @@
       transition: transform 0.3s ease;
       z-index: 100;
       box-shadow: 4px 0 12px rgba(0,0,0,0.1);
+      opacity: 0;
+      transform: translateX(-100%);
+      animation: slideIn 0.5s 1.5s forwards;
+    }
+    @keyframes slideIn {
+      to { opacity: 1; transform: translateX(0); }
     }
     #sidebar.hide {
       transform: translateX(-100%);
@@ -154,6 +161,11 @@
       flex: 1;
       padding: 24px 20px;
       transition: margin-left 0.3s ease;
+      opacity: 0;
+      animation: fadeInContent 0.5s 1.5s forwards;
+    }
+    @keyframes fadeInContent {
+      to { opacity: 1; }
     }
     #content.full {
       margin-left: 0;
@@ -188,7 +200,7 @@
       padding: 28px;
       margin-bottom: 28px;
       box-shadow: var(--shadow);
-      border: 1px solid var(--border);
+      border: 1px solid #e0e6f0;
     }
     @media (max-width: 480px) {
       .box { padding: 20px 16px; }
@@ -205,7 +217,7 @@
       width: 100%;
       padding: 14px;
       border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
+      border: 1px solid #e0e6f0;
       font-size: 16px;
       background: var(--card);
       color: var(--text);
@@ -315,15 +327,12 @@
     th, td {
       padding: 14px 10px;
       text-align: center;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid #e0e6f0;
     }
     th { font-weight: 700; }
     tr:last-child td { border-bottom: none; }
     tr:nth-child(even) {
       background: rgba(67, 97, 238, 0.03);
-    }
-    @media (prefers-color-scheme: dark) {
-      tr:nth-child(even) { background: rgba(67, 97, 238, 0.08); }
     }
 
     /* Botões */
@@ -375,7 +384,7 @@
       padding: 20px;
       margin-bottom: 20px;
       box-shadow: var(--shadow);
-      border: 1px solid var(--border);
+      border: 1px solid #e0e6f0;
     }
     .historico-card h4 {
       color: var(--primary);
@@ -383,7 +392,7 @@
       font-size: 1.25rem;
     }
     .historico-card small {
-      color: var(--text-muted);
+      color: #6c757d;
       display: block;
       margin-bottom: 10px;
     }
@@ -407,6 +416,12 @@
       z-index: 200;
       box-shadow: 0 6px 16px rgba(247, 37, 133, 0.4);
       transition: all 0.3s;
+      opacity: 0;
+      transform: scale(0.8);
+      animation: fadeInUp 0.5s 1.5s forwards;
+    }
+    @keyframes fadeInUp {
+      to { opacity: 1; transform: scale(1); }
     }
     #carrinhoIcone:hover {
       transform: scale(1.1) rotate(12deg);
@@ -447,7 +462,7 @@
       padding: 30px;
       border-radius: var(--radius);
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-      border: 1px solid var(--border);
+      border: 1px solid #e0e6f0;
       transform: scale(0.95);
       opacity: 0;
       transition: transform 0.3s, opacity 0.3s;
@@ -473,7 +488,7 @@
 </head>
 
 <body>
-  <!-- Splash -->
+  <!-- Splash - Força sumir em 1.5s -->
   <div id="splash" role="alert" aria-live="polite">
     <img src="logo.png" alt="GoL BUY SMART – App de compras inteligente" />
     <p>Bem-vindo ao seu app de compras inteligente</p>
@@ -510,7 +525,7 @@
   <main id="content" role="main">
     <!-- Home -->
     <section id="home" class="view active" aria-labelledby="home-title">
-      <img src="logo.png" style="width: 220px; height: 220px; margin: 0 auto 20px;" alt="GoL BUY SMART" />
+      <img src="logo.png" style="width: 280px; height: 280px; margin: 0 auto 20px;" alt="GoL BUY SMART" />
       <h2 id="home-title">Bem-vindo ao GoL BUY SMART</h2>
       <div id="orcamento" class="box">
         <label for="orcamentoInput">💰 Orçamento Mensal (R$)</label>
@@ -518,7 +533,7 @@
         <div id="orcamentoBarra" role="progressbar" aria-valuemin="0" aria-valuemax="100">
           <div id="orcamentoBarraInner" data-pct="0%"></div>
         </div>
-        <p style="margin-top: 12px; color: var(--text-muted);">
+        <p style="margin-top: 12px; color: #6c757d;">
           Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
         </p>
       </div>
@@ -622,80 +637,130 @@
   </div>
 
   <script>
-    // Utilitários
+    // Utilitários seguros
     const $ = id => document.getElementById(id);
     const Storage = {
-      get: (k, f = []) => JSON.parse(localStorage.getItem(k)) || f,
-      set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
+      get: (k, f = []) => {
+        try {
+          return JSON.parse(localStorage.getItem(k)) || f;
+        } catch (e) {
+          console.warn("Erro ao ler localStorage:", k, e);
+          return f;
+        }
+      },
+      set: (k, v) => {
+        try {
+          localStorage.setItem(k, JSON.stringify(v));
+        } catch (e) {
+          console.warn("Erro ao salvar localStorage:", k, e);
+        }
+      }
     };
+
     const escapeHtml = text => {
+      if (!text) return "";
       const div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML;
     };
 
-    // Dados
-    let produtos = Storage.get("produtos");
-    let carrinho = Storage.get("carrinho");
-    let historico = Storage.get("historicoCompras");
-    let orcamento = parseFloat(Storage.get("orcamento")) || 0;
+    // Dados iniciais
+    let produtos = [];
+    let carrinho = [];
+    let historico = [];
+    let orcamento = 0;
     let reader = null, stream = null, buffer = [], scannerAtivo = false;
     const repeticoes = 3;
-    const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
     let categoriaChart;
     let modoEdicao = false;
     let indiceEdicao = -1;
+
+    // Carregar dados com segurança
+    try {
+      produtos = Storage.get("produtos");
+      carrinho = Storage.get("carrinho");
+      historico = Storage.get("historicoCompras");
+      orcamento = parseFloat(Storage.get("orcamento")) || 0;
+    } catch (e) {
+      console.error("Erro ao carregar dados:", e);
+    }
 
     // Sidebar toggle
     const sidebar = $("sidebar");
     const content = $("content");
     const hamburger = $("hamburger");
-    hamburger.addEventListener('click', () => {
-      sidebar.classList.toggle("hide");
-      content.classList.toggle("full");
-    });
 
-    // Roteamento
+    if (hamburger && sidebar && content) {
+      hamburger.addEventListener('click', () => {
+        sidebar.classList.toggle("hide");
+        content.classList.toggle("full");
+      });
+    }
+
+    // Roteamento seguro
     function irPara(tela) {
-      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
-      $(tela).classList.add("active");
-      
-      if (tela === "cadastro" && !modoEdicao) {
-        $("cadastro-title").textContent = "Cadastro de Produto";
-        ["codigoCadastro", "nomeCadastro", "valorCadastro"].forEach(id => $(id).value = "");
-        $("categoriaCadastro").value = "Alimentos";
-        $("tipoCadastro").value = "UN";
-      }
-      
-      if (tela === "scanner") {
-        iniciarScanner();
-        // Atualiza o gráfico SOMENTE ao entrar na view do scanner
-        setTimeout(() => atualizarScannerChart(), 100);
-      } else {
-        pararScanner();
+      try {
+        document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+        const target = $(tela);
+        if (target) target.classList.add("active");
+        
+        if (tela === "cadastro" && !modoEdicao) {
+          const title = $("cadastro-title");
+          if (title) title.textContent = "Cadastro de Produto";
+          ["codigoCadastro", "nomeCadastro", "valorCadastro"].forEach(id => {
+            const el = $(id);
+            if (el) el.value = "";
+          });
+          const cat = $("categoriaCadastro");
+          if (cat) cat.value = "Alimentos";
+          const tipo = $("tipoCadastro");
+          if (tipo) tipo.value = "UN";
+        }
+        
+        if (tela === "scanner") {
+          iniciarScanner();
+          setTimeout(() => {
+            if (typeof Chart !== 'undefined') {
+              atualizarScannerChart();
+            }
+          }, 100);
+        } else {
+          pararScanner();
+        }
+      } catch (e) {
+        console.error("Erro ao navegar para:", tela, e);
       }
     }
 
     // Orçamento
-    $("orcamentoInput").value = orcamento || '';
-    $("orcamentoInput").addEventListener("input", () => {
-      orcamento = parseFloat($("orcamentoInput").value) || 0;
-      Storage.set("orcamento", orcamento);
-      atualizarOrcamento();
-    });
+    const orcamentoInput = $("orcamentoInput");
+    if (orcamentoInput) {
+      orcamentoInput.value = orcamento || '';
+      orcamentoInput.addEventListener("input", () => {
+        orcamento = parseFloat(orcamentoInput.value) || 0;
+        Storage.set("orcamento", orcamento);
+        atualizarOrcamento();
+      });
+    }
 
     function atualizarOrcamento() {
       const gasto = carrinho.reduce((a, b) => a + (b.valor * (b.qtd || 1)), 0);
-      $("orcamentoGasto").textContent = gasto.toFixed(2);
+      const gastoSpan = $("orcamentoGasto");
+      if (gastoSpan) gastoSpan.textContent = gasto.toFixed(2);
+      
       const pct = orcamento ? Math.min(100, (gasto / orcamento) * 100) : 0;
       const bar = $("orcamentoBarraInner");
-      bar.style.width = pct + "%";
-      bar.setAttribute('data-pct', Math.round(pct) + '%');
+      if (bar) {
+        bar.style.width = pct + "%";
+        bar.setAttribute('data-pct', Math.round(pct) + '%');
+      }
     }
 
     // Produtos
     function atualizarProdutosTable() {
-      const tbody = $("produtosTable").querySelector("tbody");
+      const tbody = $("produtosTable")?.querySelector("tbody");
+      if (!tbody) return;
+      
       tbody.innerHTML = "";
       produtos.forEach((p, i) => {
         const row = document.createElement('tr');
@@ -711,19 +776,26 @@
           </td>`;
         tbody.appendChild(row);
       });
-      $("totalProdutos").textContent = produtos.length;
+      const totalSpan = $("totalProdutos");
+      if (totalSpan) totalSpan.textContent = produtos.length;
     }
 
     function editarProduto(i) {
       modoEdicao = true;
       indiceEdicao = i;
       const p = produtos[i];
-      $("cadastro-title").textContent = "Editar Produto";
-      $("codigoCadastro").value = p.codigo;
-      $("nomeCadastro").value = p.nome;
-      $("categoriaCadastro").value = p.categoria;
-      $("tipoCadastro").value = p.tipo;
-      $("valorCadastro").value = p.valor;
+      const title = $("cadastro-title");
+      if (title) title.textContent = "Editar Produto";
+      const codigo = $("codigoCadastro");
+      if (codigo) codigo.value = p.codigo;
+      const nome = $("nomeCadastro");
+      if (nome) nome.value = p.nome;
+      const categoria = $("categoriaCadastro");
+      if (categoria) categoria.value = p.categoria;
+      const tipo = $("tipoCadastro");
+      if (tipo) tipo.value = p.tipo;
+      const valor = $("valorCadastro");
+      if (valor) valor.value = p.valor;
       irPara("cadastro");
     }
 
@@ -732,41 +804,46 @@
         produtos.splice(i, 1);
         Storage.set("produtos", produtos);
         atualizarProdutosTable();
-        // Não chama atualizarScannerChart aqui — só quando entrar na view
       }
     }
 
-    $("salvarCadastro").addEventListener('click', () => {
-      const novo = {
-        codigo: $("codigoCadastro").value.trim(),
-        nome: $("nomeCadastro").value.trim(),
-        categoria: $("categoriaCadastro").value,
-        tipo: $("tipoCadastro").value,
-        valor: parseFloat($("valorCadastro").value)
-      };
-      
-      if (!novo.codigo || !novo.nome || !novo.valor || isNaN(novo.valor) || novo.valor <= 0) {
-        alert("Preencha todos os campos corretamente.");
-        return;
-      }
+    const salvarBtn = $("salvarCadastro");
+    if (salvarBtn) {
+      salvarBtn.addEventListener('click', () => {
+        const novo = {
+          codigo: $("codigoCadastro")?.value.trim() || "",
+          nome: $("nomeCadastro")?.value.trim() || "",
+          categoria: $("categoriaCadastro")?.value || "Alimentos",
+          tipo: $("tipoCadastro")?.value || "UN",
+          valor: parseFloat($("valorCadastro")?.value) || 0
+        };
+        
+        if (!novo.codigo || !novo.nome || !novo.valor || isNaN(novo.valor) || novo.valor <= 0) {
+          alert("Preencha todos os campos corretamente.");
+          return;
+        }
 
-      if (modoEdicao) {
-        produtos[indiceEdicao] = novo;
-        modoEdicao = false;
-        indiceEdicao = -1;
-      } else {
-        produtos.push(novo);
-      }
+        if (modoEdicao) {
+          produtos[indiceEdicao] = novo;
+          modoEdicao = false;
+          indiceEdicao = -1;
+        } else {
+          produtos.push(novo);
+        }
 
-      Storage.set("produtos", produtos);
-      atualizarProdutosTable();
-      $("cadastro-title").textContent = "Cadastro de Produto";
-      irPara("produtos");
-    });
+        Storage.set("produtos", produtos);
+        atualizarProdutosTable();
+        const title = $("cadastro-title");
+        if (title) title.textContent = "Cadastro de Produto";
+        irPara("produtos");
+      });
+    }
 
     // Carrinho
     function atualizarCarrinho() {
-      const tbody = $("tabelaCarrinho").querySelector("tbody");
+      const tbody = $("tabelaCarrinho")?.querySelector("tbody");
+      if (!tbody) return;
+      
       tbody.innerHTML = "";
       let total = 0;
       carrinho.forEach(p => {
@@ -780,20 +857,28 @@
           <td>R$ ${sub.toFixed(2)}</td>`;
         tbody.appendChild(row);
       });
-      $("total").textContent = "Total: R$ " + total.toFixed(2);
-      $("badge").textContent = carrinho.length;
+      const totalEl = $("total");
+      if (totalEl) totalEl.textContent = "Total: R$ " + total.toFixed(2);
+      const badge = $("badge");
+      if (badge) badge.textContent = carrinho.length;
       atualizarOrcamento();
     }
 
     function abrirCarrinho() {
-      $("modalCarrinho").style.display = "flex";
-      setTimeout(() => $("modalCarrinho").classList.add("active"), 10);
-      atualizarCarrinho();
+      const modal = $("modalCarrinho");
+      if (modal) {
+        modal.style.display = "flex";
+        setTimeout(() => modal.classList.add("active"), 10);
+        atualizarCarrinho();
+      }
     }
 
     function fecharCarrinho() {
-      $("modalCarrinho").classList.remove("active");
-      setTimeout(() => $("modalCarrinho").style.display = "none", 300);
+      const modal = $("modalCarrinho");
+      if (modal) {
+        modal.classList.remove("active");
+        setTimeout(() => modal.style.display = "none", 300);
+      }
     }
 
     function finalizarCompra() {
@@ -816,9 +901,11 @@
     // Histórico
     function atualizarHistorico() {
       const area = $("historicoConteudo");
+      if (!area) return;
+      
       area.innerHTML = "";
       if (!historico.length) {
-        area.innerHTML = "<p style='text-align:center; color:var(--text-muted);'>Nenhuma compra registrada.</p>";
+        area.innerHTML = "<p style='text-align:center; color:#6c757d;'>Nenhuma compra registrada.</p>";
         return;
       }
       historico.forEach((compra, idx) => {
@@ -832,11 +919,13 @@
         area.appendChild(card);
 
         const ul = card.querySelector(`#itens-${idx}`);
-        compra.itens.forEach(it => {
-          const li = document.createElement('li');
-          li.textContent = `${it.nome} — ${it.qtd || 1} x R$ ${it.valor.toFixed(2)} = R$ ${(it.qtd * it.valor).toFixed(2)}`;
-          ul.appendChild(li);
-        });
+        if (ul) {
+          compra.itens.forEach(it => {
+            const li = document.createElement('li');
+            li.textContent = `${it.nome} — ${it.qtd || 1} x R$ ${it.valor.toFixed(2)} = R$ ${(it.qtd * it.valor).toFixed(2)}`;
+            ul.appendChild(li);
+          });
+        }
       });
     }
 
@@ -847,13 +936,24 @@
       buffer = [];
       if (!stream) {
         try {
-          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-          $("video").srcObject = stream;
-          await $("video").play();
+          const constraints = { video: { facingMode: "environment" } };
+          stream = await navigator.mediaDevices.getUserMedia(constraints);
+          const video = $("video");
+          if (video) video.srcObject = stream;
+          const playPromise = video?.play();
+          if (playPromise) {
+            playPromise.catch(() => {
+              console.warn("Video play falhou");
+            });
+          }
         } catch (err) {
           alert("⚠️ Permissão da câmera negada.");
           return;
         }
+      }
+      if (typeof ZXing === 'undefined') {
+        console.warn("ZXing não carregado");
+        return;
       }
       reader = new ZXing.BrowserMultiFormatReader();
       reader.decodeFromVideoElementContinuously($("video"), (res) => {
@@ -862,7 +962,8 @@
         buffer.push(codigo);
         if (buffer.length > repeticoes) buffer.shift();
         const count = buffer.filter(v => v === codigo).length;
-        $("detected").textContent = codigo;
+        const detected = $("detected");
+        if (detected) detected.textContent = codigo;
         if (count >= repeticoes) processarCodigo(codigo);
       });
     }
@@ -870,6 +971,7 @@
     function processarCodigo(codigo) {
       navigator.vibrate?.(100);
       scannerAtivo = false;
+      const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
       beep.play().catch(() => {});
       const produto = produtos.find(x => x.codigo === codigo);
       setTimeout(() => {
@@ -897,11 +999,16 @@
         stream.getTracks().forEach(t => t.stop());
         stream = null;
       }
-      $("video").srcObject = null;
+      const video = $("video");
+      if (video) video.srcObject = null;
     }
 
-    // Gráfico - Só executa se canvas existir e houver produtos
+    // Gráfico - Só se Chart.js estiver disponível
     function atualizarScannerChart() {
+      if (typeof Chart === 'undefined') {
+        console.warn("Chart.js não carregado");
+        return;
+      }
       const ctx = $("categoriaChart");
       if (!ctx || !produtos || produtos.length === 0) return;
 
@@ -934,27 +1041,44 @@
       });
     }
 
-    // Modal carrinho (fechar com Esc/click fora)
+    // Modal carrinho
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && $("modalCarrinho").style.display !== 'none') fecharCarrinho();
+      if (e.key === 'Escape' && $("modalCarrinho")?.style.display !== 'none') fecharCarrinho();
     });
-    $("modalCarrinho").addEventListener('click', e => {
+    $("modalCarrinho")?.addEventListener('click', e => {
       if (e.target === $("modalCarrinho")) fecharCarrinho();
     });
 
-    // 🚀 Inicialização segura
+    // Inicialização segura
     function inicializarApp() {
-      atualizarHistorico();
-      atualizarProdutosTable();
-      atualizarCarrinho();
-
-      // Remove o splash após tudo estar pronto
-      setTimeout(() => {
-        $("splash").style.display = "none";
-      }, 1200);
+      try {
+        atualizarHistorico();
+        atualizarProdutosTable();
+        atualizarCarrinho();
+        
+        // Força mostrar conteúdo após 1.5s
+        setTimeout(() => {
+          const splash = $("splash");
+          if (splash) splash.style.display = "none";
+          
+          const hamburger = $("hamburger");
+          if (hamburger) hamburger.style.opacity = "1";
+          
+          const sidebar = $("sidebar");
+          if (sidebar) sidebar.style.opacity = "1";
+          
+          const content = $("content");
+          if (content) content.style.opacity = "1";
+          
+          const carrinhoIcone = $("carrinhoIcone");
+          if (carrinhoIcone) carrinhoIcone.style.opacity = "1";
+        }, 1500);
+      } catch (e) {
+        console.error("Erro na inicialização:", e);
+      }
     }
 
-    // Espera o DOM carregar
+    // Executa após o DOM carregar
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", inicializarApp);
     } else {
