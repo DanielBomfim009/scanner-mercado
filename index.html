@@ -82,7 +82,7 @@
     #splash {
       position: fixed;
       inset: 0;
-      background: linear-gradient(135deg, #1e3a8a, #1e40af);
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
       color: white;
       display: flex;
       flex-direction: column;
@@ -857,7 +857,7 @@
     const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
     let categoriaChart;
 
-    // Carregar tema salvo
+    // ✅ Aplicar tema ao splash antes de iniciar
     const temaSalvo = localStorage.getItem('tema') || 'padrao';
     if (temaSalvo !== 'padrao') {
       document.body.classList.add(`tema-${temaSalvo}`);
@@ -1069,7 +1069,7 @@
         }
         const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
         historico.push({
-          data: new Date().toLocaleString("pt-BR"),
+           new Date().toLocaleString("pt-BR"),
           total,
           itens: [...carrinho]
         });
@@ -1293,11 +1293,11 @@
 
         categoriaChart = new Chart(ctx, {
           type: 'bar',
-          data: {
+           {
             labels: labels,
             datasets: [{
               label: 'Número de Produtos',
-              data: values,
+               values,
               backgroundColor: labels.map((_, i) => cores[i % cores.length]),
               borderWidth: 0
             }]
@@ -1372,6 +1372,12 @@
     window.addEventListener('DOMContentLoaded', () => {
       const splash = $("splash");
       if (splash) {
+        // ✅ Aplicar variáveis de tema ao splash
+        const rootStyles = getComputedStyle(document.documentElement);
+        const primaryDark = rootStyles.getPropertyValue('--primary-dark').trim();
+        const primary = rootStyles.getPropertyValue('--primary').trim();
+        splash.style.background = `linear-gradient(135deg, ${primaryDark}, ${primary})`;
+
         setTimeout(() => {
           splash.style.opacity = '0';
           setTimeout(() => {
