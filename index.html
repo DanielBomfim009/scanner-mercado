@@ -1017,13 +1017,13 @@ $("modalCarrinho").style.display = "flex";
 setTimeout(() => $("modalCarrinho").classList.add("active"), 10);
 atualizarCarrinho();
 };
-// ✅ Função atualizada com reinício automático + mensagem
+
+// ✅ Função fecharCarrinho CORRIGIDA e com mensagem
 window.fecharCarrinho = function() {
     $("modalCarrinho").classList.remove("active");
     setTimeout(() => {
         $("modalCarrinho").style.display = "none";
         if (document.getElementById("scanner")?.classList.contains("active")) {
-            // Mostrar mensagem
             const msg = $("reiniciandoMensagem");
             if (msg) {
                 msg.style.opacity = "1";
@@ -1031,7 +1031,6 @@ window.fecharCarrinho = function() {
             setTimeout(() => {
                 pararScanner();
                 iniciarScanner();
-                // Esconder mensagem
                 if (msg) {
                     setTimeout(() => {
                         msg.style.opacity = "0";
@@ -1041,6 +1040,7 @@ window.fecharCarrinho = function() {
         }
     }, 300);
 };
+
 window.finalizarCompra = function() {
 if (!carrinho.length) {
 alert("Carrinho vazio");
@@ -1060,6 +1060,7 @@ atualizarHistorico();
 fecharCarrinho();
 alert("Compra finalizada!");
 };
+
 function atualizarHistorico() {
 const area = $("historicoConteudo");
 if (!area) return;
@@ -1083,7 +1084,7 @@ area.innerHTML += `
 });
 }
 
-// ✅ Função atualizada com verificação extra de visibilidade
+// ✅ Função iniciarScanner com verificação extra
 async function iniciarScanner() {
     if (!document.getElementById("scanner")?.classList.contains("active")) {
         scannerAtivo = false;
@@ -1228,6 +1229,7 @@ video.srcObject = null;
 window.quantidadeJaSolicitada = false;
 }
 
+// ✅ FUNÇÃO CORRIGIDA: sintaxe do Chart.js válida
 function atualizarScannerChart() {
     const categorias = {};
     produtos.forEach(p => {
@@ -1268,11 +1270,11 @@ function atualizarScannerChart() {
         const ctx = canvas.getContext("2d");
         categoriaChart = new Chart(ctx, {
             type: 'bar',
-             {
+            data: {  // ✅ CHAVE "data:" adicionada corretamente
                 labels: labels,
                 datasets: [{
                     label: 'Número de Produtos',
-                     values,
+                    data: values,  // ✅ "data: values" e não "values" sozinho
                     backgroundColor: labels.map((_, i) => cores[i % cores.length]),
                     borderWidth: 0
                 }]
