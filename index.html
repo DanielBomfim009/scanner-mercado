@@ -6,9 +6,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="theme-color" content="#4361ee" />
 <!-- Bibliotecas externas -->
-<script src="https://unpkg.com/@zxing/library@0.21.2      "></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js      "></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter      :wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/@zxing/library@0.21.2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
 :root {
 --primary: #4361ee;
@@ -75,7 +75,6 @@ color: var(--text);
 #splash {
 position: fixed;
 inset: 0;
-/* Cor escura neutra fixa que combina com qualquer tema */
 background: #1e293b;
 color: white;
 display: flex;
@@ -629,7 +628,6 @@ text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 0%, 100% { transform: scale(1); }
 50% { transform: scale(1.2); }
 }
-/* Estilo para input de quantidade */
 .quantidade-modal {
 position: fixed;
 top: 50%;
@@ -789,7 +787,6 @@ Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
 <button onclick="fecharCarrinho()">Fechar</button>
 </div>
 </div>
-<!-- Overlay e modal de quantidade personalizado -->
 <div id="overlayQuantidade"></div>
 <div id="quantidadeModal" class="quantidade-modal" style="display:none;">
 <h3 id="tituloQuantidade">Informe a quantidade</h3>
@@ -811,7 +808,7 @@ let historico = Storage.get("historicoCompras");
 let orcamento = Storage.get("orcamento") || 0;
 let reader = null, stream = null, buffer = [], scannerAtivo = false;
 const repeticoes = 3;
-const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg      ");
+const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 let categoriaChart;
 // Carregar tema salvo
 const temaSalvo = localStorage.getItem('tema') || 'padrao';
@@ -827,7 +824,6 @@ if (tema !== 'padrao') {
 document.body.classList.add(`tema-${tema}`);
 }
 localStorage.setItem('tema', tema);
-// ✅ Correção: atualizar gráfico com delay para garantir layout estável
 if (document.getElementById("scanner").classList.contains("active")) {
 setTimeout(() => {
 atualizarScannerChart();
@@ -846,7 +842,6 @@ alerta.classList.add('show');
 setTimeout(() => alerta.classList.remove('show'), 3000);
 }
 }
-// Função para solicitar quantidade com modal personalizado
 function solicitarQuantidade(produtoNome, callback) {
 $("tituloQuantidade").innerText = `Produto: ${produtoNome}\nInforme a quantidade`;
 $("inputQuantidade").value = "1";
@@ -949,7 +944,6 @@ produtos.push(novo);
 Storage.set("produtos", produtos);
 atualizarProdutosTable();
 atualizarScannerChart();
-// ✅ LIMPAR CAMPOS após salvar
 $("codigoCadastro").value = "";
 $("nomeCadastro").value = "";
 $("valorCadastro").value = "";
@@ -1007,9 +1001,9 @@ return;
 }
 const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
 historico.push({
-  new Date().toLocaleString("pt-BR"),
-total,
-itens: [...carrinho]
+  data: new Date().toLocaleString("pt-BR"),
+  total,
+  itens: [...carrinho]
 });
 Storage.set("historicoCompras", historico);
 carrinho = [];
@@ -1101,7 +1095,6 @@ navigator.vibrate?.(50);
 beep.play().catch(e => console.warn("Beep não reproduzido:", e));
 const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
 if (produto) {
-// ✅ Evita múltiplos prompts
 if (window.quantidadeJaSolicitada) return;
 window.quantidadeJaSolicitada = true;
 solicitarQuantidade(produto.nome, (q) => {
@@ -1130,7 +1123,6 @@ return;
 }
 produtos.push(novo);
 Storage.set("produtos", produtos);
-// ✅ Evita múltiplos prompts
 if (window.quantidadeJaSolicitada) return;
 window.quantidadeJaSolicitada = true;
 solicitarQuantidade(novo.nome, (q) => {
@@ -1139,7 +1131,6 @@ if (q > 0) {
 carrinho.push({ ...novo, qtd: q });
 Storage.set("carrinho", carrinho);
 }
-// ✅ Limpar campos após cadastro rápido
 $("codigoCadastro").value = "";
 $("nomeCadastro").value = "";
 $("valorCadastro").value = "";
@@ -1186,21 +1177,17 @@ const categorias = {};
 produtos.forEach(p => {
 categorias[p.categoria] = (categorias[p.categoria] || 0) + 1;
 });
-// ✅ Garantir que o container está visível
 const chartBox = $("scannerChartBox");
 if (!chartBox || chartBox.offsetHeight === 0) {
-// Se não estiver visível, agendar nova tentativa
 setTimeout(atualizarScannerChart, 100);
 return;
 }
-// ✅ Resetar o canvas completamente
 const canvas = $("categoriaChart");
 if (!canvas) return;
 const ctx = canvas.getContext("2d");
 ctx.clearRect(0, 0, canvas.width, canvas.height);
 canvas.width = canvas.offsetWidth;
 canvas.height = canvas.offsetHeight;
-// ✅ Destruir gráfico existente
 if (categoriaChart) {
 categoriaChart.destroy();
 categoriaChart = null;
@@ -1208,7 +1195,6 @@ categoriaChart = null;
 const categoriasOrdenadas = Object.entries(categorias).sort((a, b) => b[1] - a[1]);
 const labels = categoriasOrdenadas.map(([cat]) => cat);
 const values = categoriasOrdenadas.map(([, val]) => val);
-// ✅ Obter cores de texto dinamicamente do tema atual
 const rootStyles = getComputedStyle(document.documentElement);
 const textColor = rootStyles.getPropertyValue('--text').trim();
 const textMutedColor = rootStyles.getPropertyValue('--text-muted').trim();
@@ -1217,15 +1203,15 @@ const cores = [
 '#06b6d4', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444'
 ];
 
-// ✅ CORREÇÃO: estrutura do Chart.js corrigida com ""
+// ✅ CORREÇÃO ESSENCIAL: estrutura válida do Chart.js com ""
 categoriaChart = new Chart(ctx, {
 type: 'bar',
- {  // ← CHAVE "data" ADICIONADA (ESSA É A CORREÇÃO ESSENCIAL)
+ { // ← CHAVE "data" ADICIONADA
 labels: labels,
 datasets: [{
 label: 'Número de Produtos',
  values,
-backgroundColor: labels.map((_, i) => cores[i % cores.length]),
+  backgroundColor: labels.map((_, i) => cores[i % cores.length]),
 borderWidth: 0
 }]
 },
@@ -1259,6 +1245,18 @@ ticks: { color: textColor }
 }
 }
 });
+
+// ✅ Inicialização dos dados APÓS a configuração completa
+atualizarHistorico();
+atualizarProdutosTable();
+atualizarCarrinho();
+
+// ✅ Garantir que o gráfico seja renderizado ao carregar (se o canvas existir)
+if (document.getElementById("categoriaChart")) {
+  setTimeout(() => {
+    atualizarScannerChart();
+  }, 150);
+}
 }
 document.addEventListener('keydown', (e) => {
 if (e.key === 'Escape') {
@@ -1278,20 +1276,8 @@ fecharCarrinho();
 });
 }
 $("overlayQuantidade").addEventListener('click', fecharQuantidade);
-atualizarHistorico();
-atualizarProdutosTable();
-atualizarCarrinho();
+} // ← FIM de iniciarApp()
 
-// ✅ Correção: garantir que o gráfico do dashboard seja renderizado ao carregar a página
-// Mesmo que o scanner não esteja visível, o canvas pode ser atualizado para persistir no DOM
-// Mas só renderizamos se o canvas estiver presente e os dados estiverem carregados
-if (document.getElementById("categoriaChart")) {
-  // Aguarda um ciclo para garantir que o DOM esteja estável
-  setTimeout(() => {
-    atualizarScannerChart();
-  }, 150);
-}
-}
 if ($("scanner")) {
 const observer = new MutationObserver(() => {
 if ($("scanner").classList.contains("active")) {
@@ -1303,13 +1289,11 @@ observer.observe($("scanner"), { attributes: true, attributeFilter: ['class'] })
 window.addEventListener('DOMContentLoaded', () => {
 const splash = $("splash");
 if (splash) {
-// ✅ Usar cor escura fixa no splash para compatibilidade com todos os temas
 splash.style.background = '#1e293b';
 setTimeout(() => {
 splash.style.opacity = '0';
 setTimeout(() => {
 if (splash.parentNode) splash.remove();
-// ✅ Correção: iniciarApp() DEPOIS da remoção completa do splash
 iniciarApp();
 }, 500);
 }, 1500);
