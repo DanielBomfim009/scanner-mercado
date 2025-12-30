@@ -40,17 +40,20 @@
       overflow-x: hidden;
     }
 
-    /* Splash */
+    /* Splash - SEM ANIMAÇÃO */
     #splash {
       position: fixed;
-      inset: 0;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       background: linear-gradient(135deg, var(--primary), var(--secondary));
       color: white;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
+      z-index: 10000;
     }
     #splash img {
       width: 60vw;
@@ -65,7 +68,7 @@
       max-width: 80%;
     }
 
-    /* Sidebar */
+    /* Restante do layout - igual ao que funcionava */
     #sidebar {
       position: fixed;
       top: 0;
@@ -76,8 +79,6 @@
       color: white;
       padding-top: 60px;
       z-index: 100;
-      transform: translateX(0);
-      transition: transform 0.3s;
     }
     #sidebar.hide {
       transform: translateX(-100%);
@@ -96,11 +97,7 @@
       align-items: center;
       gap: 12px;
     }
-    #sidebar button:hover {
-      background: rgba(255,255,255,0.1);
-    }
 
-    /* Hamburger */
     #hamburger {
       position: fixed;
       top: 12px;
@@ -119,7 +116,6 @@
       box-shadow: var(--shadow);
     }
 
-    /* Content */
     #content {
       margin-left: 220px;
       padding: 20px;
@@ -136,7 +132,6 @@
       display: block;
     }
 
-    /* Home */
     #home img {
       width: 240px;
       height: auto;
@@ -152,7 +147,6 @@
       text-align: center;
     }
 
-    /* Box */
     .box {
       background: var(--card);
       border-radius: var(--radius);
@@ -161,18 +155,6 @@
       box-shadow: var(--shadow);
       border: 1px solid #e0e6f0;
     }
-
-    /* Botões de ação */
-    .editBtn, .deleteBtn {
-      padding: 6px 12px;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      margin: 2px;
-    }
-    .editBtn { background: #4ade80; color: #000; }
-    .deleteBtn { background: #f87171; color: white; }
 
     /* CARRINHO */
     #carrinhoIcone {
@@ -208,7 +190,6 @@
       font-weight: 700;
     }
 
-    /* Modal do carrinho */
     #modalCarrinho {
       position: fixed;
       inset: 0;
@@ -264,36 +245,26 @@
     @media (max-width: 768px) {
       #sidebar { width: 200px; }
       #content { margin-left: 200px; }
-      #content.full { margin-left: 0; }
-      #home img { width: 200px; }
-      h2 { font-size: 22px; }
     }
-
     @media (max-width: 480px) {
       #sidebar { width: 180px; }
       #content { margin-left: 180px; padding: 16px; }
       #home img { width: 180px; }
-      h2 { font-size: 20px; }
-      #carrinhoIcone {
-        width: 56px;
-        height: 56px;
-        font-size: 22px;
-      }
+      #carrinhoIcone { width: 56px; height: 56px; }
     }
   </style>
 </head>
 
 <body>
-  <!-- Splash -->
+  <!-- Splash SEM animação -->
   <div id="splash">
     <img src="logo.png" alt="GoL BUY SMART" />
     <p>Bem-vindo ao seu app de compras inteligente</p>
   </div>
 
-  <!-- Hamburger -->
+  <!-- Restante do app -->
   <button id="hamburger">☰</button>
 
-  <!-- Sidebar -->
   <div id="sidebar">
     <button data-view="home">🏠 Home</button>
     <button data-view="scanner">📷 Scanner</button>
@@ -302,45 +273,24 @@
     <button data-view="historico">🧾 Histórico</button>
   </div>
 
-  <!-- Conteúdo -->
   <div id="content">
     <div id="home" class="view active">
       <img src="logo.png" alt="GoL BUY SMART" />
       <h2>Bem-vindo ao GoL BUY SMART</h2>
       <div class="box">
-        <p>App de compras inteligente está funcionando!</p>
-        <p style="margin-top:10px; color:#666; font-size:14px;">
-          Toque nos botões do menu para navegar.<br>
-          Experimente adicionar um item ao carrinho!
-        </p>
+        <p>App funcionando perfeitamente!</p>
         <button onclick="adicionarItemExemplo()" style="margin-top:12px; padding:10px; background:#4361ee; color:white; border:none; border-radius:8px; cursor:pointer;">
-          ➕ Adicionar item de exemplo ao carrinho
+          ➕ Adicionar ao carrinho
         </button>
       </div>
     </div>
 
-    <div id="scanner" class="view">
-      <h2>Scanner</h2>
-      <div class="box">Scanner será ativado em versões futuras.</div>
-    </div>
-
-    <div id="produtos" class="view">
-      <h2>Produtos</h2>
-      <div class="box">Lista de produtos.</div>
-    </div>
-
-    <div id="cadastro" class="view">
-      <h2>Cadastro</h2>
-      <div class="box">Formulário de cadastro.</div>
-    </div>
-
-    <div id="historico" class="view">
-      <h2>Histórico</h2>
-      <div class="box">Seu histórico de compras.</div>
-    </div>
+    <div id="scanner" class="view"><h2>Scanner</h2></div>
+    <div id="produtos" class="view"><h2>Produtos</h2></div>
+    <div id="cadastro" class="view"><h2>Cadastro</h2></div>
+    <div id="historico" class="view"><h2>Histórico</h2></div>
   </div>
 
-  <!-- CARRINHO -->
   <button id="carrinhoIcone" onclick="abrirCarrinho()">
     🛍️<span id="badge">0</span>
   </button>
@@ -355,159 +305,133 @@
     </div>
   </div>
 
+  <!-- Script no final do body, SEM defer, SEM async -->
   <script>
+    // Função ultra-segura para remover splash
+    function esconderSplash() {
+      var splash = document.getElementById('splash');
+      if (splash) {
+        splash.style.display = 'none';
+      }
+    }
+
+    // Tenta remover splash após 1500ms
+    setTimeout(esconderSplash, 1500);
+
+    // Também tenta remover assim que o DOM estiver pronto
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', esconderSplash);
+    } else {
+      esconderSplash();
+    }
+
     // ======================
-    // CARRINHO - LÓGICA SIMPLES E SEGURA
+    // Restante do app (carrinho + navegação)
     // ======================
 
     // Armazenamento seguro
-    function getStorage(key, fallback = []) {
+    function safeGet(key, fallback) {
       try {
         return JSON.parse(localStorage.getItem(key)) || fallback;
       } catch (e) {
         return fallback;
       }
     }
-
-    function setStorage(key, value) {
+    function safeSet(key, value) {
       try {
         localStorage.setItem(key, JSON.stringify(value));
       } catch (e) {
-        // Ignora erros de armazenamento
+        // ignora
       }
     }
 
-    // Dados do carrinho
-    let carrinho = getStorage('carrinho');
-    let historico = getStorage('historicoCompras');
+    let carrinho = safeGet('carrinho', []);
+    let historico = safeGet('historicoCompras', []);
 
-    // Atualiza badge e conteúdo
     function atualizarCarrinho() {
-      const badge = document.getElementById('badge');
-      const itensDiv = document.getElementById('itensCarrinho');
-      const totalDiv = document.getElementById('totalCarrinho');
+      var badge = document.getElementById('badge');
+      var itens = document.getElementById('itensCarrinho');
+      var totalEl = document.getElementById('totalCarrinho');
 
-      // Atualiza badge
-      if (badge) {
-        badge.textContent = carrinho.length;
-      }
+      if (badge) badge.textContent = carrinho.length;
 
-      // Atualiza lista
-      if (itensDiv) {
+      if (itens) {
         if (carrinho.length === 0) {
-          itensDiv.innerHTML = '<p style="color:#666; text-align:center;">Seu carrinho está vazio.</p>';
+          itens.innerHTML = '<p style="color:#666;text-align:center;">Vazio</p>';
         } else {
           let html = '';
           let total = 0;
-          carrinho.forEach(item => {
-            const subtotal = (item.valor * (item.qtd || 1)).toFixed(2);
-            total += parseFloat(subtotal);
-            html += `<div class="item-carrinho">
-              <span>${item.nome}</span>
-              <span>R$ ${subtotal}</span>
-            </div>`;
+          carrinho.forEach(i => {
+            let sub = (i.valor * (i.qtd || 1)).toFixed(2);
+            total += parseFloat(sub);
+            html += `<div class="item-carrinho"><span>${i.nome}</span><span>R$ ${sub}</span></div>`;
           });
-          itensDiv.innerHTML = html;
-          if (totalDiv) totalDiv.textContent = `Total: R$ ${total.toFixed(2)}`;
+          itens.innerHTML = html;
+          if (totalEl) totalEl.textContent = 'Total: R$ ' + total.toFixed(2);
         }
       }
     }
 
-    // Funções do carrinho
+    function adicionarItemExemplo() {
+      carrinho.push({ nome: "Arroz 1kg", valor: 8.99, qtd: 1 });
+      safeSet('carrinho', carrinho);
+      atualizarCarrinho();
+      alert("✅ Adicionado!");
+    }
+
     function abrirCarrinho() {
       atualizarCarrinho();
-      const modal = document.getElementById('modalCarrinho');
+      var modal = document.getElementById('modalCarrinho');
       if (modal) modal.style.display = 'flex';
     }
 
     function fecharCarrinho() {
-      const modal = document.getElementById('modalCarrinho');
+      var modal = document.getElementById('modalCarrinho');
       if (modal) modal.style.display = 'none';
     }
 
-    function adicionarItemExemplo() {
-      const item = {
-        nome: "Arroz 1kg",
-        valor: 8.99,
-        qtd: 1
-      };
-      carrinho.push(item);
-      setStorage('carrinho', carrinho);
-      atualizarCarrinho();
-      alert("✅ Item adicionado ao carrinho!");
-    }
-
     function finalizarCompra() {
-      if (carrinho.length === 0) {
-        alert("Carrinho vazio!");
-        return;
-      }
-
-      const total = carrinho.reduce((sum, item) => sum + (item.valor * (item.qtd || 1)), 0);
-      historico.push({
-         new Date().toLocaleString("pt-BR"),
-        total,
-        itens: [...carrinho]
-      });
-
-      setStorage('historicoCompras', historico);
+      if (carrinho.length === 0) return alert("Vazio!");
+      var total = carrinho.reduce((s, i) => s + (i.valor * (i.qtd || 1)), 0);
+      historico.push({ , total: total, itens: carrinho });
+      safeSet('historicoCompras', historico);
       carrinho = [];
-      setStorage('carrinho', carrinho);
+      safeSet('carrinho', carrinho);
       atualizarCarrinho();
       fecharCarrinho();
-      alert("✅ Compra finalizada com sucesso!");
+      alert("✅ Compra finalizada!");
     }
 
-    // ======================
-    // NAVEGAÇÃO (já funcionando)
-    // ======================
-
-    function $(id) {
-      return document.getElementById(id);
+    // Navegação
+    function irPara(view) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      var el = document.getElementById(view);
+      if (el) el.classList.add('active');
     }
 
-    function irPara(viewId) {
-      document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-      const target = $(viewId);
-      if (target) target.classList.add('active');
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-      setTimeout(() => {
-        const splash = $('splash');
-        if (splash) splash.style.display = 'none';
-      }, 1500);
-
-      const hamburger = $('hamburger');
-      const sidebar = $('sidebar');
-      const content = $('content');
-
-      if (hamburger) {
-        hamburger.addEventListener('click', () => {
-          sidebar.classList.toggle('hide');
-          content.classList.toggle('full');
-        });
+    document.addEventListener('click', function(e) {
+      if (e.target.matches('#sidebar button')) {
+        var view = e.target.getAttribute('data-view');
+        if (view) {
+          irPara(view);
+          document.getElementById('sidebar').classList.add('hide');
+          document.getElementById('content').classList.add('full');
+        }
       }
-
-      document.querySelectorAll('#sidebar button').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const view = btn.getAttribute('data-view');
-          if (view) {
-            irPara(view);
-            sidebar.classList.add('hide');
-            content.classList.add('full');
-          }
-        });
-      });
-
-      // Inicializa carrinho
-      atualizarCarrinho();
     });
 
-    // Fechar modal com tecla Esc
-    document.addEventListener('keydown', (e) => {
+    document.getElementById('hamburger').addEventListener('click', function() {
+      document.getElementById('sidebar').classList.toggle('hide');
+      document.getElementById('content').classList.toggle('full');
+    });
+
+    // Fecha modal com Esc
+    document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') fecharCarrinho();
     });
+
+    // Inicializa carrinho
+    atualizarCarrinho();
   </script>
 </body>
 </html>
