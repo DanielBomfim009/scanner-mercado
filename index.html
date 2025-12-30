@@ -872,6 +872,10 @@
         document.body.classList.add(`tema-${tema}`);
       }
       localStorage.setItem('tema', tema);
+      // ✅ Força atualização do gráfico após mudança de tema
+      if (document.getElementById("scanner").classList.contains("active")) {
+        atualizarScannerChart();
+      }
     }
 
     function normalizarCodigo(cod) {
@@ -1207,7 +1211,7 @@
               window.quantidadeJaSolicitada = true;
 
               solicitarQuantidade(novo.nome, (q) => {
-                window.quantidadeJaSolicitida = false;
+                window.quantidadeJaSolicitada = false;
                 if (q > 0) {
                   carrinho.push({ ...novo, qtd: q });
                   Storage.set("carrinho", carrinho);
@@ -1264,19 +1268,24 @@
           categorias[p.categoria] = (categorias[p.categoria] || 0) + 1;
         });
 
+        // ✅ DESTROIR ANTES de acessar o canvas
+        if (categoriaChart) {
+          categoriaChart.destroy();
+          categoriaChart = null;
+        }
+
         const ctx = $("categoriaChart")?.getContext("2d");
         if (!ctx) return;
 
-        if (categoriaChart) {
-          categoriaChart.destroy();
-        }
-
-        // ✅ Substituído para gráfico de barras horizontais com cores melhoradas
         const categoriasOrdenadas = Object.entries(categorias).sort((a, b) => b[1] - a[1]);
         const labels = categoriasOrdenadas.map(([cat]) => cat);
         const values = categoriasOrdenadas.map(([, val]) => val);
 
-        // Paleta de cores suave e distintiva
+        // ✅ Obter cores de texto dinamicamente do tema atual
+        const rootStyles = getComputedStyle(document.documentElement);
+        const textColor = rootStyles.getPropertyValue('--text').trim();
+        const textMutedColor = rootStyles.getPropertyValue('--text-muted').trim();
+
         const cores = [
           '#4361ee', '#3a56d4', '#4895ef', '#f87171', '#6b6b6b', '#9c27b0',
           '#06b6d4', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444'
@@ -1300,6 +1309,11 @@
             plugins: {
               legend: { display: false },
               tooltip: {
+                titleColor: textColor,
+                bodyColor: textColor,
+                backgroundColor: rootStyles.getPropertyValue('--card').trim(),
+                borderColor: rootStyles.getPropertyValue('--border').trim(),
+                borderWidth: 1,
                 callbacks: {
                   label: (ctx) => ` ${ctx.parsed.x} produtos`
                 }
@@ -1309,11 +1323,11 @@
               x: {
                 beginAtZero: true,
                 grid: { color: 'rgba(0,0,0,0.05)' },
-                ticks: { color: 'var(--text-muted)' }
+                ticks: { color: textMutedColor }
               },
               y: {
                 grid: { display: false },
-                ticks: { color: 'var(--text)' }
+                ticks: { color: textColor }
               }
             }
           }
