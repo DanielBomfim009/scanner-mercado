@@ -914,7 +914,7 @@
         fecharQuantidade();
         if (q > 0) callback(q);
       };
-      $("btnCancelarQtd").onclick = fecharQuantidade;
+      $("btnCancelarQtd").onclick = fecharQuantidade();
       $("overlayQuantidade").style.display = "block";
       $("quantidadeModal").style.display = "block";
     }
@@ -929,7 +929,6 @@
       }
     }
 
-    // ✅ DECLARAÇÃO GLOBAL DA FUNÇÃO
     let iniciarApp;
 
     iniciarApp = function() {
@@ -1099,8 +1098,9 @@
             return;
           }
           const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
+          const now = new Date(); // ✅ CORREÇÃO AQUI
           historico.push({
-             new Date().toLocaleString("pt-BR"),
+            data: now.toLocaleString("pt-BR"), // ✅ USO SEGURO
             total,
             itens: [...carrinho]
           });
@@ -1407,30 +1407,23 @@
       }
     });
 
-    // ✅ FORÇA A ENTRADA NA HOME SE O SPLASH NÃO FUNCIONAR
+    // ✅ Splash + Fallback
     window.addEventListener('DOMContentLoaded', () => {
-      console.log("✅ DOMContentLoaded disparado");
       const splash = $("splash");
       if (splash) {
-        console.log("✅ Splash encontrado");
         splash.style.background = '#1e293b';
         setTimeout(() => {
-          console.log("⏳ 2s passaram — escondendo splash");
           splash.style.opacity = '0';
           setTimeout(() => {
-            console.log("✅ Removendo splash e iniciando app");
             if (splash.parentNode) splash.remove();
-            // Força a entrada na Home
             document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
             document.getElementById("home").classList.add("active");
-            // Tenta iniciarApp
             if (typeof iniciarApp === "function") {
               iniciarApp();
             }
           }, 500);
         }, 2000);
       } else {
-        console.log("⚠️ Splash não encontrado — iniciando app diretamente");
         document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
         document.getElementById("home").classList.add("active");
         if (typeof iniciarApp === "function") {
