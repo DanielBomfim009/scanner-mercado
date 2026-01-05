@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -110,16 +112,11 @@ color: white;
 display: flex;
 flex-direction: column;
 padding-top: 60px;
+transition: transform 0.3s;
 z-index: 100;
-
-/* ✅ iOS FIX */
-left: -220px;
-transition: left 0.3s ease;
--webkit-overflow-scrolling: touch;
 }
-
-#sidebar.show {
-left: 0;
+#sidebar.hide {
+transform: translateX(-100%);
 }
 #sidebar button {
 background: none;
@@ -164,10 +161,10 @@ transform: rotate(90deg);
 background: var(--primary-light);
 }
 #content {
-margin-left: 0;
+margin-left: 220px;
 flex: 1;
 padding: 24px 20px;
-transition: filter 0.3s;
+transition: margin-left 0.3s;
 }
 #content.full {
 margin-left: 0;
@@ -851,7 +848,6 @@ let carrinho = Storage.get("carrinho");
 let historico = Storage.get("historicoCompras");
 let orcamento = Storage.get("orcamento") || 0;
 let reader = null, stream = null, buffer = [], scannerAtivo = false;
-let leituraTravada = false;
 const repeticoes = 3;
 const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 let categoriaChart;
@@ -918,19 +914,10 @@ else pararScanner();
 const sidebar = $("sidebar");
 const content = $("content");
 const hamburger = $("hamburger");
-
-["pointerdown"].forEach(evt => {
-  hamburger.addEventListener(evt, (e) => {
-    e.preventDefault();
-
-    sidebar.classList.toggle("show");
-
-    // iOS precisa de repaint
-    sidebar.style.display = "none";
-    sidebar.offsetHeight; // força redraw
-    sidebar.style.display = "flex";
-});
-});
+hamburger.onclick = () => {
+sidebar.classList.toggle("hide");
+content.classList.toggle("full");
+};
 if ($("orcamentoInput")) {
 $("orcamentoInput").value = orcamento;
 $("orcamentoInput").addEventListener("input", () => {
@@ -1168,15 +1155,11 @@ async function iniciarScanner() {
             $("barraValidacaoInner").style.width = (ultimosIguais / repeticoes * 100) + "%";
             $("barraValidacaoInner").setAttribute('data-pct', Math.round(ultimosIguais / repeticoes * 100) + '%');
         }
-if (ultimosIguais >= repeticoes) {
-    if (leituraTravada) return;
-
-    leituraTravada = true;
-    scannerAtivo = false;
-
-    reader.reset();
-    processarCodigo(codigoNormalizado);
-}
+        if (ultimosIguais >= repeticoes) {
+            scannerAtivo = false;
+            reader.reset();
+            processarCodigo(codigoNormalizado);
+        }
     });
 }
 
@@ -1189,22 +1172,10 @@ if (produto) {
 if (window.quantidadeJaSolicitada) return;
 window.quantidadeJaSolicitada = true;
 solicitarQuantidade(produto.nome, (q) => {
-    window.quantidadeJaSolicitada = false;
-
-    carrinho.push({ ...produto, qtd: q });
-    Storage.set("carrinho", carrinho);
-
-    // ✅ PASSO 4 (AGORA EXPLICADO):
-    // 1. Para completamente o scanner
-    pararScanner();
-
-    // 2. Vai para a Home
-    irPara("home");
-
-    // 3. Abre o carrinho automaticamente
-    setTimeout(() => {
-        abrirCarrinho();
-    }, 300);
+window.quantidadeJaSolicitada = false;
+carrinho.push({ ...produto, qtd: q });
+Storage.set("carrinho", carrinho);
+abrirCarrinho();
 });
 } else {
 $("codigoCadastro").value = codigoNormalizado;
@@ -1261,12 +1232,9 @@ window.quantidadeJaSolicitada = false;
 buffer = [];
 }
 }
+
 function pararScanner() {
 scannerAtivo = false;
-leituraTravada = false;
-buffer = [];
-window.quantidadeJaSolicitada = false;
-
 if (reader) reader.reset();
 if (stream) {
 stream.getTracks().forEach(t => t.stop());
@@ -1279,6 +1247,7 @@ video.srcObject = null;
 }
 window.quantidadeJaSolicitada = false;
 }
+
 // ✅ FUNÇÃO CORRIGIDA: sintaxe do Chart.js válida
 function atualizarScannerChart() {
     const categorias = {};
