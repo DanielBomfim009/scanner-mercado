@@ -77,6 +77,13 @@ overflow-x: hidden;
 font-size: 16px;
 color: var(--text);
 }
+
+/* ✅ Esconde elementos durante o splash */
+body.loading #hamburger,
+body.loading #carrinhoIcone {
+  display: none !important;
+}
+
 #splash {
 position: fixed;
 inset: 0;
@@ -737,7 +744,7 @@ display: none;
 }
 </style>
 </head>
-<body>
+<body class="loading">
 <div id="splash">
 <img src="logo.png" alt="GoL BUY SMART – App de compras inteligente" />
 <p>Bem-vindo ao seu app de compras inteligente</p>
@@ -1277,11 +1284,11 @@ try {
 const ctx = canvas.getContext("2d");
 window.categoriaChart = new Chart(ctx, {
 type: 'bar',
-: { // ✅ CORRIGIDO: estava faltando "data"
+data: { // ✅ CORRIGIDO: estava faltando "data"
 labels: labels,
 datasets: [{
 label: 'Número de Produtos',
-: values, // ✅ CORRIGIDO: estava "values", agora é "data"
+data: values, // ✅ CORRIGIDO: estava "values", agora é "data"
 backgroundColor: labels.map((_, i) => cores[i % cores.length]),
 borderWidth: 0
 }]
@@ -1367,6 +1374,7 @@ setTimeout(() => {
 splash.style.opacity = '0';
 setTimeout(() => {
 if (splash.parentNode) splash.remove();
+document.body.classList.remove('loading'); // 👈👈 REMOÇÃO DA CLASSE LOADING
 iniciarApp();
 }, 500);
 }, 2000);
