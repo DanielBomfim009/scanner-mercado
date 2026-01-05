@@ -845,7 +845,7 @@ Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
 </div>
 </section>
 <section id="historico" class="view">
-<div class=".box" id="historicoConteudo"></div>
+<div class="box" id="historicoConteudo"></div>
 </section>
 </div>
 <div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️<span id="badge">0</span></div>
@@ -878,6 +878,7 @@ let carrinho = Storage.get("carrinho");
 let historico = Storage.get("historicoCompras");
 let orcamento = Storage.get("orcamento") || 0;
 let reader = null, stream = null, buffer = [], scannerAtivo = false;
+let quantidadeJaSolicitada = false; // ✅ ADICIONADO: controle de estado
 const repeticoes = 3;
 const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 // Carregar tema salvo
@@ -932,10 +933,6 @@ if (!scannerAtivo) iniciarScanner();
 }, 300);
 }
 }
-
-// ✅ Controle para evitar múltiplas chamadas do modal
-window.quantidadeJaSolicitada = false;
-
 function iniciarApp() {
 window.irPara = function(tela) {
 document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
@@ -1031,7 +1028,7 @@ $("valorCadastro").value = "";
 $("categoriaCadastro").value = "Alimentos";
 $("tipoCadastro").value = "UN";
 $("cadastro-title").innerText = "Cadastro de Produto";
-irPara("produtos"); // ✅ Volta para produtos após salvar
+irPara("produtos");
 };
 if ($("salvarCadastro")) {
 $("salvarCadastro").onclick = salvarOriginal;
@@ -1089,7 +1086,6 @@ alert("Carrinho vazio");
 return;
 }
 const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
-// ✅ CORRIGIDO: objeto com ""
 historico.push({
    new Date().toLocaleString("pt-BR"),
   total,
@@ -1189,10 +1185,11 @@ navigator.vibrate?.(50);
 beep.play().catch(e => console.warn("Beep não reproduzido:", e));
 const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
 if (produto) {
-  if (window.quantidadeJaSolicitada) return;
-  window.quantidadeJaSolicitada = true;
+  // ✅ REMOVIDO o setTimeout e adicionado controle de estado
+  if (quantidadeJaSolicitada) return;
+  quantidadeJaSolicitada = true;
   solicitarQuantidade(produto.nome, (q) => {
-    window.quantidadeJaSolicitada = false;
+    quantidadeJaSolicitada = false;
     carrinho.push({ ...produto, qtd: q });
     Storage.set("carrinho", carrinho);
     abrirCarrinho();
@@ -1217,28 +1214,26 @@ return;
 }
 produtos.push(novo);
 Storage.set("produtos", produtos);
-
-// ✅ FLUXO CORRIGIDO: volta para produtos ANTES de pedir quantidade
-$("codigoCadastro").value = "";
-$("nomeCadastro").value = "";
-$("valorCadastro").value = "";
-$("categoriaCadastro").value = "Alimentos";
-$("tipoCadastro").value = "UN";
-$("cadastro-title").innerText = "Cadastro de Produto";
-$("salvarCadastro").onclick = salvarOriginal;
-irPara("produtos");
-atualizarProdutosTable();
-atualizarScannerChart();
-
-if (window.quantidadeJaSolicitada) return;
-window.quantidadeJaSolicitada = true;
+// ✅ FLUXO CORRIGIDO: vai para 'produtos' ANTES de pedir quantidade
+if (quantidadeJaSolicitada) return;
+quantidadeJaSolicitada = true;
 solicitarQuantidade(novo.nome, (q) => {
-  window.quantidadeJaSolicitada = false;
+  quantidadeJaSolicitada = false;
   if (q > 0) {
     carrinho.push({ ...novo, qtd: q });
     Storage.set("carrinho", carrinho);
-    atualizarCarrinho();
   }
+  $("codigoCadastro").value = "";
+  $("nomeCadastro").value = "";
+  $("valorCadastro").value = "";
+  $("categoriaCadastro").value = "Alimentos";
+  $("tipoCadastro").value = "UN";
+  $("cadastro-title").innerText = "Cadastro de Produto";
+  $("salvarCadastro").onclick = () => salvarOriginal();
+  irPara("produtos"); // ✅ Corrigido: vai para produtos
+  atualizarProdutosTable();
+  atualizarScannerChart();
+  atualizarCarrinho();
   fecharQuantidade();
 });
 };
@@ -1251,7 +1246,7 @@ buffer = [];
 }
 } catch (e) {
 console.error("Erro ao processar código:", e);
-window.quantidadeJaSolicitada = false;
+quantidadeJaSolicitada = false;
 buffer = [];
 }
 }
@@ -1267,8 +1262,7 @@ if (video && video.srcObject) {
 video.srcObject.getTracks?.().forEach(t => t.stop());
 video.srcObject = null;
 }
-// ✅ Reseta flag ao parar scanner
-window.quantidadeJaSolicitada = false;
+quantidadeJaSolicitada = false; // ✅ Reset do estado
 }
 function atualizarScannerChart() {
 const categorias = {};
