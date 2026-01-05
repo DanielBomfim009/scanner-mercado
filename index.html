@@ -845,7 +845,7 @@ Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
 </div>
 </section>
 <section id="historico" class="view">
-<div class="box" id="historicoConteudo"></div>
+<div class=".box" id="historicoConteudo"></div>
 </section>
 </div>
 <div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️<span id="badge">0</span></div>
@@ -919,7 +919,7 @@ const q = Number($("inputQuantidade").value);
 fecharQuantidade();
 if (q > 0) callback(q);
 };
-$("btnCancelarQtd").onclick = fecharQuantidade;
+$("btnCancelarQtd").onclick = fecharQuantidade();
 $("overlayQuantidade").style.display = "block";
 $("quantidadeModal").style.display = "block";
 }
@@ -932,6 +932,10 @@ if (!scannerAtivo) iniciarScanner();
 }, 300);
 }
 }
+
+// ✅ Controle para evitar múltiplas chamadas do modal
+window.quantidadeJaSolicitada = false;
+
 function iniciarApp() {
 window.irPara = function(tela) {
 document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
@@ -1027,7 +1031,7 @@ $("valorCadastro").value = "";
 $("categoriaCadastro").value = "Alimentos";
 $("tipoCadastro").value = "UN";
 $("cadastro-title").innerText = "Cadastro de Produto";
-irPara("produtos");
+irPara("produtos"); // ✅ Volta para produtos após salvar
 };
 if ($("salvarCadastro")) {
 $("salvarCadastro").onclick = salvarOriginal;
@@ -1085,8 +1089,9 @@ alert("Carrinho vazio");
 return;
 }
 const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
+// ✅ CORRIGIDO: objeto com ""
 historico.push({
-  data: new Date().toLocaleString("pt-BR"),
+   new Date().toLocaleString("pt-BR"),
   total,
   itens: [...carrinho]
 });
@@ -1184,13 +1189,14 @@ navigator.vibrate?.(50);
 beep.play().catch(e => console.warn("Beep não reproduzido:", e));
 const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
 if (produto) {
-  setTimeout(() => {
-    solicitarQuantidade(produto.nome, (q) => {
-      carrinho.push({ ...produto, qtd: q });
-      Storage.set("carrinho", carrinho);
-      abrirCarrinho();
-    });
-  }, 100);
+  if (window.quantidadeJaSolicitada) return;
+  window.quantidadeJaSolicitada = true;
+  solicitarQuantidade(produto.nome, (q) => {
+    window.quantidadeJaSolicitada = false;
+    carrinho.push({ ...produto, qtd: q });
+    Storage.set("carrinho", carrinho);
+    abrirCarrinho();
+  });
 } else {
 $("codigoCadastro").value = codigoNormalizado;
 $("nomeCadastro").value = "";
@@ -1211,23 +1217,29 @@ return;
 }
 produtos.push(novo);
 Storage.set("produtos", produtos);
-solicitarQuantidade(novo.nome, (q) => {
-if (q > 0) {
-carrinho.push({ ...novo, qtd: q });
-Storage.set("carrinho", carrinho);
-}
+
+// ✅ FLUXO CORRIGIDO: volta para produtos ANTES de pedir quantidade
 $("codigoCadastro").value = "";
 $("nomeCadastro").value = "";
 $("valorCadastro").value = "";
 $("categoriaCadastro").value = "Alimentos";
 $("tipoCadastro").value = "UN";
 $("cadastro-title").innerText = "Cadastro de Produto";
-$("salvarCadastro").onclick = () => salvarOriginal();
+$("salvarCadastro").onclick = salvarOriginal;
+irPara("produtos");
 atualizarProdutosTable();
 atualizarScannerChart();
-atualizarCarrinho();
-fecharQuantidade();
-irPara("scanner");
+
+if (window.quantidadeJaSolicitada) return;
+window.quantidadeJaSolicitada = true;
+solicitarQuantidade(novo.nome, (q) => {
+  window.quantidadeJaSolicitada = false;
+  if (q > 0) {
+    carrinho.push({ ...novo, qtd: q });
+    Storage.set("carrinho", carrinho);
+    atualizarCarrinho();
+  }
+  fecharQuantidade();
 });
 };
 $("salvarCadastro").onclick = handlerRapido;
@@ -1239,6 +1251,7 @@ buffer = [];
 }
 } catch (e) {
 console.error("Erro ao processar código:", e);
+window.quantidadeJaSolicitada = false;
 buffer = [];
 }
 }
@@ -1254,6 +1267,8 @@ if (video && video.srcObject) {
 video.srcObject.getTracks?.().forEach(t => t.stop());
 video.srcObject = null;
 }
+// ✅ Reseta flag ao parar scanner
+window.quantidadeJaSolicitada = false;
 }
 function atualizarScannerChart() {
 const categorias = {};
