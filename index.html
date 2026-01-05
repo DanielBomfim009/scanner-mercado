@@ -108,7 +108,7 @@
       text-shadow: 0 1px 2px rgba(0,0,0,0.3);
     }
 
-    /* ✅ CORREÇÃO SIDEBAR PARA IOS */
+    /* ✅ SIDEBAR PARA IOS */
     #sidebar {
       position: fixed;
       top: 0;
@@ -121,7 +121,7 @@
       flex-direction: column;
       padding-top: 60px;
       transition: left 0.3s ease;
-      z-index: 1100; /* aumentado para iOS */
+      z-index: 1100;
       left: 0;
     }
     #sidebar.hide {
@@ -148,6 +148,8 @@
       background: rgba(255, 255, 255, 0.15);
       padding-left: 28px;
     }
+
+    /* ✅ HAMBURGER VISÍVEL */
     #hamburger {
       position: fixed;
       top: 16px;
@@ -163,25 +165,38 @@
       z-index: 101;
       cursor: pointer;
       font-size: 28px;
+      font-weight: bold;
       box-shadow: var(--shadow);
       transition: var(--transition);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      line-height: 1;
     }
     #hamburger:hover {
       transform: rotate(90deg);
       background: var(--primary-light);
     }
+
+    /* ✅ CONTENT COM SCROLL AUTOMÁTICO */
     #content {
       margin-left: 220px;
       flex: 1;
       padding: 24px 20px;
       transition: margin-left 0.3s;
+      min-height: 100vh;
+      overflow-y: auto;
+      box-sizing: border-box;
     }
     #content.full {
       margin-left: 0;
     }
+
+    /* ✅ VIEW COM ALTURA MÍNIMA E ESPAÇO PARA CARRINHO */
     .view {
       display: none;
       animation: fadeIn 0.3s ease;
+      min-height: calc(100vh - 60px);
+      overflow-y: auto;
+      padding-bottom: 80px;
     }
     .view.active {
       display: block;
@@ -190,6 +205,50 @@
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: none; }
     }
+
+    /* ✅ CARRINHO FIXO EM TODAS AS ABAS */
+    #carrinhoIcone {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 72px;
+      height: 72px;
+      background: var(--secondary);
+      border-radius: 50%;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      cursor: pointer;
+      z-index: 200;
+      box-shadow: 0 8px 20px rgba(58, 86, 212, 0.4);
+      transition: var(--transition);
+      margin: 0;
+      padding: 0;
+    }
+    #carrinhoIcone:hover {
+      transform: scale(1.12) rotate(10deg);
+      box-shadow: 0 10px 25px rgba(58, 86, 212, 0.6);
+    }
+    #carrinhoIcone span {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      width: 24px;
+      height: 24px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    /* ✅ ALERTA DE ORÇAMENTO */
     #orcamentoAlerta {
       position: fixed;
       top: 20px;
@@ -209,6 +268,13 @@
       opacity: 1;
       transform: translateY(0);
     }
+
+    /* ✅ HOME COM ESPAÇO EXTRA */
+    .home-section {
+      padding-bottom: 100px;
+    }
+
+    /* GERAL */
     #home {
       text-align: center;
       padding-top: 20px;
@@ -318,16 +384,21 @@
       box-shadow: var(--shadow);
       border: 1px solid var(--border);
       transition: var(--transition);
+      width: 100%;
+      max-width: 100%;
     }
     .box:hover {
       transform: translateY(-3px);
       box-shadow: 0 14px 32px -8px rgba(0, 0, 0, 0.18);
     }
+
+    /* SCANNER */
     #scannerInfo {
       display: flex;
       flex-direction: column;
       gap: 16px;
       margin-top: 20px;
+      min-height: 150px;
     }
     #camera {
       width: 100%;
@@ -407,19 +478,27 @@
       50% { top: 85%; }
       100% { top: 15%; }
     }
+
+    /* PRODUTOS - TABELA RESPONSIVA */
     #produtosBox {
       overflow-x: auto;
+      max-width: 100%;
+      margin: 0 auto;
     }
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 12px;
       font-size: 15px;
+      table-layout: fixed;
     }
     th, td {
-      padding: 12px 10px;
+      padding: 12px 8px;
       text-align: center;
       border-bottom: 1px solid var(--border);
+      word-wrap: break-word;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     th {
       font-weight: 700;
@@ -436,6 +515,8 @@
         background: rgba(67, 97, 238, 0.08);
       }
     }
+
+    /* BOTÕES */
     button.editBtn {
       background: var(--success);
       color: #000;
@@ -465,6 +546,8 @@
       background: #ff6b6b;
       transform: translateY(-2px);
     }
+
+    /* HISTÓRICO */
     .historico-card {
       background: var(--card);
       border-radius: 14px;
@@ -492,44 +575,8 @@
       max-height: 150px;
       overflow-y: auto;
     }
-    #carrinhoIcone {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      width: 72px;
-      height: 72px;
-      background: var(--secondary);
-      border-radius: 50%;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      cursor: pointer;
-      z-index: 200;
-      box-shadow: 0 8px 20px rgba(58, 86, 212, 0.4);
-      transition: var(--transition);
-    }
-    #carrinhoIcone:hover {
-      transform: scale(1.12) rotate(10deg);
-      box-shadow: 0 10px 25px rgba(58, 86, 212, 0.6);
-    }
-    #carrinhoIcone span {
-      position: absolute;
-      top: -4px;
-      right: -4px;
-      width: 24px;
-      height: 24px;
-      background: var(--primary);
-      color: white;
-      border-radius: 50%;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    }
+
+    /* MODAL CARRINHO */
     #modalCarrinho {
       position: fixed;
       inset: 0;
@@ -556,27 +603,8 @@
       transform: scale(1);
       opacity: 1;
     }
-    #modalCarrinho table {
-      width: 100%;
-      margin-bottom: 16px;
-    }
-    #modalCarrinho button {
-      width: 100%;
-      padding: 14px;
-      margin-top: 12px;
-      border: none;
-      border-radius: 14px;
-      color: white;
-      background: var(--primary);
-      cursor: pointer;
-      font-weight: 700;
-      font-size: 17px;
-      transition: var(--transition);
-    }
-    #modalCarrinho button:hover {
-      background: var(--primary-light);
-      transform: translateY(-2px);
-    }
+
+    /* CADASTRO */
     #cadastroBox {
       max-width: 420px;
       margin: 20px auto;
@@ -617,6 +645,8 @@
       background: var(--primary-light);
       transform: translateY(-2px);
     }
+
+    /* GRÁFICO */
     #scannerChartBox {
       margin-top: 24px;
       height: 200px;
@@ -649,23 +679,44 @@
       font-size: 11px;
       text-shadow: 0 1px 2px rgba(0,0,0,0.3);
     }
+
+    /* ✅ MEDIA QUERIES */
     @media (max-width: 768px) {
       #sidebar { width: 200px; }
       #content { margin-left: 200px; padding: 20px 16px; }
-      .box { padding: 20px; }
+      .view { min-height: calc(100vh - 80px); }
     }
     @media (max-width: 480px) {
       #sidebar { width: 180px; left: -180px; }
       #sidebar.hide { left: -180px; }
       #content { margin-left: 180px; padding: 16px 12px; }
+      .view { min-height: calc(100vh - 100px); padding-bottom: 100px; }
       #home .logo-home { width: 240px; height: 240px; }
-      #hamburger { width: 48px; height: 48px; }
+      #hamburger { width: 48px; height: 48px; font-size: 24px; }
       #orcamento input { font-size: 15px; }
+      #camera { height: 200px; }
+      #scannerChartBox { height: 150px; }
+      #carrinhoIcone {
+        bottom: 16px;
+        right: 16px;
+        width: 64px;
+        height: 64px;
+        font-size: 24px;
+      }
+      #carrinhoIcone span {
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+      }
+      th, td { padding: 8px 6px; font-size: 13px; }
     }
+
     @keyframes pulse {
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.2); }
     }
+
+    /* MODAL QUANTIDADE */
     .quantidade-modal {
       position: fixed;
       top: 50%;
@@ -730,7 +781,7 @@
   </div>
   <div id="orcamentoAlerta">⚠️ Orçamento excedido!</div>
   <div id="content">
-    <section id="home" class="view active">
+    <section id="home" class="view active home-section">
       <img src="logo.png" class="logo-home" alt="GoL BUY SMART – App de compras inteligente" />
       <h2>Bem-vindo ao GoL BUY SMART</h2>
       <div id="temaContainer">
@@ -840,6 +891,7 @@
   </div>
 
   <script>
+    // === TUDO DA VERSÃO ANTERIOR MANTIDO, com DEBUG ADICIONAL ===
     const $ = id => document.getElementById(id);
     const Storage = {
       get: (k, f = []) => JSON.parse(localStorage.getItem(k)) || f,
@@ -853,7 +905,6 @@
     const repeticoes = 3;
     const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
-    // Carregar tema salvo
     const temaSalvo = localStorage.getItem('tema') || 'padrao';
     if (temaSalvo !== 'padrao') {
       document.body.classList.add(`tema-${temaSalvo}`);
@@ -887,10 +938,8 @@
       }
     }
 
-    // ✅ CORREÇÃO: parar scanner antes do modal
     function solicitarQuantidade(produtoNome, callback) {
-      pararScanner(); // ⚠️ Pausa o scanner
-
+      pararScanner();
       $("tituloQuantidade").innerText = `Produto: ${produtoNome}\nInforme a quantidade`;
       $("inputQuantidade").value = "1";
       $("btnConfirmarQtd").onclick = () => {
@@ -906,7 +955,6 @@
     function fecharQuantidade() {
       $("overlayQuantidade").style.display = "none";
       $("quantidadeModal").style.display = "none";
-      // Reinicia scanner se estiver na tela correta
       if (document.getElementById("scanner")?.classList.contains("active")) {
         setTimeout(() => {
           if (!scannerAtivo) iniciarScanner();
@@ -919,7 +967,7 @@
         document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
         $(tela).classList.add("active");
         if (tela === "scanner") {
-          setTimeout(() => iniciarScanner(), 100); // pequeno delay para renderização
+          setTimeout(() => iniciarScanner(), 100);
         } else {
           pararScanner();
         }
@@ -1177,17 +1225,20 @@
       }
 
       function processarCodigo(codigoNormalizado) {
+        console.log("🔍 Código processado:", codigoNormalizado); // ✅ DEBUG
         try {
           navigator.vibrate?.(50);
           beep.play().catch(e => console.warn("Beep não reproduzido:", e));
           const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
           if (produto) {
+            console.log("✅ Produto encontrado:", produto.nome);
             solicitarQuantidade(produto.nome, (q) => {
               carrinho.push({ ...produto, qtd: q });
               Storage.set("carrinho", carrinho);
               abrirCarrinho();
             });
           } else {
+            console.log("🆕 Produto não encontrado. Indo para cadastro rápido.");
             $("codigoCadastro").value = codigoNormalizado;
             $("nomeCadastro").value = "";
             $("valorCadastro").value = "";
@@ -1234,7 +1285,7 @@
             buffer = [];
           }
         } catch (e) {
-          console.error("Erro ao processar código:", e);
+          console.error("❌ Erro ao processar código:", e);
           buffer = [];
         }
       }
@@ -1292,11 +1343,11 @@
           const ctx = canvas.getContext("2d");
           window.categoriaChart = new Chart(ctx, {
             type: 'bar',
-            data: {
+             {
               labels: labels,
               datasets: [{
                 label: 'Número de Produtos',
-                data: values,
+                 values,
                 backgroundColor: labels.map((_, i) => cores[i % cores.length]),
                 borderWidth: 0
               }]
@@ -1366,7 +1417,6 @@
       }, 500);
     }
 
-    // Observador para atualizar gráfico ao entrar no scanner
     if ($("scanner")) {
       const observer = new MutationObserver(() => {
         if ($("scanner").classList.contains("active")) {
@@ -1398,7 +1448,6 @@
       }
     });
 
-    // ✅ Service Worker - registra offline support
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('service-worker.js').catch(console.warn);
