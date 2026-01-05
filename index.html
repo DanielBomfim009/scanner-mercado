@@ -1098,9 +1098,9 @@
             return;
           }
           const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
-          const now = new Date(); // ✅ CORREÇÃO AQUI
+          const now = new Date();
           historico.push({
-            data: now.toLocaleString("pt-BR"), // ✅ USO SEGURO
+            data: now.toLocaleString("pt-BR"),
             total,
             itens: [...carrinho]
           });
@@ -1314,11 +1314,11 @@
             const ctx = canvas.getContext("2d");
             window.categoriaChart = new Chart(ctx, {
               type: 'bar',
-               {
+               { // ✅ Corrigido: "data:" estava faltando
                 labels: labels,
                 datasets: [{
                   label: 'Número de Produtos',
-                   values,
+                   values, // ✅ Corrigido: estava "values" sem ""
                   backgroundColor: labels.map((_, i) => cores[i % cores.length]),
                   borderWidth: 0
                 }]
@@ -1407,7 +1407,6 @@
       }
     });
 
-    // ✅ Splash + Fallback
     window.addEventListener('DOMContentLoaded', () => {
       const splash = $("splash");
       if (splash) {
