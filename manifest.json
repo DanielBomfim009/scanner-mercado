@@ -1,7 +1,7 @@
 {
   "name": "Compras do Mês",
   "short_name": "Compras",
-  "start_url": "/scanner-mercado/",
+  "start_url": "/scanner-mercado/index.html",
   "display": "standalone",
   "background_color": "#f2f4f8",
   "theme_color": "#2f80ed",
