@@ -846,6 +846,7 @@ let carrinho = Storage.get("carrinho");
 let historico = Storage.get("historicoCompras");
 let orcamento = Storage.get("orcamento") || 0;
 let reader = null, stream = null, buffer = [], scannerAtivo = false;
+let leituraTravada = false;
 const repeticoes = 3;
 const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 let categoriaChart;
@@ -912,10 +913,14 @@ else pararScanner();
 const sidebar = $("sidebar");
 const content = $("content");
 const hamburger = $("hamburger");
-hamburger.onclick = () => {
-sidebar.classList.toggle("hide");
-content.classList.toggle("full");
-};
+
+["pointerdown"].forEach(evt => {
+  hamburger.addEventListener(evt, (e) => {
+    e.preventDefault();
+    sidebar.classList.toggle("hide");
+    content.classList.toggle("full");
+  });
+});
 if ($("orcamentoInput")) {
 $("orcamentoInput").value = orcamento;
 $("orcamentoInput").addEventListener("input", () => {
@@ -1153,11 +1158,18 @@ async function iniciarScanner() {
             $("barraValidacaoInner").style.width = (ultimosIguais / repeticoes * 100) + "%";
             $("barraValidacaoInner").setAttribute('data-pct', Math.round(ultimosIguais / repeticoes * 100) + '%');
         }
-        if (ultimosIguais >= repeticoes) {
-            scannerAtivo = false;
-            reader.reset();
-            processarCodigo(codigoNormalizado);
-        }
+if (ultimosIguais >= repeticoes) {
+    if (leituraTravada) return;
+    leituraTravada = true;
+
+    scannerAtivo = false;
+    reader.reset();
+    processarCodigo(codigoNormalizado);
+
+    setTimeout(() => {
+        leituraTravada = false;
+    }, 1000);
+}
     });
 }
 
@@ -1230,9 +1242,10 @@ window.quantidadeJaSolicitada = false;
 buffer = [];
 }
 }
-
 function pararScanner() {
 scannerAtivo = false;
+leituraTravada = false;
+
 if (reader) reader.reset();
 if (stream) {
 stream.getTracks().forEach(t => t.stop());
@@ -1245,7 +1258,6 @@ video.srcObject = null;
 }
 window.quantidadeJaSolicitada = false;
 }
-
 // ✅ FUNÇÃO CORRIGIDA: sintaxe do Chart.js válida
 function atualizarScannerChart() {
     const categorias = {};
