@@ -1,9 +1,9 @@
 const CACHE_NAME = "scanner-mercado-v1";
 const FILES_TO_CACHE = [
-  "/scanner-mercado/",
   "/scanner-mercado/index.html",
   "/scanner-mercado/manifest.json",
-  "/scanner-mercado/logo.png"
+  "/scanner-mercado/logo.png",
+  "/scanner-mercado/service-worker.js"
 ];
 
 self.addEventListener("install", event => {
