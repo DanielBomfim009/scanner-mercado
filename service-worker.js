@@ -3,7 +3,7 @@ const FILES_TO_CACHE = [
   "/scanner-mercado/",
   "/scanner-mercado/index.html",
   "/scanner-mercado/manifest.json",
-  "/scanner-mercado/logo.jpg"
+  "/scanner-mercado/logo.png"
 ];
 
 self.addEventListener("install", event => {
