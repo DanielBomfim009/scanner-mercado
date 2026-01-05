@@ -1086,9 +1086,9 @@ return;
 }
 const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
 historico.push({
-data: new Date().toLocaleString("pt-BR"),
-total,
-itens: [...carrinho]
+  data: new Date().toLocaleString("pt-BR"),
+  total,
+  itens: [...carrinho]
 });
 Storage.set("historicoCompras", historico);
 carrinho = [];
@@ -1184,11 +1184,13 @@ navigator.vibrate?.(50);
 beep.play().catch(e => console.warn("Beep não reproduzido:", e));
 const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
 if (produto) {
-solicitarQuantidade(produto.nome, (q) => {
-carrinho.push({ ...produto, qtd: q });
-Storage.set("carrinho", carrinho);
-abrirCarrinho();
-});
+  setTimeout(() => {
+    solicitarQuantidade(produto.nome, (q) => {
+      carrinho.push({ ...produto, qtd: q });
+      Storage.set("carrinho", carrinho);
+      abrirCarrinho();
+    });
+  }, 100);
 } else {
 $("codigoCadastro").value = codigoNormalizado;
 $("nomeCadastro").value = "";
@@ -1220,7 +1222,7 @@ $("valorCadastro").value = "";
 $("categoriaCadastro").value = "Alimentos";
 $("tipoCadastro").value = "UN";
 $("cadastro-title").innerText = "Cadastro de Produto";
-$("salvarCadastro").onclick = salvarOriginal;
+$("salvarCadastro").onclick = () => salvarOriginal();
 atualizarProdutosTable();
 atualizarScannerChart();
 atualizarCarrinho();
@@ -1284,11 +1286,11 @@ try {
 const ctx = canvas.getContext("2d");
 window.categoriaChart = new Chart(ctx, {
 type: 'bar',
-data: { // ✅ CORRIGIDO: estava faltando "data"
+data: {
 labels: labels,
 datasets: [{
 label: 'Número de Produtos',
-data: values, // ✅ CORRIGIDO: estava "values", agora é "data"
+data: values,
 backgroundColor: labels.map((_, i) => cores[i % cores.length]),
 borderWidth: 0
 }]
@@ -1374,7 +1376,7 @@ setTimeout(() => {
 splash.style.opacity = '0';
 setTimeout(() => {
 if (splash.parentNode) splash.remove();
-document.body.classList.remove('loading'); // 👈👈 REMOÇÃO DA CLASSE LOADING
+document.body.classList.remove('loading');
 iniciarApp();
 }, 500);
 }, 2000);
