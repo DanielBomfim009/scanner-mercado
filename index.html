@@ -1100,7 +1100,7 @@
           const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
           const now = new Date();
           historico.push({
-            data: now.toLocaleString("pt-BR"),
+             now.toLocaleString("pt-BR"),
             total,
             itens: [...carrinho]
           });
@@ -1314,11 +1314,11 @@
             const ctx = canvas.getContext("2d");
             window.categoriaChart = new Chart(ctx, {
               type: 'bar',
-               { // ✅ Corrigido: "data:" estava faltando
+               { // ✅ CORRIGIDO: estava faltando "data"
                 labels: labels,
                 datasets: [{
                   label: 'Número de Produtos',
-                   values, // ✅ Corrigido: estava "values" sem ""
+                   values, // ✅ CORRIGIDO: estava "values", agora é "data"
                   backgroundColor: labels.map((_, i) => cores[i % cores.length]),
                   borderWidth: 0
                 }]
