@@ -110,11 +110,16 @@ color: white;
 display: flex;
 flex-direction: column;
 padding-top: 60px;
-transition: transform 0.3s;
 z-index: 100;
+
+/* ✅ iOS FIX */
+left: -220px;
+transition: left 0.3s ease;
+-webkit-overflow-scrolling: touch;
 }
-#sidebar.hide {
-transform: translateX(-100%);
+
+#sidebar.show {
+left: 0;
 }
 #sidebar button {
 background: none;
@@ -159,10 +164,10 @@ transform: rotate(90deg);
 background: var(--primary-light);
 }
 #content {
-margin-left: 220px;
+margin-left: 0;
 flex: 1;
 padding: 24px 20px;
-transition: margin-left 0.3s;
+transition: filter 0.3s;
 }
 #content.full {
 margin-left: 0;
@@ -917,9 +922,14 @@ const hamburger = $("hamburger");
 ["pointerdown"].forEach(evt => {
   hamburger.addEventListener(evt, (e) => {
     e.preventDefault();
-    sidebar.classList.toggle("hide");
-    content.classList.toggle("full");
-  });
+
+    sidebar.classList.toggle("show");
+
+    // iOS precisa de repaint
+    sidebar.style.display = "none";
+    sidebar.offsetHeight; // força redraw
+    sidebar.style.display = "flex";
+});
 });
 if ($("orcamentoInput")) {
 $("orcamentoInput").value = orcamento;
@@ -1160,15 +1170,12 @@ async function iniciarScanner() {
         }
 if (ultimosIguais >= repeticoes) {
     if (leituraTravada) return;
-    leituraTravada = true;
 
+    leituraTravada = true;
     scannerAtivo = false;
+
     reader.reset();
     processarCodigo(codigoNormalizado);
-
-    setTimeout(() => {
-        leituraTravada = false;
-    }, 1000);
 }
     });
 }
@@ -1182,10 +1189,22 @@ if (produto) {
 if (window.quantidadeJaSolicitada) return;
 window.quantidadeJaSolicitada = true;
 solicitarQuantidade(produto.nome, (q) => {
-window.quantidadeJaSolicitada = false;
-carrinho.push({ ...produto, qtd: q });
-Storage.set("carrinho", carrinho);
-abrirCarrinho();
+    window.quantidadeJaSolicitada = false;
+
+    carrinho.push({ ...produto, qtd: q });
+    Storage.set("carrinho", carrinho);
+
+    // ✅ PASSO 4 (AGORA EXPLICADO):
+    // 1. Para completamente o scanner
+    pararScanner();
+
+    // 2. Vai para a Home
+    irPara("home");
+
+    // 3. Abre o carrinho automaticamente
+    setTimeout(() => {
+        abrirCarrinho();
+    }, 300);
 });
 } else {
 $("codigoCadastro").value = codigoNormalizado;
@@ -1245,6 +1264,8 @@ buffer = [];
 function pararScanner() {
 scannerAtivo = false;
 leituraTravada = false;
+buffer = [];
+window.quantidadeJaSolicitada = false;
 
 if (reader) reader.reset();
 if (stream) {
