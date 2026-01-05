@@ -108,7 +108,7 @@
       text-shadow: 0 1px 2px rgba(0,0,0,0.3);
     }
 
-    /* ✅ SIDEBAR PARA IOS */
+    /* SIDEBAR PARA IOS */
     #sidebar {
       position: fixed;
       top: 0;
@@ -149,7 +149,7 @@
       padding-left: 28px;
     }
 
-    /* ✅ HAMBURGER VISÍVEL */
+    /* HAMBURGER VISÍVEL */
     #hamburger {
       position: fixed;
       top: 16px;
@@ -176,7 +176,7 @@
       background: var(--primary-light);
     }
 
-    /* ✅ CONTENT COM SCROLL AUTOMÁTICO */
+    /* CONTENT COM SCROLL */
     #content {
       margin-left: 220px;
       flex: 1;
@@ -190,7 +190,6 @@
       margin-left: 0;
     }
 
-    /* ✅ VIEW COM ALTURA MÍNIMA E ESPAÇO PARA CARRINHO */
     .view {
       display: none;
       animation: fadeIn 0.3s ease;
@@ -206,7 +205,7 @@
       to { opacity: 1; transform: none; }
     }
 
-    /* ✅ CARRINHO FIXO EM TODAS AS ABAS */
+    /* CARRINHO FIXO */
     #carrinhoIcone {
       position: fixed;
       bottom: 24px;
@@ -248,7 +247,6 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
 
-    /* ✅ ALERTA DE ORÇAMENTO */
     #orcamentoAlerta {
       position: fixed;
       top: 20px;
@@ -269,12 +267,10 @@
       transform: translateY(0);
     }
 
-    /* ✅ HOME COM ESPAÇO EXTRA */
     .home-section {
       padding-bottom: 100px;
     }
 
-    /* GERAL */
     #home {
       text-align: center;
       padding-top: 20px;
@@ -392,7 +388,6 @@
       box-shadow: 0 14px 32px -8px rgba(0, 0, 0, 0.18);
     }
 
-    /* SCANNER */
     #scannerInfo {
       display: flex;
       flex-direction: column;
@@ -479,7 +474,6 @@
       100% { top: 15%; }
     }
 
-    /* PRODUTOS - TABELA RESPONSIVA */
     #produtosBox {
       overflow-x: auto;
       max-width: 100%;
@@ -516,7 +510,6 @@
       }
     }
 
-    /* BOTÕES */
     button.editBtn {
       background: var(--success);
       color: #000;
@@ -547,7 +540,6 @@
       transform: translateY(-2px);
     }
 
-    /* HISTÓRICO */
     .historico-card {
       background: var(--card);
       border-radius: 14px;
@@ -576,7 +568,6 @@
       overflow-y: auto;
     }
 
-    /* MODAL CARRINHO */
     #modalCarrinho {
       position: fixed;
       inset: 0;
@@ -604,7 +595,6 @@
       opacity: 1;
     }
 
-    /* CADASTRO */
     #cadastroBox {
       max-width: 420px;
       margin: 20px auto;
@@ -646,7 +636,6 @@
       transform: translateY(-2px);
     }
 
-    /* GRÁFICO */
     #scannerChartBox {
       margin-top: 24px;
       height: 200px;
@@ -680,7 +669,6 @@
       text-shadow: 0 1px 2px rgba(0,0,0,0.3);
     }
 
-    /* ✅ MEDIA QUERIES */
     @media (max-width: 768px) {
       #sidebar { width: 200px; }
       #content { margin-left: 200px; padding: 20px 16px; }
@@ -716,7 +704,6 @@
       50% { transform: scale(1.2); }
     }
 
-    /* MODAL QUANTIDADE */
     .quantidade-modal {
       position: fixed;
       top: 50%;
@@ -891,7 +878,6 @@
   </div>
 
   <script>
-    // === TUDO DA VERSÃO ANTERIOR MANTIDO, com DEBUG ADICIONAL ===
     const $ = id => document.getElementById(id);
     const Storage = {
       get: (k, f = []) => JSON.parse(localStorage.getItem(k)) || f,
@@ -962,7 +948,10 @@
       }
     }
 
-    function iniciarApp() {
+    // ✅ DECLARAÇÃO GLOBAL DA FUNÇÃO
+    let iniciarApp;
+
+    iniciarApp = function() {
       window.irPara = function(tela) {
         document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
         $(tela).classList.add("active");
@@ -1225,7 +1214,7 @@
       }
 
       function processarCodigo(codigoNormalizado) {
-        console.log("🔍 Código processado:", codigoNormalizado); // ✅ DEBUG
+        console.log("🔍 Código processado:", codigoNormalizado);
         try {
           navigator.vibrate?.(50);
           beep.play().catch(e => console.warn("Beep não reproduzido:", e));
@@ -1415,7 +1404,7 @@
       setTimeout(() => {
         atualizarScannerChart();
       }, 500);
-    }
+    };
 
     if ($("scanner")) {
       const observer = new MutationObserver(() => {
