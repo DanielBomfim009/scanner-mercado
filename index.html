@@ -870,589 +870,127 @@ Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
 <script>
 const $ = id => document.getElementById(id);
 const Storage = {
-get: (k, f = []) => JSON.parse(localStorage.getItem(k)) || f,
-set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
+  get: (k, f = []) => JSON.parse(localStorage.getItem(k)) || f,
+  set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
 };
+
 let produtos = Storage.get("produtos");
 let carrinho = Storage.get("carrinho");
 let historico = Storage.get("historicoCompras");
 let orcamento = Storage.get("orcamento") || 0;
+
 let reader = null, stream = null, buffer = [], scannerAtivo = false;
-let quantidadeJaSolicitada = false; // ✅ Nova flag para evitar duplicação
+let quantidadeJaSolicitada = false;
+
 const repeticoes = 3;
-const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg    ");
+const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 let categoriaChart;
 
-// Carregar tema salvo
-const temaSalvo = localStorage.getItem('tema') || 'padrao';
-if (temaSalvo !== 'padrao') {
-document.body.classList.add(`tema-${temaSalvo}`);
-}
-if ($("temaSelector")) {
-$("temaSelector").value = temaSalvo;
-}
-
-function mudarTema(tema) {
-document.body.className = document.body.className.replace(/tema-\w+/g, '').trim();
-if (tema !== 'padrao') {
-document.body.classList.add(`tema-${tema}`);
-}
-localStorage.setItem('tema', tema);
-if (document.getElementById("scanner").classList.contains("active")) {
-setTimeout(atualizarScannerChart, 100);
-}
-}
-
-function normalizarCodigo(cod) {
-return (cod || '').toString().trim().replace(/[\r\n\t\s]+/g, '');
-}
-
-function verificarOrcamento() {
-const gasto = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
-const pct = orcamento ? (gasto / orcamento) * 100 : 0;
-const alerta = $("orcamentoAlerta");
-if (pct >= 90 && orcamento > 0) {
-alerta.classList.add('show');
-setTimeout(() => alerta.classList.remove('show'), 3000);
-}
-}
-
-// ✅ CORRIGIDO: Evita múltiplas aberturas
+/* ======================
+   QUANTIDADE (CORRIGIDO)
+====================== */
 function solicitarQuantidade(produtoNome, callback) {
-  if (quantidadeJaSolicitada) return;
-  quantidadeJaSolicitada = true;
-  pararScanner(); // Para o scanner imediatamente
+  pararScanner();
 
-  $("tituloQuantidade").innerText = `Produto: ${produtoNome}\nInforme a quantidade`;
+  $("tituloQuantidade").innerText =
+    `Produto: ${produtoNome}\nInforme a quantidade`;
+
   $("inputQuantidade").value = "1";
+
   $("btnConfirmarQtd").onclick = () => {
     const q = Number($("inputQuantidade").value);
     fecharQuantidade();
     if (q > 0) callback(q);
   };
-  $("btnCancelarQtd").onclick = fecharQuantidade();
+
+  $("btnCancelarQtd").onclick = fecharQuantidade;
+
   $("overlayQuantidade").style.display = "block";
   $("quantidadeModal").style.display = "block";
 }
 
-// ✅ CORRIGIDO: Reseta o estado corretamente
 function fecharQuantidade() {
   $("overlayQuantidade").style.display = "none";
   $("quantidadeModal").style.display = "none";
-  quantidadeJaSolicitada = false; // ✅ Sempre reseta
 }
 
-function iniciarApp() {
-window.irPara = function(tela) {
-document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
-$(tela).classList.add("active");
-if (tela === "scanner") {
-  // ✅ Delay mínimo para garantir renderização
-  setTimeout(() => {
-    if (document.getElementById("scanner")?.classList.contains("active")) {
-      iniciarScanner();
-    }
-  }, 100);
-} else {
-  pararScanner();
-}
-};
-const sidebar = $("sidebar");
-const content = $("content");
-const hamburger = $("hamburger");
-hamburger.onclick = () => {
-sidebar.classList.toggle("hide");
-content.classList.toggle("full");
-};
-if ($("orcamentoInput")) {
-$("orcamentoInput").value = orcamento;
-$("orcamentoInput").addEventListener("input", () => {
-orcamento = Number($("orcamentoInput").value);
-localStorage.setItem("orcamento", orcamento);
-atualizarOrcamento();
-verificarOrcamento();
-});
-}
-function atualizarOrcamento() {
-const gasto = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
-$("orcamentoGasto").innerText = gasto.toFixed(2);
-const pct = orcamento ? Math.min(100, (gasto / orcamento) * 100) : 0;
-const bar = $("orcamentoBarraInner");
-bar.style.width = pct + "%";
-bar.setAttribute('data-pct', Math.round(pct) + '%');
-}
-function atualizarProdutosTable() {
-let html = "";
-produtos.forEach((p, i) => {
-html += `
-<tr>
-<td>${p.codigo}</td>
-<td>${p.nome}</td>
-<td>${p.categoria}</td>
-<td>${p.tipo}</td>
-<td>R$ ${p.valor.toFixed(2)}</td>
-<td>
-<button class="editBtn" onclick="editarProduto(${i})">✏️</button>
-<button class="deleteBtn" onclick="excluirProduto(${i})">❌</button>
-</td>
-</tr>`;
-});
-const tbody = $("produtosTable")?.querySelector("tbody");
-if (tbody) tbody.innerHTML = html;
-if ($("totalProdutos")) $("totalProdutos").innerText = produtos.length;
-}
-window.editarProduto = function(i) {
-$("cadastro-title").innerText = "Editar Produto";
-$("codigoCadastro").value = produtos[i].codigo;
-$("nomeCadastro").value = produtos[i].nome;
-$("categoriaCadastro").value = produtos[i].categoria;
-$("tipoCadastro").value = produtos[i].tipo;
-$("valorCadastro").value = produtos[i].valor;
-produtos.splice(i, 1);
-Storage.set("produtos", produtos);
-irPara("cadastro");
-};
-window.excluirProduto = function(i) {
-if (confirm("Excluir produto?")) {
-produtos.splice(i, 1);
-Storage.set("produtos", produtos);
-atualizarProdutosTable();
-atualizarScannerChart();
-}
-};
-const salvarOriginal = () => {
-const novo = {
-codigo: $("codigoCadastro").value.trim(),
-nome: $("nomeCadastro").value.trim(),
-categoria: $("categoriaCadastro").value,
-tipo: $("tipoCadastro").value,
-valor: Number($("valorCadastro").value)
-};
-if (!novo.codigo || !novo.nome || !novo.valor || isNaN(novo.valor)) {
-alert("Preencha todos os campos corretamente");
-return;
-}
-produtos.push(novo);
-Storage.set("produtos", produtos);
-atualizarProdutosTable();
-atualizarScannerChart();
-$("codigoCadastro").value = "";
-$("nomeCadastro").value = "";
-$("valorCadastro").value = "";
-$("categoriaCadastro").value = "Alimentos";
-$("tipoCadastro").value = "UN";
-$("cadastro-title").innerText = "Cadastro de Produto";
-irPara("produtos");
-};
-if ($("salvarCadastro")) {
-$("salvarCadastro").onclick = salvarOriginal;
-}
-function atualizarCarrinho() {
-let total = 0;
-let html = `<tr><th>Nome</th><th>Qtd</th><th>Subtotal</th><th>Ação</th></tr>`;
-carrinho.forEach((p, idx) => {
-const sub = p.valor * p.qtd;
-total += sub;
-html += `
-<tr>
-<td>${p.nome}</td>
-<td>${p.qtd}</td>
-<td>R$ ${sub.toFixed(2)}</td>
-<td><button class="deleteBtn" style="padding:4px 8px;font-size:14px;" onclick="removerDoCarrinho(${idx})">🗑️</button></td>
-</tr>`;
-});
-if ($("tabelaCarrinho")) $("tabelaCarrinho").innerHTML = html;
-if ($("total")) $("total").innerText = "Total: R$ " + total.toFixed(2);
-if ($("badge")) $("badge").innerText = carrinho.length;
-atualizarOrcamento();
-verificarOrcamento();
-const badge = $("badge");
-if (badge) {
-badge.style.animation = "pulse 0.5s";
-setTimeout(() => badge.style.animation = "", 500);
-}
-}
-window.removerDoCarrinho = function(idx) {
-carrinho.splice(idx, 1);
-Storage.set("carrinho", carrinho);
-atualizarCarrinho();
-};
-window.abrirCarrinho = function() {
-$("modalCarrinho").style.display = "flex";
-setTimeout(() => $("modalCarrinho").classList.add("active"), 10);
-atualizarCarrinho();
-};
-
-// ✅ Função fecharCarrinho CORRIGIDA e com mensagem
-window.fecharCarrinho = function() {
-    $("modalCarrinho").classList.remove("active");
-    setTimeout(() => {
-        $("modalCarrinho").style.display = "none";
-        if (document.getElementById("scanner")?.classList.contains("active")) {
-            const msg = $("reiniciandoMensagem");
-            if (msg) {
-                msg.style.opacity = "1";
-            }
-            setTimeout(() => {
-                pararScanner();
-                iniciarScanner();
-                if (msg) {
-                    setTimeout(() => {
-                        msg.style.opacity = "0";
-                    }, 200);
-                }
-            }, 300);
-        }
-    }, 300);
-};
-
-window.finalizarCompra = function() {
-if (!carrinho.length) {
-alert("Carrinho vazio");
-return;
-}
-const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
-historico.push({
- data: new Date().toLocaleString("pt-BR"),
-total,
-itens: [...carrinho]
-});
-Storage.set("historicoCompras", historico);
-carrinho = [];
-Storage.set("carrinho", carrinho);
-atualizarCarrinho();
-atualizarHistorico();
-fecharCarrinho();
-alert("Compra finalizada!");
-};
-
-function atualizarHistorico() {
-const area = $("historicoConteudo");
-if (!area) return;
-area.innerHTML = "";
-if (!historico.length) {
-area.innerHTML = "<p style='text-align:center; color:var(--text-muted);'>Nenhuma compra registrada.</p>";
-return;
-}
-historico.forEach((c, i) => {
-let itens = "";
-c.itens.forEach(it => {
-itens += `<li>${it.nome} — ${it.qtd} x R$ ${it.valor.toFixed(2)} = R$ ${(it.qtd * it.valor).toFixed(2)}</li>`;
-});
-area.innerHTML += `
-<div class="historico-card">
-<h4>Compra ${i + 1}</h4>
-<small>${c.data}</small>
-<p><strong>Total:</strong> R$ ${c.total.toFixed(2)}</p>
-<details><summary style="color:var(--primary); cursor:pointer;">Ver itens</summary><ul>${itens}</ul></details>
-</div>`;
-});
-}
-
-// ✅ CORRIGIDO: Inicia só quando visível e renderizado
-async function iniciarScanner() {
-    if (scannerAtivo || !navigator.mediaDevices) return;
-    if (!document.getElementById("scanner")?.classList.contains("active")) {
-        scannerAtivo = false;
-        return;
-    }
-
-    // ✅ Verifica se o vídeo está visível (offsetParent !== null)
-    const video = $("video");
-    if (!video || !video.offsetParent) {
-        setTimeout(iniciarScanner, 300);
-        return;
-    }
-
-    scannerAtivo = true;
-    buffer = [];
-    if (!stream) {
-        try {
-            const constraints = {
-                video: {
-                    facingMode: "environment",
-                    advanced: [{ focusMode: "continuous" }]
-                }
-            };
-            stream = await navigator.mediaDevices.getUserMedia(constraints);
-            if (video) {
-                video.srcObject = stream;
-                await video.play().catch(e => console.warn("Erro ao play:", e));
-            }
-        } catch (err) {
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-                if (video) {
-                    video.srcObject = stream;
-                    await video.play().catch(e => console.warn("Erro fallback:", e));
-                }
-            } catch (e2) {
-                alert("⚠️ Permissão da câmera negada ou não suportada.");
-                scannerAtivo = false;
-                return;
-            }
-        }
-    }
-    reader = new ZXing.BrowserMultiFormatReader();
-    reader.decodeFromVideoElementContinuously(video, (res) => {
-        if (!res?.text || !scannerAtivo) return;
-        const codigoBruto = res.text;
-        const codigoNormalizado = normalizarCodigo(codigoBruto);
-        if (!codigoNormalizado) return;
-        buffer.push(codigoNormalizado);
-        if (buffer.length > repeticoes) buffer.shift();
-        const ultimosIguais = buffer.filter(v => v === codigoNormalizado).length;
-        if ($("detected")) $("detected").innerText = codigoBruto;
-        if ($("barraValidacaoInner")) {
-            $("barraValidacaoInner").style.width = (ultimosIguais / repeticoes * 100) + "%";
-            $("barraValidacaoInner").setAttribute('data-pct', Math.round(ultimosIguais / repeticoes * 100) + '%');
-        }
-        if (ultimosIguais >= repeticoes) {
-            scannerAtivo = false;
-            reader.reset();
-            processarCodigo(codigoNormalizado);
-        }
-    });
-}
-
-// ✅ CORRIGIDO: Evita processamento duplicado e garante redirecionamento correto
+/* ======================
+   PROCESSAR CÓDIGO
+====================== */
 function processarCodigo(codigoNormalizado) {
-try {
-navigator.vibrate?.(50);
-beep.play().catch(e => console.warn("Beep não reproduzido:", e));
-const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
-if (produto) {
-if (quantidadeJaSolicitada) return; // ✅ Proteção contra duplicação
-quantidadeJaSolicitada = true;
-solicitarQuantidade(produto.nome, (q) => {
-quantidadeJaSolicitada = false;
-carrinho.push({ ...produto, qtd: q });
-Storage.set("carrinho", carrinho);
-abrirCarrinho(); // ✅ Abre carrinho automaticamente
-});
-} else {
-$("codigoCadastro").value = codigoNormalizado;
-$("nomeCadastro").value = "";
-$("valorCadastro").value = "";
-$("cadastro-title").innerText = "Cadastro Rápido";
-irPara("cadastro");
-const handlerRapido = () => {
-const novo = {
-codigo: $("codigoCadastro").value.trim(),
-nome: $("nomeCadastro").value.trim(),
-categoria: $("categoriaCadastro").value,
-tipo: $("tipoCadastro").value,
-valor: Number($("valorCadastro").value)
-};
-if (!novo.nome || !novo.valor || isNaN(novo.valor)) {
-alert("Preencha nome e valor corretamente.");
-return;
-}
-produtos.push(novo);
-Storage.set("produtos", produtos);
-if (quantidadeJaSolicitada) return; // ✅ Proteção adicional
-quantidadeJaSolicitada = true;
-solicitarQuantidade(novo.nome, (q) => {
-quantidadeJaSolicitada = false;
-if (q > 0) {
-carrinho.push({ ...novo, qtd: q });
-Storage.set("carrinho", carrinho);
-abrirCarrinho(); // ✅ Abre carrinho automaticamente
-}
-$("codigoCadastro").value = "";
-$("nomeCadastro").value = "";
-$("valorCadastro").value = "";
-$("categoriaCadastro").value = "Alimentos";
-$("tipoCadastro").value = "UN";
-$("cadastro-title").innerText = "Cadastro de Produto";
-$("salvarCadastro").onclick = salvarOriginal;
-atualizarProdutosTable();
-atualizarScannerChart();
-atualizarCarrinho();
-fecharQuantidade();
-irPara("produtos"); // ✅ CORREÇÃO: agora vai para "produtos" como no cadastro normal
-});
-};
-$("salvarCadastro").onclick = handlerRapido;
-if ($("barraValidacaoInner")) {
-$("barraValidacaoInner").style.width = "0%";
-$("barraValidacaoInner").setAttribute('data-pct', '0%');
-}
-buffer = [];
-}
-} catch (e) {
-console.error("Erro ao processar código:", e);
-quantidadeJaSolicitada = false;
-buffer = [];
-pararScanner(); // ✅ Garante que o scanner pare em caso de erro
-}
+  try {
+    if (quantidadeJaSolicitada) return;
+    quantidadeJaSolicitada = true;
+
+    navigator.vibrate?.(50);
+    beep.play().catch(() => {});
+
+    const produto = produtos.find(
+      p => p.codigo.replace(/\s+/g, '') === codigoNormalizado
+    );
+
+    if (produto) {
+      solicitarQuantidade(produto.nome, q => {
+        carrinho.push({ ...produto, qtd: q });
+        Storage.set("carrinho", carrinho);
+        quantidadeJaSolicitada = false;
+        abrirCarrinho();
+      });
+      return;
+    }
+
+    // Cadastro rápido
+    $("codigoCadastro").value = codigoNormalizado;
+    $("cadastro-title").innerText = "Cadastro Rápido";
+    irPara("cadastro");
+
+    const salvarOriginal = $("salvarCadastro").onclick;
+
+    $("salvarCadastro").onclick = () => {
+      const novo = {
+        codigo: $("codigoCadastro").value.trim(),
+        nome: $("nomeCadastro").value.trim(),
+        categoria: $("categoriaCadastro").value,
+        tipo: $("tipoCadastro").value,
+        valor: Number($("valorCadastro").value)
+      };
+
+      if (!novo.nome || !novo.valor || isNaN(novo.valor)) {
+        alert("Preencha nome e valor corretamente.");
+        quantidadeJaSolicitada = false;
+        return;
+      }
+
+      produtos.push(novo);
+      Storage.set("produtos", produtos);
+      atualizarProdutosTable();
+      atualizarScannerChart();
+
+      solicitarQuantidade(novo.nome, q => {
+        carrinho.push({ ...novo, qtd: q });
+        Storage.set("carrinho", carrinho);
+        quantidadeJaSolicitada = false;
+        abrirCarrinho();
+      });
+
+      $("salvarCadastro").onclick = salvarOriginal;
+      irPara("produtos");
+    };
+
+  } catch (e) {
+    console.error("Erro no scanner:", e);
+    quantidadeJaSolicitada = false;
+  }
 }
 
 function pararScanner() {
-scannerAtivo = false;
-if (reader) reader.reset();
-if (stream) {
-stream.getTracks().forEach(t => t.stop());
-stream = null;
-}
-const video = $("video");
-if (video && video.srcObject) {
-video.srcObject.getTracks?.().forEach(t => t.stop());
-video.srcObject = null;
-}
-quantidadeJaSolicitada = false; // ✅ Reseta ao parar
-}
-
-// ✅ FUNÇÃO CORRIGIDA: sintaxe do Chart.js válida
-function atualizarScannerChart() {
-    const categorias = {};
-    produtos.forEach(p => {
-        categorias[p.categoria] = (categorias[p.categoria] || 0) + 1;
-    });
-
-    const chartBox = $("scannerChartBox");
-    if (!chartBox || chartBox.offsetWidth === 0 || chartBox.offsetHeight === 0) {
-        setTimeout(atualizarScannerChart, 100);
-        return;
-    }
-
-    const canvas = $("categoriaChart");
-    if (!canvas) return;
-
-    canvas.width = chartBox.offsetWidth;
-    canvas.height = chartBox.offsetHeight;
-
-    if (categoriaChart) {
-        categoriaChart.destroy();
-        categoriaChart = null;
-    }
-
-    const categoriasOrdenadas = Object.entries(categorias).sort((a, b) => b[1] - a[1]);
-    const labels = categoriasOrdenadas.map(([cat]) => cat);
-    const values = categoriasOrdenadas.map(([, val]) => val);
-
-    const rootStyles = getComputedStyle(document.documentElement);
-    const textColor = rootStyles.getPropertyValue('--text').trim();
-    const textMutedColor = rootStyles.getPropertyValue('--text-muted').trim();
-
-    const cores = [
-        '#4361ee', '#3a56d4', '#4895ef', '#f87171', '#6b6b6b', '#9c27b0',
-        '#06b6d4', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444'
-    ];
-
-    try {
-        const ctx = canvas.getContext("2d");
-        categoriaChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Número de Produtos',
-                    data: values,
-                    backgroundColor: labels.map((_, i) => cores[i % cores.length]),
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        titleColor: textColor,
-                        bodyColor: textColor,
-                        backgroundColor: rootStyles.getPropertyValue('--card').trim(),
-                        borderColor: rootStyles.getPropertyValue('--border').trim(),
-                        borderWidth: 1,
-                        callbacks: {
-                            label: (ctx) => ` ${ctx.parsed.x} produtos`
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(0,0,0,0.05)' },
-                        ticks: { color: textMutedColor }
-                    },
-                    y: {
-                        grid: { display: false },
-                        ticks: { color: textColor }
-                    }
-                }
-            }
-        });
-    } catch (e) {
-        console.error("Erro ao criar gráfico:", e);
-        setTimeout(atualizarScannerChart, 200);
-    }
-}
-
-document.addEventListener('keydown', (e) => {
-if (e.key === 'Escape') {
-if ($("modalCarrinho")?.classList.contains("active")) {
-fecharCarrinho();
-}
-if ($("quantidadeModal").style.display === "block") {
-fecharQuantidade();
-}
-}
-});
-if ($("modalCarrinho")) {
-$("modalCarrinho").addEventListener('click', (e) => {
-if (e.target === $("modalCarrinho")) {
-fecharCarrinho();
-}
-});
-}
-$("overlayQuantidade").addEventListener('click', fecharQuantidade);
-atualizarHistorico();
-atualizarProdutosTable();
-atualizarCarrinho();
-
-setTimeout(() => {
-    atualizarScannerChart();
-}, 500);
-}
-
-if ($("scanner")) {
-const observer = new MutationObserver(() => {
-if ($("scanner").classList.contains("active")) {
-setTimeout(atualizarScannerChart, 100);
-}
-});
-observer.observe($("scanner"), { attributes: true, attributeFilter: ['class'] });
-}
-
-window.addEventListener('resize', () => {
-    if (document.getElementById("scanner")?.classList.contains("active")) {
-        setTimeout(atualizarScannerChart, 100);
-    }
-});
-
-window.addEventListener('DOMContentLoaded', () => {
-const splash = $("splash");
-if (splash) {
-splash.style.background = '#1e293b';
-setTimeout(() => {
-splash.style.opacity = '0';
-setTimeout(() => {
-if (splash.parentNode) splash.remove();
-document.body.classList.remove('loading');
-iniciarApp();
-}, 500);
-}, 2000);
-} else {
-iniciarApp();
-}
-});
-
-// PWA
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('service-worker.js').catch(console.warn);
-  });
+  scannerAtivo = false;
+  if (reader) reader.reset();
+  if (stream) {
+    stream.getTracks().forEach(t => t.stop());
+    stream = null;
+  }
+  quantidadeJaSolicitada = false;
 }
 </script>
 </body>
