@@ -11,9 +11,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <!-- Bibliotecas externas -->
-<script src="https://unpkg.com/@zxing/library@0.21.2  "></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js  "></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter  :wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/@zxing/library@0.21.2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
 :root {
 --primary: #4361ee;
@@ -78,7 +78,7 @@ font-size: 16px;
 color: var(--text);
 }
 
-/* ✅ Esconde elementos durante o splash */
+/* Esconde elementos durante o splash */
 body.loading #hamburger,
 body.loading #carrinhoIcone {
   display: none !important;
@@ -112,7 +112,7 @@ z-index: 2001;
 text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
 
-/* ✅ CORREÇÃO SIDEBAR PARA IOS */
+/* SIDEBAR */
 #sidebar {
 position: fixed;
 top: 0;
@@ -124,12 +124,11 @@ color: white;
 display: flex;
 flex-direction: column;
 padding-top: 60px;
-transition: left 0.3s ease;
-z-index: 1100;
-left: 0;
+transition: transform 0.3s;
+z-index: 100;
 }
 #sidebar.hide {
-left: -220px;
+transform: translateX(-100%);
 }
 #sidebar button {
 background: none;
@@ -152,7 +151,7 @@ background: rgba(255, 255, 255, 0.15);
 padding-left: 28px;
 }
 
-/* ✅ HAMBURGER VISÍVEL */
+/* HAMBURGER */
 #hamburger {
 position: fixed;
 top: 16px;
@@ -165,41 +164,33 @@ display: flex;
 align-items: center;
 justify-content: center;
 border-radius: 14px;
-/* ✅ z-index aumentado para sempre aparecer */
-z-index: 3000;
+z-index: 101;
 cursor: pointer;
 font-size: 28px;
 box-shadow: var(--shadow);
 transition: var(--transition);
-font-weight: bold;
-text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
 #hamburger:hover {
 transform: rotate(90deg);
 background: var(--primary-light);
 }
 
-/* ✅ CONTENT RESPONSIVO */
+/* CONTENT */
 #content {
 margin-left: 220px;
 flex: 1;
 padding: 24px 20px;
 transition: margin-left 0.3s;
-min-height: 100vh;
-overflow-y: auto;
-box-sizing: border-box;
 }
 #content.full {
 margin-left: 0;
 }
 
-/* ✅ VIEW COM ESPAÇO PARA CARRINHO */
+/* VIEWS */
 .view {
 display: none;
 animation: fadeIn 0.3s ease;
-padding-bottom: 100px; /* ✅ Espaço para carrinho */
-overflow-x: hidden;
-max-width: 100%;
+padding-bottom: 100px;
 }
 .view.active {
 display: block;
@@ -228,6 +219,8 @@ transition: opacity 0.3s, transform 0.3s;
 opacity: 1;
 transform: translateY(0);
 }
+
+/* HOME */
 #home {
 text-align: center;
 padding-top: 20px;
@@ -246,6 +239,8 @@ font-weight: 800;
 font-size: 1.8rem;
 letter-spacing: -0.5px;
 }
+
+/* TEMA */
 #temaContainer {
 margin: 16px auto 24px;
 max-width: 320px;
@@ -260,6 +255,8 @@ color: var(--text);
 font-size: 15px;
 box-shadow: var(--shadow);
 }
+
+/* ORÇAMENTO */
 #orcamento {
 position: relative;
 max-width: 400px;
@@ -271,35 +268,35 @@ font-weight: 700;
 color: var(--text);
 }
 .orcamento-input-container {
-position: relative;
-display: flex;
-align-items: center;
-width: 100%;
-margin-top: 12px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-top: 12px;
 }
 .real-prefix {
-position: absolute;
-left: 16px;
-color: var(--text-muted);
-font-weight: 700;
-font-size: 18px;
-pointer-events: none;
-z-index: 1;
+  position: absolute;
+  left: 16px;
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 18px;
+  pointer-events: none;
+  z-index: 1;
 }
 #orcamentoInput {
-width: 100%;
-padding: 14px 14px 14px 52px !important;
-border-radius: 14px;
-border: 1px solid var(--border);
-font-size: 16px;
-background: var(--card);
-color: var(--text);
-transition: var(--transition);
+  width: 100%;
+  padding: 14px 14px 14px 52px !important;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  font-size: 16px;
+  background: var(--card);
+  color: var(--text);
+  transition: var(--transition);
 }
 #orcamentoInput:focus {
-outline: none;
-border-color: var(--primary);
-box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
 }
 #orcamentoBarra {
 height: 14px;
@@ -329,6 +326,8 @@ transform: translateY(-50%);
 font-size: 11px;
 text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
+
+/* BOX GERAL */
 .box {
 background: var(--card);
 border-radius: var(--radius);
@@ -337,14 +336,13 @@ margin-bottom: 24px;
 box-shadow: var(--shadow);
 border: 1px solid var(--border);
 transition: var(--transition);
-width: 100%;
-max-width: 100%;
-overflow-x: auto;
 }
 .box:hover {
 transform: translateY(-3px);
 box-shadow: 0 14px 32px -8px rgba(0, 0, 0, 0.18);
 }
+
+/* SCANNER */
 #scannerInfo {
 display: flex;
 flex-direction: column;
@@ -429,23 +427,21 @@ animation: scan 2.5s linear infinite;
 50% { top: 85%; }
 100% { top: 15%; }
 }
+
+/* PRODUTOS */
 #produtosBox {
 overflow-x: auto;
-width: 100%;
 }
 table {
 width: 100%;
 border-collapse: collapse;
 margin-top: 12px;
 font-size: 15px;
-table-layout: fixed;
 }
 th, td {
 padding: 12px 10px;
 text-align: center;
 border-bottom: 1px solid var(--border);
-word-wrap: break-word;
-overflow: hidden;
 }
 th {
 font-weight: 700;
@@ -491,6 +487,8 @@ button.deleteBtn:hover {
 background: #ff6b6b;
 transform: translateY(-2px);
 }
+
+/* HISTÓRICO */
 .historico-card {
 background: var(--card);
 border-radius: 14px;
@@ -518,6 +516,8 @@ margin: 8px 0;
 max-height: 150px;
 overflow-y: auto;
 }
+
+/* CARRINHO */
 #carrinhoIcone {
 position: fixed;
 bottom: 24px;
@@ -532,8 +532,7 @@ align-items: center;
 justify-content: center;
 font-size: 28px;
 cursor: pointer;
-/* ✅ z-index alto para sempre aparecer */
-z-index: 3000;
+z-index: 200;
 box-shadow: 0 8px 20px rgba(58, 86, 212, 0.4);
 transition: var(--transition);
 }
@@ -557,6 +556,8 @@ justify-content: center;
 font-weight: 700;
 box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
+
+/* MODAL CARRINHO */
 #modalCarrinho {
 position: fixed;
 inset: 0;
@@ -604,6 +605,8 @@ transition: var(--transition);
 background: var(--primary-light);
 transform: translateY(-2px);
 }
+
+/* CADASTRO */
 #cadastroBox {
 max-width: 420px;
 margin: 20px auto;
@@ -644,6 +647,8 @@ transition: var(--transition);
 background: var(--primary-light);
 transform: translateY(-2px);
 }
+
+/* GRÁFICO E VALIDAÇÃO */
 #scannerChartBox {
 margin-top: 24px;
 height: 200px;
@@ -676,14 +681,16 @@ transform: translateY(-50%);
 font-size: 11px;
 text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
+
+/* RESPONSIVO */
 @media (max-width: 768px) {
 #sidebar { width: 200px; }
 #content { margin-left: 200px; padding: 20px 16px; }
 .box { padding: 20px; }
 }
 @media (max-width: 480px) {
-#sidebar { width: 180px; left: -180px; }
-#sidebar.hide { left: -180px; }
+#sidebar { width: 180px; transform: translateX(-100%); }
+#sidebar.hide { transform: translateX(-100%); }
 #content { margin-left: 180px; padding: 16px 12px; }
 #home .logo-home { width: 240px; height: 240px; }
 #hamburger { width: 48px; height: 48px; }
@@ -691,10 +698,14 @@ text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 .view { padding-bottom: 120px; }
 #carrinhoIcone { bottom: 16px; right: 16px; width: 64px; height: 64px; }
 }
+
+/* ANIMAÇÕES */
 @keyframes pulse {
 0%, 100% { transform: scale(1); }
 50% { transform: scale(1.2); }
 }
+
+/* MODAL QUANTIDADE */
 .quantidade-modal {
 position: fixed;
 top: 50%;
@@ -746,661 +757,698 @@ display: none;
 </head>
 <body class="loading">
 <div id="splash">
-<img src="logo.png" alt="GoL BUY SMART – App de compras inteligente" />
-<p>Bem-vindo ao seu app de compras inteligente</p>
+  <img src="logo.png" alt="GoL BUY SMART – App de compras inteligente" />
+  <p>Bem-vindo ao seu app de compras inteligente</p>
 </div>
 <div id="hamburger">☰</div>
 <div id="sidebar">
-<button onclick="irPara('home')">🏠 Home</button>
-<button onclick="irPara('scanner')">📷 Scanner</button>
-<button onclick="irPara('produtos')">📦 Produtos</button>
-<button onclick="irPara('cadastro')">📝 Cadastro</button>
-<button onclick="irPara('historico')">🧾 Histórico</button>
+  <button onclick="irPara('home')">🏠 Home</button>
+  <button onclick="irPara('scanner')">📷 Scanner</button>
+  <button onclick="irPara('produtos')">📦 Produtos</button>
+  <button onclick="irPara('cadastro')">📝 Cadastro</button>
+  <button onclick="irPara('historico')">🧾 Histórico</button>
 </div>
 <div id="orcamentoAlerta">⚠️ Orçamento excedido!</div>
 <div id="content">
-<section id="home" class="view active">
-<img src="logo.png" class="logo-home" alt="GoL BUY SMART – App de compras inteligente" />
-<h2>Bem-vindo ao GoL BUY SMART</h2>
-<div id="temaContainer">
-<select id="temaSelector" onchange="mudarTema(this.value)">
-<option value="padrao">Tema Padrão (Azul)</option>
-<option value="verde">Tema Verde</option>
-<option value="roxo">Tema Roxo</option>
-<option value="laranja">Tema Laranja</option>
-</select>
+  <section id="home" class="view active">
+    <img src="logo.png" class="logo-home" alt="GoL BUY SMART – App de compras inteligente" />
+    <h2>Bem-vindo ao GoL BUY SMART</h2>
+    <div id="temaContainer">
+      <select id="temaSelector" onchange="mudarTema(this.value)">
+        <option value="padrao">Tema Padrão (Azul)</option>
+        <option value="verde">Tema Verde</option>
+        <option value="roxo">Tema Roxo</option>
+        <option value="laranja">Tema Laranja</option>
+      </select>
+    </div>
+    <div id="orcamento" class="box">
+      <h3>💰 Orçamento Mensal</h3>
+      <div class="orcamento-input-container">
+        <span class="real-prefix">R$</span>
+        <input type="number" id="orcamentoInput" placeholder="0,00" min="0" step="0.01" />
+      </div>
+      <div id="orcamentoBarra">
+        <div id="orcamentoBarraInner" data-pct="0%"></div>
+      </div>
+      <p style="margin-top: 12px; color: var(--text-muted);">
+        Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
+      </p>
+    </div>
+  </section>
+
+  <section id="scanner" class="view">
+    <div class="box">
+      <h2 style="text-align:center; margin-bottom:16px;">Scanner de Produtos</h2>
+      <div id="camera">
+        <video id="video" playsinline></video>
+        <div class="reiniciando" id="reiniciandoMensagem">Reiniciando câmera...</div>
+        <div class="scan-overlay"></div>
+        <div class="scan-line"></div>
+      </div>
+      <div id="scannerInfo">
+        <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
+        <p><strong>Total produtos cadastrados:</strong> <span id="totalProdutos">0</span></p>
+        <div id="scannerChartBox">
+          <canvas id="categoriaChart"></canvas>
+        </div>
+      </div>
+      <div id="barraValidacao">
+        <div id="barraValidacaoInner" data-pct="0%"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="produtos" class="view">
+    <div id="produtosBox" class="box">
+      <h2 style="margin-bottom:16px;">Produtos Cadastrados</h2>
+      <table id="produtosTable">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nome</th>
+            <th>Categoria</th>
+            <th>Tipo</th>
+            <th>Valor</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="cadastro" class="view">
+    <div id="cadastroBox" class="box">
+      <h2 id="cadastro-title">Cadastro de Produto</h2>
+      <input id="codigoCadastro" placeholder="Código" />
+      <input id="nomeCadastro" placeholder="Nome" />
+      <select id="categoriaCadastro">
+        <option value="Alimentos">Alimentos</option>
+        <option value="Limpeza">Limpeza</option>
+        <option value="Bebida">Bebida</option>
+        <option value="Farmácia">Farmácia</option>
+        <option value="Higiene">Higiene</option>
+        <option value="Outros">Outros</option>
+      </select>
+      <select id="tipoCadastro">
+        <option>UN</option>
+        <option>KG</option>
+      </select>
+      <input id="valorCadastro" type="number" step="0.01" placeholder="Valor" />
+      <button id="salvarCadastro">Salvar Produto</button>
+    </div>
+  </section>
+
+  <section id="historico" class="view">
+    <div class="box" id="historicoConteudo"></div>
+  </section>
 </div>
-<div id="orcamento" class="box">
-<h3>💰 Orçamento Mensal</h3>
-<div class="orcamento-input-container">
-<span class="real-prefix">R$</span>
-<input type="number" id="orcamentoInput" placeholder="0,00" min="0" step="0.01" />
-</div>
-<div id="orcamentoBarra">
-<div id="orcamentoBarraInner" data-pct="0%"></div>
-</div>
-<p style="margin-top: 12px; color: var(--text-muted);">
-Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
-</p>
-</div>
-</section>
-<section id="scanner" class="view">
-<div class="box">
-<h2 style="text-align:center; margin-bottom:16px;">Scanner de Produtos</h2>
-<div id="camera">
-<video id="video" playsinline></video>
-<div class="reiniciando" id="reiniciandoMensagem">Reiniciando câmera...</div>
-<div class="scan-overlay"></div>
-<div class="scan-line"></div>
-</div>
-<div id="scannerInfo">
-<p><strong>Código detectado:</strong> <span id="detected">—</span></p>
-<p><strong>Total produtos cadastrados:</strong> <span id="totalProdutos">0</span></p>
-<div id="scannerChartBox">
-<canvas id="categoriaChart"></canvas>
-</div>
-</div>
-<div id="barraValidacao">
-<div id="barraValidacaoInner" data-pct="0%"></div>
-</div>
-</div>
-</section>
-<section id="produtos" class="view">
-<div id="produtosBox" class="box">
-<h2 style="margin-bottom:16px;">Produtos Cadastrados</h2>
-<table id="produtosTable">
-<thead>
-<tr>
-<th>Código</th>
-<th>Nome</th>
-<th>Categoria</th>
-<th>Tipo</th>
-<th>Valor</th>
-<th>Ações</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-</div>
-</section>
-<section id="cadastro" class="view">
-<div id="cadastroBox" class="box">
-<h2 id="cadastro-title">Cadastro de Produto</h2>
-<input id="codigoCadastro" placeholder="Código" />
-<input id="nomeCadastro" placeholder="Nome" />
-<select id="categoriaCadastro">
-<option value="Alimentos">Alimentos</option>
-<option value="Limpeza">Limpeza</option>
-<option value="Bebida">Bebida</option>
-<option value="Farmácia">Farmácia</option>
-<option value="Higiene">Higiene</option>
-<option value="Outros">Outros</option>
-</select>
-<select id="tipoCadastro">
-<option>UN</option>
-<option>KG</option>
-</select>
-<input id="valorCadastro" type="number" step="0.01" placeholder="Valor" />
-<button id="salvarCadastro">Salvar Produto</button>
-</div>
-</section>
-<section id="historico" class="view">
-<div class="box" id="historicoConteudo"></div>
-</section>
-</div>
+
 <div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️<span id="badge">0</span></div>
 <div id="modalCarrinho">
-<div class="modal-content">
-<h3 style="margin-bottom:16px; color: var(--primary);">Carrinho</h3>
-<table id="tabelaCarrinho"></table>
-<p id="total" style="font-weight:700; color: var(--primary); margin:16px 0;">Total: R$ 0,00</p>
-<button onclick="finalizarCompra()">Finalizar</button>
-<button onclick="fecharCarrinho()">Fechar</button>
-</div>
+  <div class="modal-content">
+    <h3 style="margin-bottom:16px; color: var(--primary);">Carrinho</h3>
+    <table id="tabelaCarrinho"></table>
+    <p id="total" style="font-weight:700; color: var(--primary); margin:16px 0;">Total: R$ 0,00</p>
+    <button onclick="finalizarCompra()">Finalizar</button>
+    <button onclick="fecharCarrinho()">Fechar</button>
+  </div>
 </div>
 <div id="overlayQuantidade"></div>
 <div id="quantidadeModal" class="quantidade-modal" style="display:none;">
-<h3 id="tituloQuantidade">Informe a quantidade</h3>
-<input type="number" id="inputQuantidade" min="1" value="1" step="1" />
-<div>
-<button id="btnConfirmarQtd">Confirmar</button>
-<button id="btnCancelarQtd">Cancelar</button>
+  <h3 id="tituloQuantidade">Informe a quantidade</h3>
+  <input type="number" id="inputQuantidade" min="1" value="1" step="1" />
+  <div>
+    <button id="btnConfirmarQtd">Confirmar</button>
+    <button id="btnCancelarQtd">Cancelar</button>
+  </div>
 </div>
-</div>
+
 <script>
 const $ = id => document.getElementById(id);
 const Storage = {
-get: (k, f = []) => JSON.parse(localStorage.getItem(k)) || f,
-set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
+  get: (k, f = []) => JSON.parse(localStorage.getItem(k)) || f,
+  set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
 };
+
 let produtos = Storage.get("produtos");
 let carrinho = Storage.get("carrinho");
 let historico = Storage.get("historicoCompras");
 let orcamento = Storage.get("orcamento") || 0;
 let reader = null, stream = null, buffer = [], scannerAtivo = false;
-// ✅ CORREÇÃO: declarado globalmente (escopo correto)
 let quantidadeJaSolicitada = false;
 const repeticoes = 3;
-const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg  ");
+const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+
 // Carregar tema salvo
 const temaSalvo = localStorage.getItem('tema') || 'padrao';
 if (temaSalvo !== 'padrao') {
-document.body.classList.add(`tema-${temaSalvo}`);
+  document.body.classList.add(`tema-${temaSalvo}`);
 }
 if ($("temaSelector")) {
-$("temaSelector").value = temaSalvo;
+  $("temaSelector").value = temaSalvo;
 }
+
 function mudarTema(tema) {
-document.body.className = document.body.className.replace(/tema-\w+/g, '').trim();
-if (tema !== 'padrao') {
-document.body.classList.add(`tema-${tema}`);
-}
-localStorage.setItem('tema', tema);
-if (document.getElementById("scanner").classList.contains("active")) {
-setTimeout(atualizarScannerChart, 100);
-}
-}
-function normalizarCodigo(cod) {
-return (cod || '').toString().trim().replace(/[\r\n\t\s]+/g, '');
-}
-function verificarOrcamento() {
-const gasto = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
-const pct = orcamento ? (gasto / orcamento) * 100 : 0;
-const alerta = $("orcamentoAlerta");
-if (pct >= 90 && orcamento > 0) {
-alerta.classList.add('show');
-setTimeout(() => alerta.classList.remove('show'), 3000);
-}
-}
-function solicitarQuantidade(produtoNome, callback) {
-pararScanner();
-$("tituloQuantidade").innerText = `Produto: ${produtoNome}\nInforme a quantidade`;
-$("inputQuantidade").value = "1";
-$("btnConfirmarQtd").onclick = () => {
-const q = Number($("inputQuantidade").value);
-fecharQuantidade();
-if (q > 0) callback(q);
-};
-$("btnCancelarQtd").onclick = () => fecharQuantidade();
-$("overlayQuantidade").style.display = "block";
-$("quantidadeModal").style.display = "block";
-}
-function fecharQuantidade() {
-$("overlayQuantidade").style.display = "none";
-$("quantidadeModal").style.display = "none";
-if (document.getElementById("scanner")?.classList.contains("active")) {
-setTimeout(() => {
-if (!scannerAtivo) iniciarScanner();
-}, 300);
-}
-}
-function iniciarApp() {
-window.irPara = function(tela) {
-document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
-$(tela).classList.add("active");
-if (tela === "scanner") {
-setTimeout(() => iniciarScanner(), 100);
-} else {
-pararScanner();
-}
-};
-const sidebar = $("sidebar");
-const content = $("content");
-const hamburger = $("hamburger");
-hamburger.onclick = () => {
-sidebar.classList.toggle("hide");
-content.classList.toggle("full");
-};
-if ($("orcamentoInput")) {
-$("orcamentoInput").value = orcamento;
-$("orcamentoInput").addEventListener("input", () => {
-orcamento = Number($("orcamentoInput").value);
-localStorage.setItem("orcamento", orcamento);
-atualizarOrcamento();
-verificarOrcamento();
-});
-}
-function atualizarOrcamento() {
-const gasto = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
-$("orcamentoGasto").innerText = gasto.toFixed(2);
-const pct = orcamento ? Math.min(100, (gasto / orcamento) * 100) : 0;
-const bar = $("orcamentoBarraInner");
-bar.style.width = pct + "%";
-bar.setAttribute('data-pct', Math.round(pct) + '%');
-}
-function atualizarProdutosTable() {
-let html = "";
-produtos.forEach((p, i) => {
-html += `
-<tr>
-<td>${p.codigo}</td>
-<td>${p.nome}</td>
-<td>${p.categoria}</td>
-<td>${p.tipo}</td>
-<td>R$ ${p.valor.toFixed(2)}</td>
-<td>
-<button class="editBtn" onclick="editarProduto(${i})">✏️</button>
-<button class="deleteBtn" onclick="excluirProduto(${i})">❌</button>
-</td>
-</tr>`;
-});
-const tbody = $("produtosTable")?.querySelector("tbody");
-if (tbody) tbody.innerHTML = html;
-if ($("totalProdutos")) $("totalProdutos").innerText = produtos.length;
-}
-window.editarProduto = function(i) {
-$("cadastro-title").innerText = "Editar Produto";
-$("codigoCadastro").value = produtos[i].codigo;
-$("nomeCadastro").value = produtos[i].nome;
-$("categoriaCadastro").value = produtos[i].categoria;
-$("tipoCadastro").value = produtos[i].tipo;
-$("valorCadastro").value = produtos[i].valor;
-produtos.splice(i, 1);
-Storage.set("produtos", produtos);
-irPara("cadastro");
-};
-window.excluirProduto = function(i) {
-if (confirm("Excluir produto?")) {
-produtos.splice(i, 1);
-Storage.set("produtos", produtos);
-atualizarProdutosTable();
-atualizarScannerChart();
-}
-};
-const salvarOriginal = () => {
-const novo = {
-codigo: $("codigoCadastro").value.trim(),
-nome: $("nomeCadastro").value.trim(),
-categoria: $("categoriaCadastro").value,
-tipo: $("tipoCadastro").value,
-valor: Number($("valorCadastro").value)
-};
-if (!novo.codigo || !novo.nome || !novo.valor || isNaN(novo.valor)) {
-alert("Preencha todos os campos corretamente");
-return;
-}
-produtos.push(novo);
-Storage.set("produtos", produtos);
-atualizarProdutosTable();
-atualizarScannerChart();
-$("codigoCadastro").value = "";
-$("nomeCadastro").value = "";
-$("valorCadastro").value = "";
-$("categoriaCadastro").value = "Alimentos";
-$("tipoCadastro").value = "UN";
-$("cadastro-title").innerText = "Cadastro de Produto";
-irPara("produtos");
-};
-if ($("salvarCadastro")) {
-$("salvarCadastro").onclick = salvarOriginal;
-}
-function atualizarCarrinho() {
-let total = 0;
-let html = `<tr><th>Nome</th><th>Qtd</th><th>Subtotal</th><th>Ação</th></tr>`;
-carrinho.forEach((p, idx) => {
-const sub = p.valor * p.qtd;
-total += sub;
-html += `
-<tr>
-<td>${p.nome}</td>
-<td>${p.qtd}</td>
-<td>R$ ${sub.toFixed(2)}</td>
-<td><button class="deleteBtn" style="padding:4px 8px;font-size:14px;" onclick="removerDoCarrinho(${idx})">🗑️</button></td>
-</tr>`;
-});
-if ($("tabelaCarrinho")) $("tabelaCarrinho").innerHTML = html;
-if ($("total")) $("total").innerText = "Total: R$ " + total.toFixed(2);
-if ($("badge")) $("badge").innerText = carrinho.length;
-atualizarOrcamento();
-verificarOrcamento();
-const badge = $("badge");
-if (badge) {
-badge.style.animation = "pulse 0.5s";
-setTimeout(() => badge.style.animation = "", 500);
-}
-}
-window.removerDoCarrinho = function(idx) {
-carrinho.splice(idx, 1);
-Storage.set("carrinho", carrinho);
-atualizarCarrinho();
-};
-window.abrirCarrinho = function() {
-$("modalCarrinho").style.display = "flex";
-setTimeout(() => $("modalCarrinho").classList.add("active"), 10);
-atualizarCarrinho();
-};
-window.fecharCarrinho = function() {
-$("modalCarrinho").classList.remove("active");
-setTimeout(() => {
-$("modalCarrinho").style.display = "none";
-if (document.getElementById("scanner")?.classList.contains("active")) {
-setTimeout(() => {
-pararScanner();
-iniciarScanner();
-}, 300);
-}
-}, 300);
-};
-window.finalizarCompra = function() {
-if (!carrinho.length) {
-alert("Carrinho vazio");
-return;
-}
-const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
-historico.push({
-   data: new Date().toLocaleString("pt-BR"), // ✅ Corrigido
-  total,
-  itens: [...carrinho]
-});
-Storage.set("historicoCompras", historico);
-carrinho = [];
-Storage.set("carrinho", carrinho);
-atualizarCarrinho();
-atualizarHistorico();
-fecharCarrinho();
-alert("Compra finalizada!");
-};
-function atualizarHistorico() {
-const area = $("historicoConteudo");
-if (!area) return;
-area.innerHTML = "";
-if (!historico.length) {
-area.innerHTML = "<p style='text-align:center; color:var(--text-muted);'>Nenhuma compra registrada.</p>";
-return;
-}
-historico.forEach((c, i) => {
-let itens = "";
-c.itens.forEach(it => {
-itens += `<li>${it.nome} — ${it.qtd} x R$ ${it.valor.toFixed(2)} = R$ ${(it.qtd * it.valor).toFixed(2)}</li>`;
-});
-area.innerHTML += `
-<div class="historico-card">
-<h4>Compra ${i + 1}</h4>
-<small>${c.data}</small>
-<p><strong>Total:</strong> R$ ${c.total.toFixed(2)}</p>
-<details><summary style="color:var(--primary); cursor:pointer;">Ver itens</summary><ul>${itens}</ul></details>
-</div>`;
-});
-}
-async function iniciarScanner() {
-if (!document.getElementById("scanner")?.classList.contains("active")) {
-scannerAtivo = false;
-return;
-}
-if (scannerAtivo || !navigator.mediaDevices) return;
-scannerAtivo = true;
-buffer = [];
-if (!stream) {
-try {
-const constraints = {
-video: {
-facingMode: "environment",
-advanced: [{ focusMode: "continuous" }]
-}
-};
-stream = await navigator.mediaDevices.getUserMedia(constraints);
-const video = $("video");
-if (video) {
-video.srcObject = stream;
-await video.play().catch(e => console.warn("Erro ao play:", e));
-}
-} catch (err) {
-try {
-stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-const video = $("video");
-if (video) {
-video.srcObject = stream;
-await video.play().catch(e => console.warn("Erro fallback:", e));
-}
-} catch (e2) {
-alert("⚠️ Permissão da câmera negada ou não suportada.");
-scannerAtivo = false;
-return;
-}
-}
-}
-reader = new ZXing.BrowserMultiFormatReader();
-reader.decodeFromVideoElementContinuously($("video"), (res) => {
-if (!res?.text || !scannerAtivo) return;
-const codigoBruto = res.text;
-const codigoNormalizado = normalizarCodigo(codigoBruto);
-if (!codigoNormalizado) return;
-buffer.push(codigoNormalizado);
-if (buffer.length > repeticoes) buffer.shift();
-const ultimosIguais = buffer.filter(v => v === codigoNormalizado).length;
-if ($("detected")) $("detected").innerText = codigoBruto;
-if ($("barraValidacaoInner")) {
-$("barraValidacaoInner").style.width = (ultimosIguais / repeticoes * 100) + "%";
-$("barraValidacaoInner").setAttribute('data-pct', Math.round(ultimosIguais / repeticoes * 100) + '%');
-}
-if (ultimosIguais >= repeticoes) {
-scannerAtivo = false;
-reader.reset();
-processarCodigo(codigoNormalizado);
-}
-});
-}
-function processarCodigo(codigoNormalizado) {
-try {
-navigator.vibrate?.(50);
-beep.play().catch(e => console.warn("Beep não reproduzido:", e));
-const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
-if (produto) {
-  // ✅ Agora funciona: estado global limpo e consistente
-  if (quantidadeJaSolicitada) return;
-  quantidadeJaSolicitada = true;
-  solicitarQuantidade(produto.nome, (q) => {
-    quantidadeJaSolicitada = false;
-    carrinho.push({ ...produto, qtd: q });
-    Storage.set("carrinho", carrinho);
-    abrirCarrinho();
-  });
-} else {
-$("codigoCadastro").value = codigoNormalizado;
-$("nomeCadastro").value = "";
-$("valorCadastro").value = "";
-$("cadastro-title").innerText = "Cadastro Rápido";
-irPara("cadastro");
-const handlerRapido = () => {
-const novo = {
-codigo: $("codigoCadastro").value.trim(),
-nome: $("nomeCadastro").value.trim(),
-categoria: $("categoriaCadastro").value,
-tipo: $("tipoCadastro").value,
-valor: Number($("valorCadastro").value)
-};
-if (!novo.nome || !novo.valor || isNaN(novo.valor)) {
-alert("Preencha nome e valor corretamente.");
-return;
-}
-produtos.push(novo);
-Storage.set("produtos", produtos);
-// ✅ FLUXO CORRIGIDO: restaura handler, atualiza e redireciona para SCANNER
-if (quantidadeJaSolicitada) return;
-quantidadeJaSolicitada = true;
-solicitarQuantidade(novo.nome, (q) => {
-  quantidadeJaSolicitada = false;
-  if (q > 0) {
-    carrinho.push({ ...novo, qtd: q });
-    Storage.set("carrinho", carrinho);
+  document.body.className = document.body.className.replace(/tema-\w+/g, '').trim();
+  if (tema !== 'padrao') {
+    document.body.classList.add(`tema-${tema}`);
   }
-  $("codigoCadastro").value = "";
-  $("nomeCadastro").value = "";
-  $("valorCadastro").value = "";
-  $("categoriaCadastro").value = "Alimentos";
-  $("tipoCadastro").value = "UN";
-  $("cadastro-title").innerText = "Cadastro de Produto";
-  // ✅ Restaurar handler
-  $("salvarCadastro").onclick = salvarOriginal;
-  // ✅ Atualizar UI
+  localStorage.setItem('tema', tema);
+  if (document.getElementById("scanner")?.classList.contains("active")) {
+    setTimeout(atualizarScannerChart, 100);
+  }
+}
+
+function normalizarCodigo(cod) {
+  return (cod || '').toString().trim().replace(/[\r\n\t\s]+/g, '');
+}
+
+function verificarOrcamento() {
+  const gasto = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
+  const pct = orcamento ? (gasto / orcamento) * 100 : 0;
+  const alerta = $("orcamentoAlerta");
+  if (pct >= 90 && orcamento > 0) {
+    alerta.classList.add('show');
+    setTimeout(() => alerta.classList.remove('show'), 3000);
+  }
+}
+
+function solicitarQuantidade(produtoNome, callback) {
+  pararScanner();
+  $("tituloQuantidade").innerText = `Produto: ${produtoNome}\nInforme a quantidade`;
+  $("inputQuantidade").value = "1";
+  $("btnConfirmarQtd").onclick = () => {
+    const q = Number($("inputQuantidade").value);
+    fecharQuantidade();
+    if (q > 0) callback(q);
+  };
+  $("btnCancelarQtd").onclick = fecharQuantidade();
+  $("overlayQuantidade").style.display = "block";
+  $("quantidadeModal").style.display = "block";
+}
+
+function fecharQuantidade() {
+  $("overlayQuantidade").style.display = "none";
+  $("quantidadeModal").style.display = "none";
+  if (document.getElementById("scanner")?.classList.contains("active")) {
+    setTimeout(() => {
+      if (!scannerAtivo) iniciarScanner();
+    }, 300);
+  }
+}
+
+function iniciarApp() {
+  window.irPara = function(tela) {
+    document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+    $(tela).classList.add("active");
+    if (tela === "scanner") {
+      setTimeout(() => iniciarScanner(), 100);
+    } else {
+      pararScanner();
+    }
+  };
+
+  const sidebar = $("sidebar");
+  const content = $("content");
+  const hamburger = $("hamburger");
+  hamburger.onclick = () => {
+    sidebar.classList.toggle("hide");
+    content.classList.toggle("full");
+  };
+
+  if ($("orcamentoInput")) {
+    $("orcamentoInput").value = orcamento;
+    $("orcamentoInput").addEventListener("input", () => {
+      orcamento = Number($("orcamentoInput").value);
+      localStorage.setItem("orcamento", orcamento);
+      atualizarOrcamento();
+      verificarOrcamento();
+    });
+  }
+
+  function atualizarOrcamento() {
+    const gasto = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
+    $("orcamentoGasto").innerText = gasto.toFixed(2);
+    const pct = orcamento ? Math.min(100, (gasto / orcamento) * 100) : 0;
+    const bar = $("orcamentoBarraInner");
+    bar.style.width = pct + "%";
+    bar.setAttribute('data-pct', Math.round(pct) + '%');
+  }
+
+  function atualizarProdutosTable() {
+    let html = "";
+    produtos.forEach((p, i) => {
+      html += `
+        <tr>
+          <td>${p.codigo}</td>
+          <td>${p.nome}</td>
+          <td>${p.categoria}</td>
+          <td>${p.tipo}</td>
+          <td>R$ ${p.valor.toFixed(2)}</td>
+          <td>
+            <button class="editBtn" onclick="editarProduto(${i})">✏️</button>
+            <button class="deleteBtn" onclick="excluirProduto(${i})">❌</button>
+          </td>
+        </tr>`;
+    });
+    const tbody = $("produtosTable")?.querySelector("tbody");
+    if (tbody) tbody.innerHTML = html;
+    if ($("totalProdutos")) $("totalProdutos").innerText = produtos.length;
+  }
+
+  window.editarProduto = function(i) {
+    $("cadastro-title").innerText = "Editar Produto";
+    $("codigoCadastro").value = produtos[i].codigo;
+    $("nomeCadastro").value = produtos[i].nome;
+    $("categoriaCadastro").value = produtos[i].categoria;
+    $("tipoCadastro").value = produtos[i].tipo;
+    $("valorCadastro").value = produtos[i].valor;
+    produtos.splice(i, 1);
+    Storage.set("produtos", produtos);
+    irPara("cadastro");
+  };
+
+  window.excluirProduto = function(i) {
+    if (confirm("Excluir produto?")) {
+      produtos.splice(i, 1);
+      Storage.set("produtos", produtos);
+      atualizarProdutosTable();
+      atualizarScannerChart();
+    }
+  };
+
+  const salvarOriginal = () => {
+    const novo = {
+      codigo: $("codigoCadastro").value.trim(),
+      nome: $("nomeCadastro").value.trim(),
+      categoria: $("categoriaCadastro").value,
+      tipo: $("tipoCadastro").value,
+      valor: Number($("valorCadastro").value)
+    };
+    if (!novo.codigo || !novo.nome || !novo.valor || isNaN(novo.valor)) {
+      alert("Preencha todos os campos corretamente");
+      return;
+    }
+    produtos.push(novo);
+    Storage.set("produtos", produtos);
+    atualizarProdutosTable();
+    atualizarScannerChart();
+    $("codigoCadastro").value = "";
+    $("nomeCadastro").value = "";
+    $("valorCadastro").value = "";
+    $("categoriaCadastro").value = "Alimentos";
+    $("tipoCadastro").value = "UN";
+    $("cadastro-title").innerText = "Cadastro de Produto";
+    irPara("produtos");
+  };
+
+  if ($("salvarCadastro")) {
+    $("salvarCadastro").onclick = salvarOriginal;
+  }
+
+  function atualizarCarrinho() {
+    let total = 0;
+    let html = `<tr><th>Nome</th><th>Qtd</th><th>Subtotal</th><th>Ação</th></tr>`;
+    carrinho.forEach((p, idx) => {
+      const sub = p.valor * p.qtd;
+      total += sub;
+      html += `
+        <tr>
+          <td>${p.nome}</td>
+          <td>${p.qtd}</td>
+          <td>R$ ${sub.toFixed(2)}</td>
+          <td><button class="deleteBtn" style="padding:4px 8px;font-size:14px;" onclick="removerDoCarrinho(${idx})">🗑️</button></td>
+        </tr>`;
+    });
+    if ($("tabelaCarrinho")) $("tabelaCarrinho").innerHTML = html;
+    if ($("total")) $("total").innerText = "Total: R$ " + total.toFixed(2);
+    if ($("badge")) $("badge").innerText = carrinho.length;
+    atualizarOrcamento();
+    verificarOrcamento();
+    const badge = $("badge");
+    if (badge) {
+      badge.style.animation = "pulse 0.5s";
+      setTimeout(() => badge.style.animation = "", 500);
+    }
+  }
+
+  window.removerDoCarrinho = function(idx) {
+    carrinho.splice(idx, 1);
+    Storage.set("carrinho", carrinho);
+    atualizarCarrinho();
+  };
+
+  window.abrirCarrinho = function() {
+    $("modalCarrinho").style.display = "flex";
+    setTimeout(() => $("modalCarrinho").classList.add("active"), 10);
+    atualizarCarrinho();
+  };
+
+  window.fecharCarrinho = function() {
+    $("modalCarrinho").classList.remove("active");
+    setTimeout(() => {
+      $("modalCarrinho").style.display = "none";
+      if (document.getElementById("scanner")?.classList.contains("active")) {
+        setTimeout(() => {
+          pararScanner();
+          iniciarScanner();
+        }, 300);
+      }
+    }, 300);
+  };
+
+  window.finalizarCompra = function() {
+    if (!carrinho.length) {
+      alert("Carrinho vazio");
+      return;
+    }
+    const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
+    historico.push({
+      data: new Date().toLocaleString("pt-BR"),
+      total,
+      itens: [...carrinho]
+    });
+    Storage.set("historicoCompras", historico);
+    carrinho = [];
+    Storage.set("carrinho", carrinho);
+    atualizarCarrinho();
+    atualizarHistorico();
+    fecharCarrinho();
+    alert("Compra finalizada!");
+  };
+
+  function atualizarHistorico() {
+    const area = $("historicoConteudo");
+    if (!area) return;
+    area.innerHTML = "";
+    if (!historico.length) {
+      area.innerHTML = "<p style='text-align:center; color:var(--text-muted);'>Nenhuma compra registrada.</p>";
+      return;
+    }
+    historico.forEach((c, i) => {
+      let itens = "";
+      c.itens.forEach(it => {
+        itens += `<li>${it.nome} — ${it.qtd} x R$ ${it.valor.toFixed(2)} = R$ ${(it.qtd * it.valor).toFixed(2)}</li>`;
+      });
+      area.innerHTML += `
+        <div class="historico-card">
+          <h4>Compra ${i + 1}</h4>
+          <small>${c.data}</small>
+          <p><strong>Total:</strong> R$ ${c.total.toFixed(2)}</p>
+          <details><summary style="color:var(--primary); cursor:pointer;">Ver itens</summary><ul>${itens}</ul></details>
+        </div>`;
+    });
+  }
+
+  async function iniciarScanner() {
+    if (!document.getElementById("scanner")?.classList.contains("active")) {
+      scannerAtivo = false;
+      return;
+    }
+    if (scannerAtivo || !navigator.mediaDevices) return;
+    scannerAtivo = true;
+    buffer = [];
+    if (!stream) {
+      try {
+        const constraints = {
+          video: {
+            facingMode: "environment",
+            advanced: [{ focusMode: "continuous" }]
+          }
+        };
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        const video = $("video");
+        if (video) {
+          video.srcObject = stream;
+          await video.play().catch(e => console.warn("Erro ao play:", e));
+        }
+      } catch (err) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+          const video = $("video");
+          if (video) {
+            video.srcObject = stream;
+            await video.play().catch(e => console.warn("Erro fallback:", e));
+          }
+        } catch (e2) {
+          alert("⚠️ Permissão da câmera negada ou não suportada.");
+          scannerAtivo = false;
+          return;
+        }
+      }
+    }
+    reader = new ZXing.BrowserMultiFormatReader();
+    reader.decodeFromVideoElementContinuously($("video"), (res) => {
+      if (!res?.text || !scannerAtivo) return;
+      const codigoBruto = res.text;
+      const codigoNormalizado = normalizarCodigo(codigoBruto);
+      if (!codigoNormalizado) return;
+      buffer.push(codigoNormalizado);
+      if (buffer.length > repeticoes) buffer.shift();
+      const ultimosIguais = buffer.filter(v => v === codigoNormalizado).length;
+      if ($("detected")) $("detected").innerText = codigoBruto;
+      if ($("barraValidacaoInner")) {
+        $("barraValidacaoInner").style.width = (ultimosIguais / repeticoes * 100) + "%";
+        $("barraValidacaoInner").setAttribute('data-pct', Math.round(ultimosIguais / repeticoes * 100) + '%');
+      }
+      if (ultimosIguais >= repeticoes) {
+        scannerAtivo = false;
+        reader.reset();
+        processarCodigo(codigoNormalizado);
+      }
+    });
+  }
+
+  function processarCodigo(codigoNormalizado) {
+    try {
+      navigator.vibrate?.(50);
+      beep.play().catch(e => console.warn("Beep não reproduzido:", e));
+      const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
+      if (produto) {
+        if (quantidadeJaSolicitada) return;
+        quantidadeJaSolicitada = true;
+        solicitarQuantidade(produto.nome, (q) => {
+          quantidadeJaSolicitada = false;
+          carrinho.push({ ...produto, qtd: q });
+          Storage.set("carrinho", carrinho);
+          abrirCarrinho();
+        });
+      } else {
+        $("codigoCadastro").value = codigoNormalizado;
+        $("nomeCadastro").value = "";
+        $("valorCadastro").value = "";
+        $("cadastro-title").innerText = "Cadastro Rápido";
+        irPara("cadastro");
+        const handlerRapido = () => {
+          const novo = {
+            codigo: $("codigoCadastro").value.trim(),
+            nome: $("nomeCadastro").value.trim(),
+            categoria: $("categoriaCadastro").value,
+            tipo: $("tipoCadastro").value,
+            valor: Number($("valorCadastro").value)
+          };
+          if (!novo.nome || !novo.valor || isNaN(novo.valor)) {
+            alert("Preencha nome e valor corretamente.");
+            return;
+          }
+          produtos.push(novo);
+          Storage.set("produtos", produtos);
+          if (quantidadeJaSolicitada) return;
+          quantidadeJaSolicitada = true;
+          solicitarQuantidade(novo.nome, (q) => {
+            quantidadeJaSolicitada = false;
+            if (q > 0) {
+              carrinho.push({ ...novo, qtd: q });
+              Storage.set("carrinho", carrinho);
+            }
+            $("codigoCadastro").value = "";
+            $("nomeCadastro").value = "";
+            $("valorCadastro").value = "";
+            $("categoriaCadastro").value = "Alimentos";
+            $("tipoCadastro").value = "UN";
+            $("cadastro-title").innerText = "Cadastro de Produto";
+            $("salvarCadastro").onclick = () => salvarOriginal();
+            irPara("produtos");
+            atualizarProdutosTable();
+            atualizarScannerChart();
+            atualizarCarrinho();
+            fecharQuantidade();
+          });
+        };
+        $("salvarCadastro").onclick = handlerRapido;
+        if ($("barraValidacaoInner")) {
+          $("barraValidacaoInner").style.width = "0%";
+          $("barraValidacaoInner").setAttribute('data-pct', '0%');
+        }
+        buffer = [];
+      }
+    } catch (e) {
+      console.error("Erro ao processar código:", e);
+      quantidadeJaSolicitada = false;
+      buffer = [];
+    }
+  }
+
+  function pararScanner() {
+    scannerAtivo = false;
+    if (reader) reader.reset();
+    if (stream) {
+      stream.getTracks().forEach(t => t.stop());
+      stream = null;
+    }
+    const video = $("video");
+    if (video && video.srcObject) {
+      video.srcObject.getTracks?.().forEach(t => t.stop());
+      video.srcObject = null;
+    }
+    quantidadeJaSolicitada = false;
+  }
+
+  function atualizarScannerChart() {
+    const categorias = {};
+    produtos.forEach(p => {
+      categorias[p.categoria] = (categorias[p.categoria] || 0) + 1;
+    });
+    const chartBox = $("scannerChartBox");
+    if (!chartBox || chartBox.offsetWidth === 0 || chartBox.offsetHeight === 0) {
+      setTimeout(atualizarScannerChart, 100);
+      return;
+    }
+    const canvas = $("categoriaChart");
+    if (!canvas) return;
+    canvas.width = chartBox.offsetWidth;
+    canvas.height = chartBox.offsetHeight;
+    if (window.categoriaChart) {
+      window.categoriaChart.destroy();
+    }
+    const categoriasOrdenadas = Object.entries(categorias).sort((a, b) => b[1] - a[1]);
+    const labels = categoriasOrdenadas.map(([cat]) => cat);
+    const values = categoriasOrdenadas.map(([, val]) => val);
+    const rootStyles = getComputedStyle(document.documentElement);
+    const textColor = rootStyles.getPropertyValue('--text').trim();
+    const textMutedColor = rootStyles.getPropertyValue('--text-muted').trim();
+    const cores = [
+      '#4361ee', '#3a56d4', '#4895ef', '#f87171', '#6b6b6b', '#9c27b0',
+      '#06b6d4', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444'
+    ];
+    try {
+      const ctx = canvas.getContext("2d");
+      window.categoriaChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Número de Produtos',
+            data: values,
+            backgroundColor: labels.map((_, i) => cores[i % cores.length]),
+            borderWidth: 0
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              titleColor: textColor,
+              bodyColor: textColor,
+              backgroundColor: rootStyles.getPropertyValue('--card').trim(),
+              borderColor: rootStyles.getPropertyValue('--border').trim(),
+              borderWidth: 1,
+              callbacks: {
+                label: (ctx) => ` ${ctx.parsed.x} produtos`
+              }
+            }
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              grid: { color: 'rgba(0,0,0,0.05)' },
+              ticks: { color: textMutedColor }
+            },
+            y: {
+              grid: { display: false },
+              ticks: { color: textColor }
+            }
+          }
+        }
+      });
+    } catch (e) {
+      console.error("Erro ao criar gráfico:", e);
+      setTimeout(atualizarScannerChart, 200);
+    }
+  }
+
+  // Eventos
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if ($("modalCarrinho")?.classList.contains("active")) {
+        fecharCarrinho();
+      }
+      if ($("quantidadeModal").style.display === "block") {
+        fecharQuantidade();
+      }
+    }
+  });
+
+  if ($("modalCarrinho")) {
+    $("modalCarrinho").addEventListener('click', (e) => {
+      if (e.target === $("modalCarrinho")) {
+        fecharCarrinho();
+      }
+    });
+  }
+
+  $("overlayQuantidade").addEventListener('click', fecharQuantidade);
+
+  // Inicializações
+  atualizarHistorico();
   atualizarProdutosTable();
-  atualizarScannerChart();
   atualizarCarrinho();
-  // ✅ REDIRECIONAR PARA O SCANNER (não para produtos!)
-  irPara("scanner");
-  fecharQuantidade();
-});
-};
-$("salvarCadastro").onclick = handlerRapido;
-if ($("barraValidacaoInner")) {
-$("barraValidacaoInner").style.width = "0%";
-$("barraValidacaoInner").setAttribute('data-pct', '0%');
+  setTimeout(() => {
+    atualizarScannerChart();
+  }, 500);
+
+  if ($("scanner")) {
+    const observer = new MutationObserver(() => {
+      if ($("scanner").classList.contains("active")) {
+        setTimeout(atualizarScannerChart, 100);
+      }
+    });
+    observer.observe($("scanner"), { attributes: true, attributeFilter: ['class'] });
+  }
+
+  window.addEventListener('resize', () => {
+    if (document.getElementById("scanner")?.classList.contains("active")) {
+      setTimeout(atualizarScannerChart, 100);
+    }
+  });
 }
-buffer = [];
-}
-} catch (e) {
-console.error("Erro ao processar código:", e);
-quantidadeJaSolicitada = false;
-buffer = [];
-}
-}
-function pararScanner() {
-scannerAtivo = false;
-if (reader) reader.reset();
-if (stream) {
-stream.getTracks().forEach(t => t.stop());
-stream = null;
-}
-const video = $("video");
-if (video && video.srcObject) {
-video.srcObject.getTracks?.().forEach(t => t.stop());
-video.srcObject = null;
-}
-quantidadeJaSolicitada = false;
-}
-function atualizarScannerChart() {
-const categorias = {};
-produtos.forEach(p => {
-categorias[p.categoria] = (categorias[p.categoria] || 0) + 1;
-});
-const chartBox = $("scannerChartBox");
-if (!chartBox || chartBox.offsetWidth === 0 || chartBox.offsetHeight === 0) {
-setTimeout(atualizarScannerChart, 100);
-return;
-}
-const canvas = $("categoriaChart");
-if (!canvas) return;
-canvas.width = chartBox.offsetWidth;
-canvas.height = chartBox.offsetHeight;
-if (window.categoriaChart) {
-window.categoriaChart.destroy();
-}
-const categoriasOrdenadas = Object.entries(categorias).sort((a, b) => b[1] - a[1]);
-const labels = categoriasOrdenadas.map(([cat]) => cat);
-const values = categoriasOrdenadas.map(([, val]) => val);
-const rootStyles = getComputedStyle(document.documentElement);
-const textColor = rootStyles.getPropertyValue('--text').trim();
-const textMutedColor = rootStyles.getPropertyValue('--text-muted').trim();
-const cores = [
-'#4361ee', '#3a56d4', '#4895ef', '#f87171', '#6b6b6b', '#9c27b0',
-'#06b6d4', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444'
-];
-try {
-const ctx = canvas.getContext("2d");
-window.categoriaChart = new Chart(ctx, {
-type: 'bar',
-data: { // ✅ Corrigido: "data:" adicionado
-labels: labels,
-datasets: [{
-label: 'Número de Produtos',
-data: values, // ✅ Corrigido: "data: values"
-backgroundColor: labels.map((_, i) => cores[i % cores.length]),
-borderWidth: 0
-}]
-},
-options: {
-indexAxis: 'y',
-responsive: true,
-maintainAspectRatio: false,
-plugins: {
-legend: { display: false },
-tooltip: {
-titleColor: textColor,
-bodyColor: textColor,
-backgroundColor: rootStyles.getPropertyValue('--card').trim(),
-borderColor: rootStyles.getPropertyValue('--border').trim(),
-borderWidth: 1,
-callbacks: {
-label: (ctx) => ` ${ctx.parsed.x} produtos`
-}
-}
-},
-scales: {
-x: {
-beginAtZero: true,
-grid: { color: 'rgba(0,0,0,0.05)' },
-ticks: { color: textMutedColor }
-},
-y: {
-grid: { display: false },
-ticks: { color: textColor }
-}
-}
-}
-});
-} catch (e) {
-console.error("Erro ao criar gráfico:", e);
-setTimeout(atualizarScannerChart, 200);
-}
-}
-document.addEventListener('keydown', (e) => {
-if (e.key === 'Escape') {
-if ($("modalCarrinho")?.classList.contains("active")) {
-fecharCarrinho();
-}
-if ($("quantidadeModal").style.display === "block") {
-fecharQuantidade();
-}
-}
-});
-if ($("modalCarrinho")) {
-$("modalCarrinho").addEventListener('click', (e) => {
-if (e.target === $("modalCarrinho")) {
-fecharCarrinho();
-}
-});
-}
-$("overlayQuantidade").addEventListener('click', fecharQuantidade);
-atualizarHistorico();
-atualizarProdutosTable();
-atualizarCarrinho();
-setTimeout(() => {
-atualizarScannerChart();
-}, 500);
-}
-if ($("scanner")) {
-const observer = new MutationObserver(() => {
-if ($("scanner").classList.contains("active")) {
-setTimeout(atualizarScannerChart, 100);
-}
-});
-observer.observe($("scanner"), { attributes: true, attributeFilter: ['class'] });
-}
-window.addEventListener('resize', () => {
-if (document.getElementById("scanner")?.classList.contains("active")) {
-setTimeout(atualizarScannerChart, 100);
-}
-});
+
 window.addEventListener('DOMContentLoaded', () => {
-const splash = $("splash");
-if (splash) {
-splash.style.background = '#1e293b';
-setTimeout(() => {
-splash.style.opacity = '0';
-setTimeout(() => {
-if (splash.parentNode) splash.remove();
-document.body.classList.remove('loading');
-iniciarApp();
-}, 500);
-}, 2000);
-} else {
-iniciarApp();
-}
+  const splash = $("splash");
+  if (splash) {
+    splash.style.background = '#1e293b';
+    setTimeout(() => {
+      splash.style.opacity = '0';
+      setTimeout(() => {
+        if (splash.parentNode) splash.remove();
+        document.body.classList.remove('loading');
+        iniciarApp();
+      }, 500);
+    }, 2000);
+  } else {
+    iniciarApp();
+  }
 });
+
+// PWA
 if ('serviceWorker' in navigator) {
-window.addEventListener('load', () => {
-navigator.serviceWorker.register('service-worker.js').catch(console.warn);
-});
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(console.warn);
+  });
 }
 </script>
 </body>
