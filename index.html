@@ -7,9 +7,11 @@
   <meta name="theme-color" content="#4361ee" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-  <link rel="manifest" href="./manifest.json" />
-  <link rel="apple-touch-icon" sizes="192x192" href="./logo.png" />
-  <link rel="icon" type="image/png" sizes="192x192" href="./logo.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+
+  <!-- Bibliotecas externas -->
   <script src="https://unpkg.com/@zxing/library@0.21.2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -30,6 +32,8 @@
       --shadow: 0 10px 25px -5px rgba(67, 97, 238, 0.1);
       --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
+
+    /* Temas personalizáveis */
     body.tema-verde {
       --primary: #22c55e;
       --primary-dark: #16a34a;
@@ -48,6 +52,7 @@
       --primary-light: #fdba74;
       --secondary: #f97316;
     }
+
     @media (prefers-color-scheme: dark) {
       :root,
       body.tema-verde,
@@ -61,20 +66,23 @@
         --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
       }
     }
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
+
     body {
       background: var(--background);
       display: flex;
-      height: 100dvh;
+      height: 100dvh; /* ✅ Correção para iOS */
       overflow-x: hidden;
       font-size: 16px;
       color: var(--text);
     }
+
     #splash {
       position: fixed;
       inset: 0;
@@ -102,6 +110,7 @@
       z-index: 2001;
       text-shadow: 0 1px 2px rgba(0,0,0,0.3);
     }
+
     #sidebar {
       position: fixed;
       top: 0;
@@ -114,7 +123,7 @@
       flex-direction: column;
       padding-top: 60px;
       transition: transform 0.3s;
-      z-index: 1000;
+      z-index: 1000; /* ✅ Aumentado */
     }
     #sidebar.hide {
       transform: translateX(-100%);
@@ -139,6 +148,7 @@
       background: rgba(255, 255, 255, 0.15);
       padding-left: 28px;
     }
+
     #hamburger {
       position: fixed;
       top: 16px;
@@ -151,28 +161,30 @@
       align-items: center;
       justify-content: center;
       border-radius: 14px;
-      z-index: 1001;
+      z-index: 1001; /* ✅ Aumentado */
       cursor: pointer;
       font-size: 28px;
       box-shadow: var(--shadow);
       transition: var(--transition);
-      touch-action: manipulation;
+      touch-action: manipulation; /* ✅ iOS */
       -webkit-tap-highlight-color: transparent;
     }
     #hamburger:hover {
       transform: rotate(90deg);
       background: var(--primary-light);
     }
+
     #content {
       margin-left: 220px;
       flex: 1;
       padding: 24px 20px;
       transition: margin-left 0.3s;
-      overflow-y: auto;
+      overflow-y: auto; /* ✅ Rolagem interna */
     }
     #content.full {
       margin-left: 0;
     }
+
     .view {
       display: none;
       animation: fadeIn 0.3s ease;
@@ -184,6 +196,7 @@
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: none; }
     }
+
     #orcamentoAlerta {
       position: fixed;
       top: 20px;
@@ -203,6 +216,7 @@
       opacity: 1;
       transform: translateY(0);
     }
+
     #home {
       text-align: center;
       padding-top: 20px;
@@ -221,6 +235,7 @@
       font-size: 1.8rem;
       letter-spacing: -0.5px;
     }
+
     #temaContainer {
       margin: 16px auto 24px;
       max-width: 320px;
@@ -235,6 +250,7 @@
       font-size: 15px;
       box-shadow: var(--shadow);
     }
+
     #orcamento {
       position: relative;
       max-width: 400px;
@@ -245,6 +261,7 @@
       font-weight: 700;
       color: var(--text);
     }
+
     .orcamento-input-container {
       position: relative;
       display: flex;
@@ -252,6 +269,7 @@
       width: 100%;
       margin-top: 12px;
     }
+
     .real-prefix {
       position: absolute;
       left: 16px;
@@ -261,6 +279,7 @@
       pointer-events: none;
       z-index: 1;
     }
+
     #orcamentoInput {
       width: 100%;
       padding: 14px 14px 14px 52px !important;
@@ -271,11 +290,13 @@
       color: var(--text);
       transition: var(--transition);
     }
+
     #orcamentoInput:focus {
       outline: none;
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
     }
+
     #orcamentoBarra {
       height: 14px;
       background: #e2e8f0;
@@ -304,6 +325,7 @@
       font-size: 11px;
       text-shadow: 0 1px 2px rgba(0,0,0,0.3);
     }
+
     .box {
       background: var(--card);
       border-radius: var(--radius);
@@ -317,6 +339,7 @@
       transform: translateY(-3px);
       box-shadow: 0 14px 32px -8px rgba(0, 0, 0, 0.18);
     }
+
     #scannerInfo {
       display: flex;
       flex-direction: column;
@@ -357,6 +380,7 @@
       pointer-events: none;
       transition: opacity 0.2s;
     }
+
     .scan-overlay {
       position: absolute;
       top: 15%;
@@ -401,6 +425,7 @@
       50% { top: 85%; }
       100% { top: 15%; }
     }
+
     #produtosBox {
       overflow-x: auto;
     }
@@ -430,6 +455,7 @@
         background: rgba(67, 97, 238, 0.08);
       }
     }
+
     button.editBtn {
       background: var(--success);
       color: #000;
@@ -459,6 +485,7 @@
       background: #ff6b6b;
       transform: translateY(-2px);
     }
+
     .historico-card {
       background: var(--card);
       border-radius: 14px;
@@ -486,9 +513,10 @@
       max-height: 150px;
       overflow-y: auto;
     }
+
     #carrinhoIcone {
       position: fixed;
-      bottom: max(24px, env(safe-area-inset-bottom));
+      bottom: max(24px, env(safe-area-inset-bottom)); /* ✅ Correção iOS */
       right: 24px;
       width: 72px;
       height: 72px;
@@ -524,6 +552,7 @@
       font-weight: 700;
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
+
     #modalCarrinho {
       position: fixed;
       inset: 0;
@@ -571,6 +600,7 @@
       background: var(--primary-light);
       transform: translateY(-2px);
     }
+
     #cadastroBox {
       max-width: 420px;
       margin: 20px auto;
@@ -611,10 +641,12 @@
       background: var(--primary-light);
       transform: translateY(-2px);
     }
+
     #scannerChartBox {
       margin-top: 24px;
       height: 200px;
     }
+
     #barraValidacao {
       height: 14px;
       background: #e2e8f0;
@@ -643,6 +675,7 @@
       font-size: 11px;
       text-shadow: 0 1px 2px rgba(0,0,0,0.3);
     }
+
     @media (max-width: 768px) {
       #sidebar { width: 200px; }
       #content { margin-left: 200px; padding: 20px 16px; }
@@ -656,10 +689,12 @@
       #hamburger { width: 48px; height: 48px; }
       #orcamento input { font-size: 15px; }
     }
+
     @keyframes pulse {
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.2); }
     }
+
     .quantidade-modal {
       position: fixed;
       top: 50%;
@@ -711,7 +746,7 @@
 </head>
 <body>
   <div id="splash">
-    <img src="./logo.png" alt="GoL BUY SMART – App de compras inteligente" />
+    <img src="logo.png" alt="GoL BUY SMART – App de compras inteligente" />
     <p>Bem-vindo ao seu app de compras inteligente</p>
   </div>
 
@@ -728,7 +763,7 @@
 
   <div id="content">
     <section id="home" class="view active">
-      <img src="./logo.png" class="logo-home" alt="GoL BUY SMART – App de compras inteligente" />
+      <img src="logo.png" class="logo-home" alt="GoL BUY SMART – App de compras inteligente" />
       <h2>Bem-vindo ao GoL BUY SMART</h2>
       <div id="temaContainer">
         <select id="temaSelector" onchange="mudarTema(this.value)">
@@ -845,7 +880,10 @@
 
   <script>
     const $ = id => document.getElementById(id);
-    const Storage = { get: (k, f = []) => JSON.parse(localStorage.getItem(k)) || f, set: (k, v) => localStorage.setItem(k, JSON.stringify(v)) };
+    const Storage = {
+      get: (k, f = []) => JSON.parse(localStorage.getItem(k)) || f,
+      set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
+    };
     let produtos = Storage.get("produtos");
     let carrinho = Storage.get("carrinho");
     let historico = Storage.get("historicoCompras");
@@ -855,18 +893,29 @@
     const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
     let categoriaChart;
 
+    // Carregar tema salvo
     const temaSalvo = localStorage.getItem('tema') || 'padrao';
-    if (temaSalvo !== 'padrao') document.body.classList.add(`tema-${temaSalvo}`);
-    if ($("temaSelector")) $("temaSelector").value = temaSalvo;
+    if (temaSalvo !== 'padrao') {
+      document.body.classList.add(`tema-${temaSalvo}`);
+    }
+    if ($("temaSelector")) {
+      $("temaSelector").value = temaSalvo;
+    }
 
     function mudarTema(tema) {
       document.body.className = document.body.className.replace(/tema-\w+/g, '').trim();
-      if (tema !== 'padrao') document.body.classList.add(`tema-${tema}`);
+      if (tema !== 'padrao') {
+        document.body.classList.add(`tema-${tema}`);
+      }
       localStorage.setItem('tema', tema);
-      if (document.getElementById("scanner")?.classList.contains("active")) setTimeout(atualizarScannerChart, 100);
+      if (document.getElementById("scanner").classList.contains("active")) {
+        setTimeout(atualizarScannerChart, 100);
+      }
     }
 
-    function normalizarCodigo(cod) { return (cod || '').toString().trim().replace(/[\r\n\t\s]+/g, ''); }
+    function normalizarCodigo(cod) {
+      return (cod || '').toString().trim().replace(/[\r\n\t\s]+/g, '');
+    }
 
     function verificarOrcamento() {
       const gasto = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
@@ -894,19 +943,14 @@
     function fecharQuantidade() {
       $("overlayQuantidade").style.display = "none";
       $("quantidadeModal").style.display = "none";
-      if (document.getElementById("scanner")?.classList.contains("active")) scannerAtivo = true;
     }
 
     function iniciarApp() {
       window.irPara = function(tela) {
         document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
         $(tela).classList.add("active");
-        if (tela === "scanner") {
-          scannerAtivo = true;
-          iniciarScanner();
-        } else {
-          pararScanner();
-        }
+        if (tela === "scanner") iniciarScanner();
+        else pararScanner();
       };
 
       const sidebar = $("sidebar");
@@ -939,7 +983,18 @@
       function atualizarProdutosTable() {
         let html = "";
         produtos.forEach((p, i) => {
-          html += `<tr><td>${p.codigo}</td><td>${p.nome}</td><td>${p.categoria}</td><td>${p.tipo}</td><td>R$ ${p.valor.toFixed(2)}</td><td><button class="editBtn" onclick="editarProduto(${i})">✏️</button><button class="deleteBtn" onclick="excluirProduto(${i})">❌</button></td></tr>`;
+          html += `
+            <tr>
+              <td>${p.codigo}</td>
+              <td>${p.nome}</td>
+              <td>${p.categoria}</td>
+              <td>${p.tipo}</td>
+              <td>R$ ${p.valor.toFixed(2)}</td>
+              <td>
+                <button class="editBtn" onclick="editarProduto(${i})">✏️</button>
+                <button class="deleteBtn" onclick="excluirProduto(${i})">❌</button>
+              </td>
+            </tr>`;
         });
         const tbody = $("produtosTable")?.querySelector("tbody");
         if (tbody) tbody.innerHTML = html;
@@ -992,7 +1047,9 @@
         irPara("produtos");
       };
 
-      if ($("salvarCadastro")) $("salvarCadastro").onclick = salvarOriginal;
+      if ($("salvarCadastro")) {
+        $("salvarCadastro").onclick = salvarOriginal;
+      }
 
       function atualizarCarrinho() {
         let total = 0;
@@ -1000,7 +1057,13 @@
         carrinho.forEach((p, idx) => {
           const sub = p.valor * p.qtd;
           total += sub;
-          html += `<tr><td>${p.nome}</td><td>${p.qtd}</td><td>R$ ${sub.toFixed(2)}</td><td><button class="deleteBtn" style="padding:4px 8px;font-size:14px;" onclick="removerDoCarrinho(${idx})">🗑️</button></td></tr>`;
+          html += `
+            <tr>
+              <td>${p.nome}</td>
+              <td>${p.qtd}</td>
+              <td>R$ ${sub.toFixed(2)}</td>
+              <td><button class="deleteBtn" style="padding:4px 8px;font-size:14px;" onclick="removerDoCarrinho(${idx})">🗑️</button></td>
+            </tr>`;
         });
         if ($("tabelaCarrinho")) $("tabelaCarrinho").innerHTML = html;
         if ($("total")) $("total").innerText = "Total: R$ " + total.toFixed(2);
@@ -1030,22 +1093,30 @@
         $("modalCarrinho").classList.remove("active");
         setTimeout(() => {
           $("modalCarrinho").style.display = "none";
+          // ✅ Só reinicia se estiver na aba "scanner"
           if (document.getElementById("scanner")?.classList.contains("active")) {
             const msg = $("reiniciandoMensagem");
-            if (msg) msg.style.opacity = "1";
+            if (msg) {
+              msg.style.opacity = "1";
+            }
             setTimeout(() => {
               pararScanner();
-              if (reader) reader.reset();
-              scannerAtivo = true;
               iniciarScanner();
-              if (msg) setTimeout(() => msg.style.opacity = "0", 200);
-            }, 500);
+              if (msg) {
+                setTimeout(() => {
+                  msg.style.opacity = "0";
+                }, 200);
+              }
+            }, 300);
           }
         }, 300);
       };
 
       window.finalizarCompra = function() {
-        if (!carrinho.length) { alert("Carrinho vazio"); return; }
+        if (!carrinho.length) {
+          alert("Carrinho vazio");
+          return;
+        }
         const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
         historico.push({
           data: new Date().toLocaleString("pt-BR"),
@@ -1074,7 +1145,13 @@
           c.itens.forEach(it => {
             itens += `<li>${it.nome} — ${it.qtd} x R$ ${it.valor.toFixed(2)} = R$ ${(it.qtd * it.valor).toFixed(2)}</li>`;
           });
-          area.innerHTML += `<div class="historico-card"><h4>Compra ${i + 1}</h4><small>${c.data}</small><p><strong>Total:</strong> R$ ${c.total.toFixed(2)}</p><details><summary style="color:var(--primary); cursor:pointer;">Ver itens</summary><ul>${itens}</ul></details></div>`;
+          area.innerHTML += `
+            <div class="historico-card">
+              <h4>Compra ${i + 1}</h4>
+              <small>${c.data}</small>
+              <p><strong>Total:</strong> R$ ${c.total.toFixed(2)}</p>
+              <details><summary style="color:var(--primary); cursor:pointer;">Ver itens</summary><ul>${itens}</ul></details>
+            </div>`;
         });
       }
 
@@ -1083,12 +1160,17 @@
           scannerAtivo = false;
           return;
         }
-        if (scannerAtivo === false || !navigator.mediaDevices) return;
+        if (scannerAtivo || !navigator.mediaDevices) return;
         scannerAtivo = true;
         buffer = [];
         if (!stream) {
           try {
-            const constraints = { video: { facingMode: "environment", advanced: [{ focusMode: "continuous" }] } };
+            const constraints = {
+              video: {
+                facingMode: "environment",
+                advanced: [{ focusMode: "continuous" }]
+              }
+            };
             stream = await navigator.mediaDevices.getUserMedia(constraints);
             const video = $("video");
             if (video) {
@@ -1124,7 +1206,7 @@
             $("barraValidacaoInner").style.width = (ultimosIguais / repeticoes * 100) + "%";
             $("barraValidacaoInner").setAttribute('data-pct', Math.round(ultimosIguais / repeticoes * 100) + '%');
           }
-          if (ultimosIguais >= repeticoes && scannerAtivo) {
+          if (ultimosIguais >= repeticoes) {
             scannerAtivo = false;
             reader.reset();
             processarCodigo(codigoNormalizado);
@@ -1133,9 +1215,8 @@
       }
 
       function processarCodigo(codigoNormalizado) {
-        if (document.getElementById("quantidadeModal").style.display === "block" ||
-            document.getElementById("modalCarrinho").classList.contains("active") ||
-            !scannerAtivo) {
+        // ✅ Verificação: já há um modal aberto?
+        if (document.getElementById("quantidadeModal").style.display === "block") {
           return;
         }
 
@@ -1144,8 +1225,6 @@
           beep.play().catch(e => console.warn("Beep não reproduzido:", e));
           const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
           if (produto) {
-            scannerAtivo = false;
-            reader.reset();
             solicitarQuantidade(produto.nome, (q) => {
               carrinho.push({ ...produto, qtd: q });
               Storage.set("carrinho", carrinho);
@@ -1172,8 +1251,7 @@
               }
               produtos.push(novo);
               Storage.set("produtos", produtos);
-              scannerAtivo = false;
-              reader.reset();
+
               solicitarQuantidade(novo.nome, (q) => {
                 if (q > 0) {
                   carrinho.push({ ...novo, qtd: q });
@@ -1191,11 +1269,6 @@
                 atualizarCarrinho();
                 fecharQuantidade();
                 irPara("scanner");
-                setTimeout(() => {
-                  if (document.getElementById("scanner")?.classList.contains("active")) {
-                    iniciarScanner();
-                  }
-                }, 300);
               });
             };
 
@@ -1209,9 +1282,6 @@
         } catch (e) {
           console.error("Erro ao processar código:", e);
           buffer = [];
-          if (document.getElementById("scanner")?.classList.contains("active")) {
-            scannerAtivo = true;
-          }
         }
       }
 
@@ -1231,33 +1301,49 @@
 
       function atualizarScannerChart() {
         const categorias = {};
-        produtos.forEach(p => { categorias[p.categoria] = (categorias[p.categoria] || 0) + 1; });
+        produtos.forEach(p => {
+          categorias[p.categoria] = (categorias[p.categoria] || 0) + 1;
+        });
+
         const chartBox = $("scannerChartBox");
         if (!chartBox || chartBox.offsetWidth === 0 || chartBox.offsetHeight === 0) {
           setTimeout(atualizarScannerChart, 100);
           return;
         }
+
         const canvas = $("categoriaChart");
         if (!canvas) return;
+
         canvas.width = chartBox.offsetWidth;
         canvas.height = chartBox.offsetHeight;
-        if (categoriaChart) { categoriaChart.destroy(); categoriaChart = null; }
+
+        if (categoriaChart) {
+          categoriaChart.destroy();
+          categoriaChart = null;
+        }
+
         const categoriasOrdenadas = Object.entries(categorias).sort((a, b) => b[1] - a[1]);
         const labels = categoriasOrdenadas.map(([cat]) => cat);
         const values = categoriasOrdenadas.map(([, val]) => val);
+
         const rootStyles = getComputedStyle(document.documentElement);
         const textColor = rootStyles.getPropertyValue('--text').trim();
         const textMutedColor = rootStyles.getPropertyValue('--text-muted').trim();
-        const cores = ['#4361ee','#3a56d4','#4895ef','#f87171','#6b6b6b','#9c27b0','#06b6d4','#10b981','#f59e0b','#ec4899','#8b5cf6','#ef4444'];
+
+        const cores = [
+          '#4361ee', '#3a56d4', '#4895ef', '#f87171', '#6b6b6b', '#9c27b0',
+          '#06b6d4', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444'
+        ];
+
         try {
           const ctx = canvas.getContext("2d");
           categoriaChart = new Chart(ctx, {
             type: 'bar',
-             {
+            data: {
               labels: labels,
               datasets: [{
                 label: 'Número de Produtos',
-                 values,
+                data: values,
                 backgroundColor: labels.map((_, i) => cores[i % cores.length]),
                 borderWidth: 0
               }]
@@ -1274,12 +1360,21 @@
                   backgroundColor: rootStyles.getPropertyValue('--card').trim(),
                   borderColor: rootStyles.getPropertyValue('--border').trim(),
                   borderWidth: 1,
-                  callbacks: { label: (ctx) => ` ${ctx.parsed.x} produtos` }
+                  callbacks: {
+                    label: (ctx) => ` ${ctx.parsed.x} produtos`
+                  }
                 }
               },
               scales: {
-                x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: textMutedColor } },
-                y: { grid: { display: false }, ticks: { color: textColor } }
+                x: {
+                  beginAtZero: true,
+                  grid: { color: 'rgba(0,0,0,0.05)' },
+                  ticks: { color: textMutedColor }
+                },
+                y: {
+                  grid: { display: false },
+                  ticks: { color: textColor }
+                }
               }
             }
           });
@@ -1291,14 +1386,20 @@
 
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-          if ($("modalCarrinho")?.classList.contains("active")) fecharCarrinho();
-          if ($("quantidadeModal").style.display === "block") fecharQuantidade();
+          if ($("modalCarrinho")?.classList.contains("active")) {
+            fecharCarrinho();
+          }
+          if ($("quantidadeModal").style.display === "block") {
+            fecharQuantidade();
+          }
         }
       });
 
       if ($("modalCarrinho")) {
         $("modalCarrinho").addEventListener('click', (e) => {
-          if (e.target === $("modalCarrinho")) fecharCarrinho();
+          if (e.target === $("modalCarrinho")) {
+            fecharCarrinho();
+          }
         });
       }
 
@@ -1307,12 +1408,17 @@
       atualizarHistorico();
       atualizarProdutosTable();
       atualizarCarrinho();
-      setTimeout(() => atualizarScannerChart(), 500);
+
+      setTimeout(() => {
+        atualizarScannerChart();
+      }, 500);
     }
 
     if ($("scanner")) {
       const observer = new MutationObserver(() => {
-        if ($("scanner").classList.contains("active")) setTimeout(atualizarScannerChart, 100);
+        if ($("scanner").classList.contains("active")) {
+          setTimeout(atualizarScannerChart, 100);
+        }
       });
       observer.observe($("scanner"), { attributes: true, attributeFilter: ['class'] });
     }
@@ -1323,38 +1429,21 @@
       }
     });
 
-    // ✅ INICIALIZAÇÃO SEGURA
     window.addEventListener('DOMContentLoaded', () => {
-      try {
-        const splash = $("splash");
-        if (splash) {
-          splash.style.background = '#1e293b';
+      const splash = $("splash");
+      if (splash) {
+        splash.style.background = '#1e293b';
+        setTimeout(() => {
+          splash.style.opacity = '0';
           setTimeout(() => {
-            splash.style.opacity = '0';
-            setTimeout(() => {
-              if (splash.parentNode) splash.remove();
-              iniciarApp();
-            }, 500);
-          }, 2000);
-        } else {
-          iniciarApp();
-        }
-      } catch (e) {
-        console.error("Erro ao iniciar app:", e);
-        if ($("splash") && $("splash").parentNode) $("splash").parentNode.removeChild($("splash"));
-        alert("Erro ao carregar. Atualize a página.");
+            if (splash.parentNode) splash.remove();
+            iniciarApp();
+          }, 500);
+        }, 2000);
+      } else {
+        iniciarApp();
       }
     });
-  </script>
-
-  <!-- Service Worker -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js')
-          .catch(e => console.warn('Service Worker falhou:', e));
-      });
-    }
   </script>
 </body>
 </html>
