@@ -878,7 +878,7 @@ let carrinho = Storage.get("carrinho");
 let historico = Storage.get("historicoCompras");
 let orcamento = Storage.get("orcamento") || 0;
 let reader = null, stream = null, buffer = [], scannerAtivo = false;
-// ✅ CORREÇÃO: declarar no escopo global
+// ✅ CORREÇÃO: declarado globalmente (escopo correto)
 let quantidadeJaSolicitada = false;
 const repeticoes = 3;
 const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg  ");
@@ -1088,7 +1088,7 @@ return;
 }
 const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
 historico.push({
-  data: new Date().toLocaleString("pt-BR"), // ✅ Corrigido
+   data: new Date().toLocaleString("pt-BR"), // ✅ Corrigido
   total,
   itens: [...carrinho]
 });
@@ -1186,7 +1186,7 @@ navigator.vibrate?.(50);
 beep.play().catch(e => console.warn("Beep não reproduzido:", e));
 const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
 if (produto) {
-  // ✅ Verifica estado global corretamente
+  // ✅ Agora funciona: estado global limpo e consistente
   if (quantidadeJaSolicitada) return;
   quantidadeJaSolicitada = true;
   solicitarQuantidade(produto.nome, (q) => {
@@ -1215,7 +1215,7 @@ return;
 }
 produtos.push(novo);
 Storage.set("produtos", produtos);
-// ✅ FLUXO RÁPIDO: restaura handler, atualiza e redireciona
+// ✅ FLUXO CORRIGIDO: restaura handler, atualiza e redireciona para SCANNER
 if (quantidadeJaSolicitada) return;
 quantidadeJaSolicitada = true;
 solicitarQuantidade(novo.nome, (q) => {
@@ -1230,18 +1230,17 @@ solicitarQuantidade(novo.nome, (q) => {
   $("categoriaCadastro").value = "Alimentos";
   $("tipoCadastro").value = "UN";
   $("cadastro-title").innerText = "Cadastro de Produto";
-  // ✅ Restaurar onclick para o normal
+  // ✅ Restaurar handler
   $("salvarCadastro").onclick = salvarOriginal;
   // ✅ Atualizar UI
   atualizarProdutosTable();
   atualizarScannerChart();
   atualizarCarrinho();
-  // ✅ Redirecionar para produtos
-  irPara("produtos");
+  // ✅ REDIRECIONAR PARA O SCANNER (não para produtos!)
+  irPara("scanner");
   fecharQuantidade();
 });
 };
-// ✅ Define o handler rápido
 $("salvarCadastro").onclick = handlerRapido;
 if ($("barraValidacaoInner")) {
 $("barraValidacaoInner").style.width = "0%";
@@ -1300,11 +1299,11 @@ try {
 const ctx = canvas.getContext("2d");
 window.categoriaChart = new Chart(ctx, {
 type: 'bar',
-data: { // ✅ Corrigido: objeto data
+data: { // ✅ Corrigido: "data:" adicionado
 labels: labels,
 datasets: [{
 label: 'Número de Produtos',
-data: values, // ✅ Corrigido
+data: values, // ✅ Corrigido: "data: values"
 backgroundColor: labels.map((_, i) => cores[i % cores.length]),
 borderWidth: 0
 }]
