@@ -11,9 +11,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <!-- Bibliotecas externas -->
-<script src="https://unpkg.com/@zxing/library@0.21.2  "></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js  "></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter  :wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/@zxing/library@0.21.2    "></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js    "></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter    :wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
 :root {
 --primary: #4361ee;
@@ -880,7 +880,7 @@ let orcamento = Storage.get("orcamento") || 0;
 let reader = null, stream = null, buffer = [], scannerAtivo = false;
 let quantidadeJaSolicitada = false; // ✅ Nova flag para evitar duplicação
 const repeticoes = 3;
-const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg  ");
+const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg    ");
 let categoriaChart;
 
 // Carregar tema salvo
@@ -1215,7 +1215,7 @@ async function iniciarScanner() {
     });
 }
 
-// ✅ CORRIGIDO: Evita processamento duplicado
+// ✅ CORRIGIDO: Evita processamento duplicado e garante redirecionamento correto
 function processarCodigo(codigoNormalizado) {
 try {
 navigator.vibrate?.(50);
@@ -1228,7 +1228,7 @@ solicitarQuantidade(produto.nome, (q) => {
 quantidadeJaSolicitada = false;
 carrinho.push({ ...produto, qtd: q });
 Storage.set("carrinho", carrinho);
-abrirCarrinho();
+abrirCarrinho(); // ✅ Abre carrinho automaticamente
 });
 } else {
 $("codigoCadastro").value = codigoNormalizado;
@@ -1257,6 +1257,7 @@ quantidadeJaSolicitada = false;
 if (q > 0) {
 carrinho.push({ ...novo, qtd: q });
 Storage.set("carrinho", carrinho);
+abrirCarrinho(); // ✅ Abre carrinho automaticamente
 }
 $("codigoCadastro").value = "";
 $("nomeCadastro").value = "";
@@ -1269,7 +1270,7 @@ atualizarProdutosTable();
 atualizarScannerChart();
 atualizarCarrinho();
 fecharQuantidade();
-irPara("scanner");
+irPara("produtos"); // ✅ CORREÇÃO: agora vai para "produtos" como no cadastro normal
 });
 };
 $("salvarCadastro").onclick = handlerRapido;
