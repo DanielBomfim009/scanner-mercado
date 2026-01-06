@@ -1089,28 +1089,19 @@
         atualizarCarrinho();
       };
 
-      window.fecharCarrinho = function() {
-        $("modalCarrinho").classList.remove("active");
-        setTimeout(() => {
-          $("modalCarrinho").style.display = "none";
-          // ✅ Só reinicia se estiver na aba "scanner"
-          if (document.getElementById("scanner")?.classList.contains("active")) {
-            const msg = $("reiniciandoMensagem");
-            if (msg) {
-              msg.style.opacity = "1";
-            }
-            setTimeout(() => {
-              pararScanner();
-              iniciarScanner();
-              if (msg) {
-                setTimeout(() => {
-                  msg.style.opacity = "0";
-                }, 200);
-              }
-            }, 300);
-          }
-        }, 300);
-      };
+window.fecharCarrinho = function() {
+  $("modalCarrinho").classList.remove("active");
+
+  setTimeout(() => {
+    $("modalCarrinho").style.display = "none";
+
+    // 👉 NOVO COMPORTAMENTO:
+    // para o scanner e volta para Home
+    pararScanner();
+    irPara("home");
+
+  }, 300);
+};
 
       window.finalizarCompra = function() {
         if (!carrinho.length) {
