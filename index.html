@@ -916,7 +916,6 @@ setTimeout(() => alerta.classList.remove('show'), 3000);
 }
 }
 
-// ✅ FUNÇÃO CORRIGIDA
 function solicitarQuantidade(produtoNome, callback) {
   if (quantidadeJaSolicitada) return;
   
@@ -954,7 +953,6 @@ function fecharQuantidade() {
 
 function iniciarApp() {
 window.irPara = function(tela) {
-  // ✅ Resetar modo rápido se estiver nele
   if (document.getElementById("cadastro-title")?.innerText === "Cadastro Rápido") {
     $("salvarCadastro").onclick = salvarOriginal;
     $("cadastro-title").innerText = "Cadastro de Produto";
@@ -1036,7 +1034,6 @@ atualizarScannerChart();
 }
 };
 
-// ✅ Função original de salvar
 const salvarOriginal = () => {
 const novo = {
 codigo: $("codigoCadastro").value.trim(),
@@ -1122,6 +1119,7 @@ window.fecharCarrinho = function() {
     }, 300);
 };
 
+// ✅ CORREÇÃO PRINCIPAL AQUI
 window.finalizarCompra = function() {
 if (!carrinho.length) {
 alert("Carrinho vazio");
@@ -1129,9 +1127,9 @@ return;
 }
 const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
 historico.push({
-  new Date().toLocaleString("pt-BR"),
-total,
-itens: [...carrinho]
+  data: new Date().toLocaleString("pt-BR"), // ✅ Corrigido: propriedade "data" adicionada
+  total,
+  itens: [...carrinho]
 });
 Storage.set("historicoCompras", historico);
 carrinho = [];
@@ -1165,7 +1163,6 @@ area.innerHTML += `
 });
 }
 
-// ✅ CORRIGIDO: Inicia só quando visível e renderizado
 async function iniciarScanner() {
     if (scannerAtivo || !navigator.mediaDevices) return;
     if (!document.getElementById("scanner")?.classList.contains("active")) {
@@ -1230,7 +1227,6 @@ async function iniciarScanner() {
     });
 }
 
-// ✅ CORRIGIDO
 function processarCodigo(codigoNormalizado) {
 try {
 navigator.vibrate?.(50);
@@ -1243,7 +1239,6 @@ if (produto) {
     abrirCarrinho();
   });
 } else {
-  // ✅ Garantir que qualquer handler anterior seja removido
   $("salvarCadastro").onclick = null;
 
   $("codigoCadastro").value = codigoNormalizado;
@@ -1270,10 +1265,8 @@ if (produto) {
     produtos.push(novo);
     Storage.set("produtos", produtos);
     
-    // ✅ Resetar para o handler original
     $("salvarCadastro").onclick = salvarOriginal;
 
-    // ✅ Pedir quantidade
     solicitarQuantidade(novo.nome, (q) => {
       if (q > 0) {
         carrinho.push({ ...novo, qtd: q });
@@ -1281,7 +1274,6 @@ if (produto) {
         abrirCarrinho();
       }
 
-      // ✅ Limpar campos e ir para "produtos"
       $("codigoCadastro").value = "";
       $("nomeCadastro").value = "";
       $("valorCadastro").value = "";
@@ -1368,11 +1360,11 @@ function atualizarScannerChart() {
         const ctx = canvas.getContext("2d");
         categoriaChart = new Chart(ctx, {
             type: 'bar',
-             {
+            data: {
                 labels: labels,
                 datasets: [{
                     label: 'Número de Produtos',
-                     values,
+                    data: values,
                     backgroundColor: labels.map((_, i) => cores[i % cores.length]),
                     borderWidth: 0
                 }]
@@ -1471,13 +1463,11 @@ iniciarApp();
 iniciarApp();
 }
 
-// ✅ Garantir handler inicial
 if ($("salvarCadastro")) {
   $("salvarCadastro").onclick = salvarOriginal;
 }
 });
 
-// PWA
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('service-worker.js').catch(console.warn);
