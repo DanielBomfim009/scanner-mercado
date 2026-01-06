@@ -6,9 +6,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="theme-color" content="#4361ee" />
 <!-- Bibliotecas externas -->
-<script src="https://unpkg.com/@zxing/library@0.21.2           "></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js           "></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter           :wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/@zxing/library@0.21.2  "></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js  "></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter  :wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
 :root {
 --primary: #4361ee;
@@ -847,7 +847,7 @@ let historico = Storage.get("historicoCompras");
 let orcamento = Storage.get("orcamento") || 0;
 let reader = null, stream = null, buffer = [], scannerAtivo = false;
 const repeticoes = 3;
-const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg           ");
+const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg  ");
 let categoriaChart;
 
 // Carregar tema salvo
@@ -1329,69 +1329,6 @@ function atualizarScannerChart() {
     } catch (e) {
         console.error("Erro ao criar gráfico:", e);
         setTimeout(atualizarScannerChart, 200);
-    }
-}
-
-document.addEventListener('keydown', (e) => {
-if (e.key === 'Escape') {
-if ($("modalCarrinho")?.classList.contains("active")) {
-fecharCarrinho();
-}
-if ($("quantidadeModal").style.display === "block") {
-fecharQuantidade();
-}
-}
-});
-if ($("modalCarrinho")) {
-$("modalCarrinho").addEventListener('click', (e) => {
-if (e.target === $("modalCarrinho")) {
-fecharCarrinho();
-}
-});
-}
-$("overlayQuantidade").addEventListener('click', fecharQuantidade);
-atualizarHistorico();
-atualizarProdutosTable();
-atualizarCarrinho();
-
-setTimeout(() => {
-    atualizarScannerChart();
-}, 500);
-}
-
-if ($("scanner")) {
-const observer = new MutationObserver(() => {
-if ($("scanner").classList.contains("active")) {
-setTimeout(atualizarScannerChart, 100);
-}
-});
-observer.observe($("scanner"), { attributes: true, attributeFilter: ['class'] });
-}
-
-window.addEventListener('resize', () => {
-    if (document.getElementById("scanner")?.classList.contains("active")) {
-        setTimeout(atualizarScannerChart, 100);
-    }
-});
-
-window.addEventListener('DOMContentLoaded', () => {
-const splash = $("splash");
-if (splash) {
-splash.style.background = '#1e293b';
-setTimeout(() => {
-splash.style.opacity = '0';
-setTimeout(() => {
-if (splash.parentNode) splash.remove();
-iniciarApp();
-}, 500);
-}, 2000);
-} else {
-iniciarApp();
-}
-});
-</script>
-</body>
-</html>
     }
 }
 
