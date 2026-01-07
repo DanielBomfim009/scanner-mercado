@@ -60,7 +60,7 @@ body.tema-laranja {
 --text: #f1f5f9;
 --text-muted: #94a3b8;
 --border: #334155;
---shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+--shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
 }
 }
 * {
@@ -709,6 +709,33 @@ background: rgba(0,0,0,0.5);
 z-index: 1050;
 display: none;
 }
+/* Estilo para botão de instalação APK */
+#installApkButton {
+background: #4361ee;
+color: white;
+border: none;
+padding: 12px 20px;
+border-radius: 12px;
+font-weight: 600;
+cursor: pointer;
+margin-top: 16px;
+display: inline-block;
+text-decoration: none;
+}
+#installApkButton:hover {
+background: #3a56d4;
+transform: translateY(-2px);
+}
+#installInstructions {
+margin-top: 20px;
+padding: 16px;
+background: #f8f9ff;
+border-radius: 12px;
+border: 1px solid #e2e8f0;
+font-size: 14px;
+line-height: 1.5;
+color: #1e293b;
+}
 </style>
 </head>
 <body>
@@ -749,6 +776,24 @@ display: none;
 <p style="margin-top: 12px; color: var(--text-muted);">
 Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
 </p>
+</div>
+
+<!-- Botão de instalação APK -->
+<div class="box" style="margin-top: 24px;">
+<h3>📲 Instalar como APK</h3>
+<p>Seu app já é um Progressive Web App (PWA). Para instalá-lo como APK (aplicativo nativo), siga estas instruções:</p>
+<button id="installApkButton" onclick="mostrarInstrucoesApk()">Mostrar instruções</button>
+<div id="installInstructions" style="display:none;">
+<ol>
+<li>Abra este site no <strong>Google Chrome</strong> (Android).</li>
+<li>Clique nos três pontos no canto superior direito.</li>
+<li>Escolha "<strong>Adicionar à tela inicial</strong>" — isso instala como PWA.</li>
+<li>Para APK nativo, use a ferramenta <a href="https://github.com/GoogleChromeLabs/bubblewrap" target="_blank">Google Bubblewrap</a>.</li>
+<li>Execute no terminal:<br><code>npm install -g @bubblewrap/cli</code><br><code>bubblewrap init --manifest=https://seu-site.com/manifest.json</code><br><code>bubblewrap build</code></li>
+<li>O arquivo <code>app-release-signed.apk</code> será gerado — instale-o manualmente.</li>
+</ol>
+<p>💡 Dica: Você também pode publicar na Play Store usando TWA (Trusted Web Activity).</p>
+</div>
 </div>
 </section>
 <section id="scanner" class="view">
@@ -845,29 +890,9 @@ let carrinho = Storage.get("carrinho");
 let historico = Storage.get("historicoCompras");
 let orcamento = Storage.get("orcamento") || 0;
 let reader = null, stream = null, buffer = [], scannerAtivo = false;
+let ultimoCodigoProcessado = null; // 👈 NOVA VARIÁVEL PARA EVITAR REPETIÇÃO
 const repeticoes = 3;
 const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
-let categoriaChart;
-
-// Carregar tema salvo
-const temaSalvo = localStorage.getItem('tema') || 'padrao';
-if (temaSalvo !== 'padrao') {
-document.body.classList.add(`tema-${temaSalvo}`);
-}
-if ($("temaSelector")) {
-$("temaSelector").value = temaSalvo;
-}
-
-function mudarTema(tema) {
-document.body.className = document.body.className.replace(/tema-\w+/g, '').trim();
-if (tema !== 'padrao') {
-document.body.classList.add(`tema-${tema}`);
-}
-localStorage.setItem('tema', tema);
-if (document.getElementById("scanner").classList.contains("active")) {
-setTimeout(atualizarScannerChart, 100);
-}
-}
 
 function normalizarCodigo(cod) {
 return (cod || '').toString().trim().replace(/[\r\n\t\s]+/g, '');
@@ -1157,12 +1182,25 @@ processarCodigo(codigoNormalizado);
 }
 
 function processarCodigo(codigoNormalizado) {
-if (document.getElementById("quantidadeModal").style.display === "block") {
+// ✅ Evita reprocessar o mesmo código imediatamente
+if (ultimoCodigoProcessado === codigoNormalizado) {
+buffer = [];
 return;
 }
+
+// ✅ Verifica se há modal aberto
+if (document.getElementById("quantidadeModal").style.display === "block") {
+buffer = [];
+return;
+}
+
 try {
 navigator.vibrate?.(50);
 beep.play().catch(e => console.warn("Beep não reproduzido:", e));
+
+// ✅ Marca como processado
+ultimoCodigoProcessado = codigoNormalizado;
+
 const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
 if (produto) {
 solicitarQuantidade(produto.nome, (q) => {
@@ -1176,6 +1214,7 @@ $("nomeCadastro").value = "";
 $("valorCadastro").value = "";
 $("cadastro-title").innerText = "Cadastro Rápido";
 irPara("cadastro");
+
 const handlerRapido = () => {
 const novo = {
 codigo: $("codigoCadastro").value.trim(),
@@ -1207,8 +1246,6 @@ atualizarProdutosTable();
 atualizarScannerChart();
 atualizarCarrinho();
 fecharQuantidade();
-// ✅ REMOVIDO: irPara("scanner");
-// ✅ ADICIONADO: abrir carrinho (igual ao fluxo de produto existente)
 abrirCarrinho();
 });
 };
@@ -1222,11 +1259,14 @@ buffer = [];
 } catch (e) {
 console.error("Erro ao processar código:", e);
 buffer = [];
+ultimoCodigoProcessado = null; // reseta em caso de erro
 }
 }
 
 function pararScanner() {
 scannerAtivo = false;
+buffer = []; // 👈 LIMPA O BUFFER
+ultimoCodigoProcessado = null; // 👈 LIMPA O ÚLTIMO CÓDIGO
 if (reader) reader.reset();
 if (stream) {
 stream.getTracks().forEach(t => t.stop());
@@ -1271,11 +1311,11 @@ try {
 const ctx = canvas.getContext("2d");
 categoriaChart = new Chart(ctx, {
 type: 'bar',
-data: {
+ {
 labels: labels,
 datasets: [{
 label: 'Número de Produtos',
-data: values,
+ values,
 backgroundColor: labels.map((_, i) => cores[i % cores.length]),
 borderWidth: 0
 }]
@@ -1359,6 +1399,11 @@ if (document.getElementById("scanner")?.classList.contains("active")) {
 setTimeout(atualizarScannerChart, 100);
 }
 });
+
+window.mostrarInstrucoesApk = function() {
+const instructions = $("installInstructions");
+instructions.style.display = instructions.style.display === "none" ? "block" : "none";
+};
 
 window.addEventListener('DOMContentLoaded', () => {
 const splash = $("splash");
