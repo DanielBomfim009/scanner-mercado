@@ -7,24 +7,29 @@
 <meta name="theme-color" id="themeColorMeta" content="#4361ee" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-<link rel="manifest" href="/manifest.json" />
-<link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
-<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js').then(registration => {
-      console.log('Service Worker registrado com sucesso:', registration.scope);
-    }).catch(error => {
-      console.log('Falha ao registrar o Service Worker:', error);
-    });
-  });
-}
-</script>
+<link rel="manifest" href="./manifest.json" />
+<link rel="apple-touch-icon" sizes="192x192" href="./logo.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="./logo.png" />
 <!-- Bibliotecas externas -->
 <script src="https://unpkg.com/@zxing/library@0.21.2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- Service Worker registration -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(registration => {
+        console.log('Service Worker registrado:', registration.scope);
+      })
+      .catch(error => {
+        console.error('Erro ao registrar Service Worker:', error);
+      });
+  });
+}
+</script>
+
 <style>
 :root {
 --primary: #4361ee;
@@ -765,7 +770,6 @@ Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
 <section id="scanner" class="view">
 <div class="box">
 <h2 style="text-align:center; margin-bottom:16px;">Scanner de Produtos</h2>
-<!-- ✅ Botão adicionado aqui -->
 <div style="text-align: center; margin-bottom: 16px;">
   <button id="toggleScannerBtn" style="
     background: var(--primary);
@@ -884,6 +888,7 @@ if ($("temaSelector")) {
   $("temaSelector").value = temaSalvo;
 }
 
+// ✅ Função atualizada: muda tema + cor da barra
 function mudarTema(tema) {
   document.body.className = document.body.className.replace(/tema-\w+/g, '').trim();
   if (tema !== 'padrao') {
@@ -894,11 +899,9 @@ function mudarTema(tema) {
   // ✅ Atualiza a cor da barra do navegador
   const themeColorMeta = document.getElementById('themeColorMeta');
   let themeColor = '#4361ee'; // padrão azul
-
   if (tema === 'verde') themeColor = '#22c55e';
   else if (tema === 'roxo') themeColor = '#8b5cf6';
   else if (tema === 'laranja') themeColor = '#fb923c';
-
   if (themeColorMeta) {
     themeColorMeta.setAttribute('content', themeColor);
   }
@@ -922,13 +925,21 @@ function verificarOrcamento() {
   }
 }
 
+// ✅ Função com tratamento de erro
 function solicitarQuantidade(produtoNome, callback) {
   $("tituloQuantidade").innerText = `Produto: ${produtoNome}\nInforme a quantidade`;
   $("inputQuantidade").value = "1";
   $("btnConfirmarQtd").onclick = () => {
-    const q = Number($("inputQuantidade").value);
-    fecharQuantidade();
-    if (q > 0) callback(q);
+    try {
+      const q = Number($("inputQuantidade").value);
+      fecharQuantidade();
+      if (q > 0 && typeof callback === 'function') {
+        callback(q);
+      }
+    } catch (e) {
+      console.error("Erro ao confirmar quantidade:", e);
+      alert("Erro ao adicionar produto. Tente novamente.");
+    }
   };
   $("btnCancelarQtd").onclick = fecharQuantidade;
   $("overlayQuantidade").style.display = "block";
@@ -1021,7 +1032,7 @@ function atualizarHistorico() {
   });
 }
 
-// ✅ Nova função: resetar interface do scanner SEM iniciar câmera
+// ✅ Função corrigida: destrói o leitor completamente
 function resetarScannerUI() {
   fecharQuantidade();
   if ($("detected")) $("detected").innerText = "—";
@@ -1034,11 +1045,10 @@ function resetarScannerUI() {
   scannerAtivo = false;
   if (reader) {
     reader.reset();
-    reader = null; // 👈 ESTA LINHA É A CHAVE!
+    reader = null; // 👈 CHAVE para evitar leitura fantasma
   }
 }
 
-// ✅ Nova função: alternar scanner manualmente
 function alternarScanner() {
   const btn = $("toggleScannerBtn");
   if (scannerAtivo) {
@@ -1172,10 +1182,9 @@ function processarCodigo(codigoNormalizado) {
 
 function pararScanner() {
   scannerAtivo = false;
-  // ✅ Destrói o leitor completamente
   if (reader) {
     reader.reset();
-    reader = null; // ← força a recriação depois
+    reader = null;
   }
   if (stream) {
     stream.getTracks().forEach(t => t.stop());
@@ -1286,9 +1295,7 @@ if ($("modalCarrinho")) {
 
 $("overlayQuantidade").addEventListener('click', fecharQuantidade);
 
-// ✅ Inicialização principal
 function iniciarApp() {
-  // Configura o botão do scanner
   if ($("toggleScannerBtn")) {
     $("toggleScannerBtn").onclick = alternarScanner;
   }
@@ -1296,10 +1303,8 @@ function iniciarApp() {
   window.irPara = function(tela) {
     document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
     $(tela).classList.add("active");
-    
     if (tela === "scanner") {
-      // ✅ NÃO inicia scanner automaticamente
-      resetarScannerUI(); // só limpa a interface
+      resetarScannerUI();
     } else {
       pararScanner();
       fecharQuantidade();
@@ -1403,7 +1408,7 @@ function iniciarApp() {
     }
     const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
     historico.push({
-      data: new Date().toLocaleString("pt-BR"),
+       new Date().toLocaleString("pt-BR"),
       total,
       itens: [...carrinho]
     });
@@ -1423,21 +1428,6 @@ function iniciarApp() {
     atualizarScannerChart();
   }, 500);
 }
-
-if ($("scanner")) {
-  const observer = new MutationObserver(() => {
-    if ($("scanner").classList.contains("active")) {
-      setTimeout(atualizarScannerChart, 100);
-    }
-  });
-  observer.observe($("scanner"), { attributes: true, attributeFilter: ['class'] });
-}
-
-window.addEventListener('resize', () => {
-  if (document.getElementById("scanner")?.classList.contains("active")) {
-    setTimeout(atualizarScannerChart, 100);
-  }
-});
 
 window.addEventListener('DOMContentLoaded', () => {
   const splash = $("splash");
