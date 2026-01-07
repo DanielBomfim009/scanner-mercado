@@ -339,6 +339,7 @@ width: 100%;
 height: 100%;
 object-fit: cover;
 border-radius: var(--radius);
+display: none; /* ✅ Inicia escondido */
 }
 #camera .reiniciando {
 position: absolute;
@@ -369,6 +370,7 @@ border: 3px solid var(--secondary);
 border-radius: 8px;
 pointer-events: none;
 box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.1);
+display: none; /* ✅ Inicia escondido */
 }
 .scan-overlay::before,
 .scan-overlay::after {
@@ -397,6 +399,7 @@ height: 4px;
 background: var(--secondary);
 box-shadow: 0 0 12px var(--secondary);
 animation: scan 2.5s linear infinite;
+display: none; /* ✅ Inicia escondido */
 }
 @keyframes scan {
 0% { top: 15%; }
@@ -754,6 +757,20 @@ Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
 <section id="scanner" class="view">
 <div class="box">
 <h2 style="text-align:center; margin-bottom:16px;">Scanner de Produtos</h2>
+<!-- ✅ Botão para controlar o scanner -->
+<div style="text-align: center; margin-bottom: 16px;">
+  <button id="toggleScannerBtn" style="
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: var(--transition);
+  ">Iniciar Scanner</button>
+</div>
 <div id="camera">
 <video id="video" playsinline></video>
 <div class="reiniciando" id="reiniciandoMensagem">Reiniciando câmera...</div>
@@ -900,9 +917,278 @@ function solicitarQuantidade(produtoNome, callback) {
 function fecharQuantidade() {
   $("overlayQuantidade").style.display = "none";
   $("quantidadeModal").style.display = "none";
-  // ✅ Remove listeners antigos para evitar conflitos
   $("btnConfirmarQtd").onclick = null;
   $("btnCancelarQtd").onclick = fecharQuantidade;
+}
+
+function atualizarOrcamento() {
+  const gasto = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
+  $("orcamentoGasto").innerText = gasto.toFixed(2);
+  const pct = orcamento ? Math.min(100, (gasto / orcamento) * 100) : 0;
+  const bar = $("orcamentoBarraInner");
+  bar.style.width = pct + "%";
+  bar.setAttribute('data-pct', Math.round(pct) + '%');
+}
+
+function atualizarProdutosTable() {
+  let html = "";
+  produtos.forEach((p, i) => {
+    html += `
+    <tr>
+      <td>${p.codigo}</td>
+      <td>${p.nome}</td>
+      <td>${p.categoria}</td>
+      <td>${p.tipo}</td>
+      <td>R$ ${p.valor.toFixed(2)}</td>
+      <td>
+        <button class="editBtn" onclick="editarProduto(${i})">✏️</button>
+        <button class="deleteBtn" onclick="excluirProduto(${i})">❌</button>
+      </td>
+    </tr>`;
+  });
+  const tbody = $("produtosTable")?.querySelector("tbody");
+  if (tbody) tbody.innerHTML = html;
+  if ($("totalProdutos")) $("totalProdutos").innerText = produtos.length;
+}
+
+function atualizarCarrinho() {
+  let total = 0;
+  let html = `<tr><th>Nome</th><th>Qtd</th><th>Subtotal</th><th>Ação</th></tr>`;
+  carrinho.forEach((p, idx) => {
+    const sub = p.valor * p.qtd;
+    total += sub;
+    html += `
+    <tr>
+      <td>${p.nome}</td>
+      <td>${p.qtd}</td>
+      <td>R$ ${sub.toFixed(2)}</td>
+      <td><button class="deleteBtn" style="padding:4px 8px;font-size:14px;" onclick="removerDoCarrinho(${idx})">🗑️</button></td>
+    </tr>`;
+  });
+  if ($("tabelaCarrinho")) $("tabelaCarrinho").innerHTML = html;
+  if ($("total")) $("total").innerText = "Total: R$ " + total.toFixed(2);
+  if ($("badge")) $("badge").innerText = carrinho.length;
+  atualizarOrcamento();
+  verificarOrcamento();
+  const badge = $("badge");
+  if (badge) {
+    badge.style.animation = "pulse 0.5s";
+    setTimeout(() => badge.style.animation = "", 500);
+  }
+}
+
+function atualizarHistorico() {
+  const area = $("historicoConteudo");
+  if (!area) return;
+  area.innerHTML = "";
+  if (!historico.length) {
+    area.innerHTML = "<p style='text-align:center; color:var(--text-muted);'>Nenhuma compra registrada.</p>";
+    return;
+  }
+  historico.forEach((c, i) => {
+    let itens = "";
+    c.itens.forEach(it => {
+      itens += `<li>${it.nome} — ${it.qtd} x R$ ${it.valor.toFixed(2)} = R$ ${(it.qtd * it.valor).toFixed(2)}</li>`;
+    });
+    area.innerHTML += `
+    <div class="historico-card">
+      <h4>Compra ${i + 1}</h4>
+      <small>${c.data}</small>
+      <p><strong>Total:</strong> R$ ${c.total.toFixed(2)}</p>
+      <details><summary style="color:var(--primary); cursor:pointer;">Ver itens</summary><ul>${itens}</ul></details>
+    </div>`;
+  });
+}
+
+// ✅ Nova função: resetar interface do scanner SEM iniciar câmera
+function resetarScannerUI() {
+  fecharQuantidade();
+  if ($("detected")) $("detected").innerText = "—";
+  const barra = $("barraValidacaoInner");
+  if (barra) {
+    barra.style.width = "0%";
+    barra.setAttribute('data-pct', '0%');
+  }
+  buffer = [];
+  scannerAtivo = false;
+  if (reader) reader.reset();
+  
+  // Esconde elementos visuais
+  const video = $("video");
+  const overlay = document.querySelector(".scan-overlay");
+  const line = document.querySelector(".scan-line");
+  if (video) video.style.display = "none";
+  if (overlay) overlay.style.display = "none";
+  if (line) line.style.display = "none";
+  
+  // Atualiza texto do botão
+  const btn = $("toggleScannerBtn");
+  if (btn) btn.innerText = "Iniciar Scanner";
+}
+
+// ✅ Nova função: alternar scanner manualmente
+function alternarScanner() {
+  const btn = $("toggleScannerBtn");
+  if (scannerAtivo) {
+    pararScanner();
+    resetarScannerUI();
+  } else {
+    btn.innerText = "Parar Scanner";
+    setTimeout(iniciarScanner, 100);
+  }
+}
+
+async function iniciarScanner() {
+  if (scannerAtivo || !navigator.mediaDevices) return;
+  scannerAtivo = true;
+  buffer = [];
+  
+  if (!stream) {
+    try {
+      const constraints = {
+        video: { facingMode: "environment", advanced: [{ focusMode: "continuous" }] }
+      };
+      stream = await navigator.mediaDevices.getUserMedia(constraints);
+      const video = $("video");
+      if (video) {
+        video.style.display = "block";
+        video.srcObject = stream;
+        await video.play().catch(e => console.warn("Erro ao play:", e));
+        // Mostra overlays
+        const overlay = document.querySelector(".scan-overlay");
+        const line = document.querySelector(".scan-line");
+        if (overlay) overlay.style.display = "block";
+        if (line) line.style.display = "block";
+      }
+    } catch (err) {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        const video = $("video");
+        if (video) {
+          video.style.display = "block";
+          video.srcObject = stream;
+          await video.play().catch(e => console.warn("Erro fallback:", e));
+          const overlay = document.querySelector(".scan-overlay");
+          const line = document.querySelector(".scan-line");
+          if (overlay) overlay.style.display = "block";
+          if (line) line.style.display = "block";
+        }
+      } catch (e2) {
+        alert("⚠️ Permissão da câmera negada ou não suportada.");
+        scannerAtivo = false;
+        resetarScannerUI();
+        return;
+      }
+    }
+  }
+  
+  reader = new ZXing.BrowserMultiFormatReader();
+  reader.decodeFromVideoElementContinuously($("video"), (res) => {
+    if (!res?.text || !scannerAtivo) return;
+    const codigoBruto = res.text;
+    const codigoNormalizado = normalizarCodigo(codigoBruto);
+    if (!codigoNormalizado) return;
+    buffer.push(codigoNormalizado);
+    if (buffer.length > repeticoes) buffer.shift();
+    const ultimosIguais = buffer.filter(v => v === codigoNormalizado).length;
+    if ($("detected")) $("detected").innerText = codigoBruto;
+    if ($("barraValidacaoInner")) {
+      $("barraValidacaoInner").style.width = (ultimosIguais / repeticoes * 100) + "%";
+      $("barraValidacaoInner").setAttribute('data-pct', Math.round(ultimosIguais / repeticoes * 100) + '%');
+    }
+    if (ultimosIguais >= repeticoes) {
+      scannerAtivo = false;
+      reader.reset();
+      processarCodigo(codigoNormalizado);
+    }
+  });
+}
+
+function processarCodigo(codigoNormalizado) {
+  if ($("quantidadeModal")?.style.display === "block") return;
+  
+  try {
+    navigator.vibrate?.(50);
+    beep.play().catch(e => console.warn("Beep não reproduzido:", e));
+    const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
+    
+    if (produto) {
+      solicitarQuantidade(produto.nome, (q) => {
+        carrinho.push({ ...produto, qtd: q });
+        Storage.set("carrinho", carrinho);
+        abrirCarrinho();
+      });
+    } else {
+      $("codigoCadastro").value = codigoNormalizado;
+      $("nomeCadastro").value = "";
+      $("valorCadastro").value = "";
+      $("cadastro-title").innerText = "Cadastro Rápido";
+      irPara("cadastro");
+      const handlerRapido = () => {
+        const novo = {
+          codigo: $("codigoCadastro").value.trim(),
+          nome: $("nomeCadastro").value.trim(),
+          categoria: $("categoriaCadastro").value,
+          tipo: $("tipoCadastro").value,
+          valor: Number($("valorCadastro").value)
+        };
+        if (!novo.nome || !novo.valor || isNaN(novo.valor)) {
+          alert("Preencha nome e valor corretamente.");
+          return;
+        }
+        produtos.push(novo);
+        Storage.set("produtos", produtos);
+        solicitarQuantidade(novo.nome, (q) => {
+          if (q > 0) {
+            carrinho.push({ ...novo, qtd: q });
+            Storage.set("carrinho", carrinho);
+          }
+          $("codigoCadastro").value = "";
+          $("nomeCadastro").value = "";
+          $("valorCadastro").value = "";
+          $("categoriaCadastro").value = "Alimentos";
+          $("tipoCadastro").value = "UN";
+          $("cadastro-title").innerText = "Cadastro de Produto";
+          $("salvarCadastro").onclick = salvarOriginal;
+          atualizarProdutosTable();
+          atualizarScannerChart();
+          atualizarCarrinho();
+          fecharQuantidade();
+          abrirCarrinho();
+        });
+      };
+      $("salvarCadastro").onclick = handlerRapido;
+      if ($("barraValidacaoInner")) {
+        $("barraValidacaoInner").style.width = "0%";
+        $("barraValidacaoInner").setAttribute('data-pct', '0%');
+      }
+      buffer = [];
+    }
+  } catch (e) {
+    console.error("Erro ao processar código:", e);
+    buffer = [];
+  }
+}
+
+function pararScanner() {
+  scannerAtivo = false;
+  if (reader) reader.reset();
+  if (stream) {
+    stream.getTracks().forEach(t => t.stop());
+    stream = null;
+  }
+  const video = $("video");
+  if (video) {
+    if (video.srcObject) {
+      video.srcObject.getTracks().forEach(t => t.stop());
+    }
+    video.srcObject = null;
+    video.style.display = "none";
+  }
+  const overlay = document.querySelector(".scan-overlay");
+  const line = document.querySelector(".scan-line");
+  if (overlay) overlay.style.display = "none";
+  if (line) line.style.display = "none";
 }
 
 function iniciarApp() {
@@ -911,12 +1197,18 @@ function iniciarApp() {
     $(tela).classList.add("active");
     
     if (tela === "scanner") {
-      entrarNaAbaScanner(); // ✅ Nova função de entrada limpa
+      // ✅ Entra com interface limpa, sem ativar câmera
+      resetarScannerUI();
     } else {
       pararScanner();
-      fecharQuantidade(); // ✅ Garante que modais fechem ao sair
+      fecharQuantidade();
     }
   };
+
+  // Configura o botão do scanner
+  if ($("toggleScannerBtn")) {
+    $("toggleScannerBtn").onclick = alternarScanner;
+  }
 
   const sidebar = $("sidebar");
   const content = $("content");
@@ -934,36 +1226,6 @@ function iniciarApp() {
       atualizarOrcamento();
       verificarOrcamento();
     });
-  }
-
-  function atualizarOrcamento() {
-    const gasto = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
-    $("orcamentoGasto").innerText = gasto.toFixed(2);
-    const pct = orcamento ? Math.min(100, (gasto / orcamento) * 100) : 0;
-    const bar = $("orcamentoBarraInner");
-    bar.style.width = pct + "%";
-    bar.setAttribute('data-pct', Math.round(pct) + '%');
-  }
-
-  function atualizarProdutosTable() {
-    let html = "";
-    produtos.forEach((p, i) => {
-      html += `
-      <tr>
-        <td>${p.codigo}</td>
-        <td>${p.nome}</td>
-        <td>${p.categoria}</td>
-        <td>${p.tipo}</td>
-        <td>R$ ${p.valor.toFixed(2)}</td>
-        <td>
-          <button class="editBtn" onclick="editarProduto(${i})">✏️</button>
-          <button class="deleteBtn" onclick="excluirProduto(${i})">❌</button>
-        </td>
-      </tr>`;
-    });
-    const tbody = $("produtosTable")?.querySelector("tbody");
-    if (tbody) tbody.innerHTML = html;
-    if ($("totalProdutos")) $("totalProdutos").innerText = produtos.length;
   }
 
   window.editarProduto = function(i) {
@@ -1016,32 +1278,6 @@ function iniciarApp() {
     $("salvarCadastro").onclick = salvarOriginal;
   }
 
-  function atualizarCarrinho() {
-    let total = 0;
-    let html = `<tr><th>Nome</th><th>Qtd</th><th>Subtotal</th><th>Ação</th></tr>`;
-    carrinho.forEach((p, idx) => {
-      const sub = p.valor * p.qtd;
-      total += sub;
-      html += `
-      <tr>
-        <td>${p.nome}</td>
-        <td>${p.qtd}</td>
-        <td>R$ ${sub.toFixed(2)}</td>
-        <td><button class="deleteBtn" style="padding:4px 8px;font-size:14px;" onclick="removerDoCarrinho(${idx})">🗑️</button></td>
-      </tr>`;
-    });
-    if ($("tabelaCarrinho")) $("tabelaCarrinho").innerHTML = html;
-    if ($("total")) $("total").innerText = "Total: R$ " + total.toFixed(2);
-    if ($("badge")) $("badge").innerText = carrinho.length;
-    atualizarOrcamento();
-    verificarOrcamento();
-    const badge = $("badge");
-    if (badge) {
-      badge.style.animation = "pulse 0.5s";
-      setTimeout(() => badge.style.animation = "", 500);
-    }
-  }
-
   window.removerDoCarrinho = function(idx) {
     carrinho.splice(idx, 1);
     Storage.set("carrinho", carrinho);
@@ -1070,7 +1306,7 @@ function iniciarApp() {
     }
     const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
     historico.push({
-      data: new Date().toLocaleString("pt-BR"),
+       new Date().toLocaleString("pt-BR"),
       total,
       itens: [...carrinho]
     });
@@ -1081,295 +1317,107 @@ function iniciarApp() {
     atualizarHistorico();
     fecharCarrinho();
     alert("Compra finalizada!");
-  };
-
-  function atualizarHistorico() {
-    const area = $("historicoConteudo");
-    if (!area) return;
-    area.innerHTML = "";
-    if (!historico.length) {
-      area.innerHTML = "<p style='text-align:center; color:var(--text-muted);'>Nenhuma compra registrada.</p>";
-      return;
-    }
-    historico.forEach((c, i) => {
-      let itens = "";
-      c.itens.forEach(it => {
-        itens += `<li>${it.nome} — ${it.qtd} x R$ ${it.valor.toFixed(2)} = R$ ${(it.qtd * it.valor).toFixed(2)}</li>`;
-      });
-      area.innerHTML += `
-      <div class="historico-card">
-        <h4>Compra ${i + 1}</h4>
-        <small>${c.data}</small>
-        <p><strong>Total:</strong> R$ ${c.total.toFixed(2)}</p>
-        <details><summary style="color:var(--primary); cursor:pointer;">Ver itens</summary><ul>${itens}</ul></details>
-      </div>`;
-    });
   }
 
-  // ✅ Nova função: entra na aba scanner com estado limpo
-  function entrarNaAbaScanner() {
-    fecharQuantidade(); // Fecha qualquer modal residual
-    
-    // Reseta interface visual
-    if ($("detected")) $("detected").innerText = "—";
-    const barra = $("barraValidacaoInner");
-    if (barra) {
-      barra.style.width = "0%";
-      barra.setAttribute('data-pct', '0%');
-    }
-    
-    // Reseta estado lógico
-    buffer = [];
-    scannerAtivo = false;
-    if (reader) reader.reset();
-    
-    // Inicia scanner com pequeno delay para garantir renderização
-    setTimeout(iniciarScanner, 100);
-  }
-
-  async function iniciarScanner() {
-    if (!document.getElementById("scanner")?.classList.contains("active")) {
-      scannerAtivo = false;
-      return;
-    }
-    if (scannerAtivo || !navigator.mediaDevices) return;
-    scannerAtivo = true;
-    buffer = [];
-    if (!stream) {
-      try {
-        const constraints = {
-          video: {
-            facingMode: "environment",
-            advanced: [{ focusMode: "continuous" }]
-          }
-        };
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
-        const video = $("video");
-        if (video) {
-          video.srcObject = stream;
-          await video.play().catch(e => console.warn("Erro ao play:", e));
-        }
-      } catch (err) {
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-          const video = $("video");
-          if (video) {
-            video.srcObject = stream;
-            await video.play().catch(e => console.warn("Erro fallback:", e));
-          }
-        } catch (e2) {
-          alert("⚠️ Permissão da câmera negada ou não suportada.");
-          scannerAtivo = false;
-          return;
-        }
-      }
-    }
-    reader = new ZXing.BrowserMultiFormatReader();
-    reader.decodeFromVideoElementContinuously($("video"), (res) => {
-      if (!res?.text || !scannerAtivo) return;
-      const codigoBruto = res.text;
-      const codigoNormalizado = normalizarCodigo(codigoBruto);
-      if (!codigoNormalizado) return;
-      buffer.push(codigoNormalizado);
-      if (buffer.length > repeticoes) buffer.shift();
-      const ultimosIguais = buffer.filter(v => v === codigoNormalizado).length;
-      if ($("detected")) $("detected").innerText = codigoBruto;
-      if ($("barraValidacaoInner")) {
-        $("barraValidacaoInner").style.width = (ultimosIguais / repeticoes * 100) + "%";
-        $("barraValidacaoInner").setAttribute('data-pct', Math.round(ultimosIguais / repeticoes * 100) + '%');
-      }
-      if (ultimosIguais >= repeticoes) {
-        scannerAtivo = false;
-        reader.reset();
-        processarCodigo(codigoNormalizado);
-      }
-    });
-  }
-
-  function processarCodigo(codigoNormalizado) {
-    if (document.getElementById("quantidadeModal")?.style.display === "block") {
-      return; // Evita processar se modal já estiver aberto
-    }
-    try {
-      navigator.vibrate?.(50);
-      beep.play().catch(e => console.warn("Beep não reproduzido:", e));
-      const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
-      if (produto) {
-        solicitarQuantidade(produto.nome, (q) => {
-          carrinho.push({ ...produto, qtd: q });
-          Storage.set("carrinho", carrinho);
-          abrirCarrinho();
-        });
-      } else {
-        $("codigoCadastro").value = codigoNormalizado;
-        $("nomeCadastro").value = "";
-        $("valorCadastro").value = "";
-        $("cadastro-title").innerText = "Cadastro Rápido";
-        irPara("cadastro");
-        const handlerRapido = () => {
-          const novo = {
-            codigo: $("codigoCadastro").value.trim(),
-            nome: $("nomeCadastro").value.trim(),
-            categoria: $("categoriaCadastro").value,
-            tipo: $("tipoCadastro").value,
-            valor: Number($("valorCadastro").value)
-          };
-          if (!novo.nome || !novo.valor || isNaN(novo.valor)) {
-            alert("Preencha nome e valor corretamente.");
-            return;
-          }
-          produtos.push(novo);
-          Storage.set("produtos", produtos);
-          solicitarQuantidade(novo.nome, (q) => {
-            if (q > 0) {
-              carrinho.push({ ...novo, qtd: q });
-              Storage.set("carrinho", carrinho);
-            }
-            $("codigoCadastro").value = "";
-            $("nomeCadastro").value = "";
-            $("valorCadastro").value = "";
-            $("categoriaCadastro").value = "Alimentos";
-            $("tipoCadastro").value = "UN";
-            $("cadastro-title").innerText = "Cadastro de Produto";
-            $("salvarCadastro").onclick = salvarOriginal;
-            atualizarProdutosTable();
-            atualizarScannerChart();
-            atualizarCarrinho();
-            fecharQuantidade();
-            abrirCarrinho();
-          });
-        };
-        $("salvarCadastro").onclick = handlerRapido;
-        if ($("barraValidacaoInner")) {
-          $("barraValidacaoInner").style.width = "0%";
-          $("barraValidacaoInner").setAttribute('data-pct', '0%');
-        }
-        buffer = [];
-      }
-    } catch (e) {
-      console.error("Erro ao processar código:", e);
-      buffer = [];
-    }
-  }
-
-  function pararScanner() {
-    scannerAtivo = false;
-    if (reader) reader.reset();
-    if (stream) {
-      stream.getTracks().forEach(t => t.stop());
-      stream = null;
-    }
-    const video = $("video");
-    if (video && video.srcObject) {
-      video.srcObject.getTracks?.().forEach(t => t.stop());
-      video.srcObject = null;
-    }
-  }
-
-  function atualizarScannerChart() {
-    const categorias = {};
-    produtos.forEach(p => {
-      categorias[p.categoria] = (categorias[p.categoria] || 0) + 1;
-    });
-    const chartBox = $("scannerChartBox");
-    if (!chartBox || chartBox.offsetWidth === 0 || chartBox.offsetHeight === 0) {
-      setTimeout(atualizarScannerChart, 100);
-      return;
-    }
-    const canvas = $("categoriaChart");
-    if (!canvas) return;
-    canvas.width = chartBox.offsetWidth;
-    canvas.height = chartBox.offsetHeight;
-    if (categoriaChart) {
-      categoriaChart.destroy();
-      categoriaChart = null;
-    }
-    const categoriasOrdenadas = Object.entries(categorias).sort((a, b) => b[1] - a[1]);
-    const labels = categoriasOrdenadas.map(([cat]) => cat);
-    const values = categoriasOrdenadas.map(([, val]) => val);
-    const rootStyles = getComputedStyle(document.documentElement);
-    const textColor = rootStyles.getPropertyValue('--text').trim();
-    const textMutedColor = rootStyles.getPropertyValue('--text-muted').trim();
-    const cores = [
-      '#4361ee', '#3a56d4', '#4895ef', '#f87171', '#6b6b6b', '#9c27b0',
-      '#06b6d4', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444'
-    ];
-    try {
-      const ctx = canvas.getContext("2d");
-      categoriaChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Número de Produtos',
-            data: values,
-            backgroundColor: labels.map((_, i) => cores[i % cores.length]),
-            borderWidth: 0
-          }]
-        },
-        options: {
-          indexAxis: 'y',
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              titleColor: textColor,
-              bodyColor: textColor,
-              backgroundColor: rootStyles.getPropertyValue('--card').trim(),
-              borderColor: rootStyles.getPropertyValue('--border').trim(),
-              borderWidth: 1,
-              callbacks: {
-                label: (ctx) => ` ${ctx.parsed.x} produtos`
-              }
-            }
-          },
-          scales: {
-            x: {
-              beginAtZero: true,
-              grid: { color: 'rgba(0,0,0,0.05)' },
-              ticks: { color: textMutedColor }
-            },
-            y: {
-              grid: { display: false },
-              ticks: { color: textColor }
-            }
-          }
-        }
-      });
-    } catch (e) {
-      console.error("Erro ao criar gráfico:", e);
-      setTimeout(atualizarScannerChart, 200);
-    }
-  }
-
+  // Eventos
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-      if ($("modalCarrinho")?.classList.contains("active")) {
-        fecharCarrinho();
-      }
-      if ($("quantidadeModal").style.display === "block") {
-        fecharQuantidade();
-      }
+      if ($("modalCarrinho")?.classList.contains("active")) fecharCarrinho();
+      if ($("quantidadeModal").style.display === "block") fecharQuantidade();
     }
   });
 
   if ($("modalCarrinho")) {
     $("modalCarrinho").addEventListener('click', (e) => {
-      if (e.target === $("modalCarrinho")) {
-        fecharCarrinho();
-      }
+      if (e.target === $("modalCarrinho")) fecharCarrinho();
     });
   }
 
   $("overlayQuantidade").addEventListener('click', fecharQuantidade);
 
+  // Inicializa dados
   atualizarHistorico();
   atualizarProdutosTable();
   atualizarCarrinho();
-  setTimeout(() => {
-    atualizarScannerChart();
-  }, 500);
+  setTimeout(() => atualizarScannerChart(), 500);
+}
+
+// Funções auxiliares de gráfico
+function atualizarScannerChart() {
+  const categorias = {};
+  produtos.forEach(p => {
+    categorias[p.categoria] = (categorias[p.categoria] || 0) + 1;
+  });
+  const chartBox = $("scannerChartBox");
+  if (!chartBox || chartBox.offsetWidth === 0 || chartBox.offsetHeight === 0) {
+    setTimeout(atualizarScannerChart, 100);
+    return;
+  }
+  const canvas = $("categoriaChart");
+  if (!canvas) return;
+  canvas.width = chartBox.offsetWidth;
+  canvas.height = chartBox.offsetHeight;
+  if (categoriaChart) {
+    categoriaChart.destroy();
+    categoriaChart = null;
+  }
+  const categoriasOrdenadas = Object.entries(categorias).sort((a, b) => b[1] - a[1]);
+  const labels = categoriasOrdenadas.map(([cat]) => cat);
+  const values = categoriasOrdenadas.map(([, val]) => val);
+  const rootStyles = getComputedStyle(document.documentElement);
+  const textColor = rootStyles.getPropertyValue('--text').trim();
+  const textMutedColor = rootStyles.getPropertyValue('--text-muted').trim();
+  const cores = [
+    '#4361ee', '#3a56d4', '#4895ef', '#f87171', '#6b6b6b', '#9c27b0',
+    '#06b6d4', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444'
+  ];
+  try {
+    const ctx = canvas.getContext("2d");
+    categoriaChart = new Chart(ctx, {
+      type: 'bar',
+       {
+        labels: labels,
+        datasets: [{
+          label: 'Número de Produtos',
+           values,
+          backgroundColor: labels.map((_, i) => cores[i % cores.length]),
+          borderWidth: 0
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            titleColor: textColor,
+            bodyColor: textColor,
+            backgroundColor: rootStyles.getPropertyValue('--card').trim(),
+            borderColor: rootStyles.getPropertyValue('--border').trim(),
+            borderWidth: 1,
+            callbacks: {
+              label: (ctx) => ` ${ctx.parsed.x} produtos`
+            }
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            grid: { color: 'rgba(0,0,0,0.05)' },
+            ticks: { color: textMutedColor }
+          },
+          y: {
+            grid: { display: false },
+            ticks: { color: textColor }
+          }
+        }
+      }
+    });
+  } catch (e) {
+    console.error("Erro ao criar gráfico:", e);
+    setTimeout(atualizarScannerChart, 200);
+  }
 }
 
 if ($("scanner")) {
@@ -1390,7 +1438,6 @@ window.addEventListener('resize', () => {
 window.addEventListener('DOMContentLoaded', () => {
   const splash = $("splash");
   if (splash) {
-    splash.style.background = '#1e293b';
     setTimeout(() => {
       splash.style.opacity = '0';
       setTimeout(() => {
