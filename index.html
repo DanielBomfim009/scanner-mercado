@@ -1157,12 +1157,15 @@ processarCodigo(codigoNormalizado);
 }
 
 function processarCodigo(codigoNormalizado) {
+// ✅ Verificação: já há um modal aberto?
 if (document.getElementById("quantidadeModal").style.display === "block") {
 return;
 }
 try {
 navigator.vibrate?.(50);
 beep.play().catch(e => console.warn("Beep não reproduzido:", e));
+// ✅ LIMPA O BUFFER ANTES DE PROCESSAR
+buffer = [];
 const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
 if (produto) {
 solicitarQuantidade(produto.nome, (q) => {
@@ -1195,7 +1198,6 @@ if (q > 0) {
 carrinho.push({ ...novo, qtd: q });
 Storage.set("carrinho", carrinho);
 }
-// ✅ Limpar campos e resetar
 $("codigoCadastro").value = "";
 $("nomeCadastro").value = "";
 $("valorCadastro").value = "";
@@ -1208,7 +1210,6 @@ atualizarScannerChart();
 atualizarCarrinho();
 fecharQuantidade();
 // ✅ REMOVIDO: irPara("scanner");
-// ✅ ADICIONADO: abrir carrinho (igual ao fluxo de produto existente)
 abrirCarrinho();
 });
 };
@@ -1217,7 +1218,7 @@ if ($("barraValidacaoInner")) {
 $("barraValidacaoInner").style.width = "0%";
 $("barraValidacaoInner").setAttribute('data-pct', '0%');
 }
-buffer = [];
+// ✅ O 'buffer = []' já foi feito no início da função
 }
 } catch (e) {
 console.error("Erro ao processar código:", e);
@@ -1226,6 +1227,8 @@ buffer = [];
 }
 
 function pararScanner() {
+// ✅ LIMPA O BUFFER AO PARAR O SCANNER
+buffer = [];
 scannerAtivo = false;
 if (reader) reader.reset();
 if (stream) {
