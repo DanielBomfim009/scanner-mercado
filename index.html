@@ -93,33 +93,6 @@ overflow-x: hidden;
 font-size: 16px;
 color: var(--text);
 }
-#splash {
-position: fixed;
-inset: 0;
-background: #1e293b;
-color: white;
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-z-index: 2000;
-opacity: 1;
-transition: opacity 0.5s;
-}
-#splash img {
-width: 300px;
-height: 300px;
-object-fit: contain;
-filter: drop-shadow(0 12px 28px rgba(0,0,0,0.4)) brightness(1.1);
-z-index: 2001;
-}
-#splash p {
-margin-top: 15px;
-font-size: 18px;
-font-weight: 600;
-z-index: 2001;
-text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-}
 #sidebar {
 position: fixed;
 top: 0;
@@ -728,10 +701,6 @@ display: none;
 </style>
 </head>
 <body>
-<div id="splash">
-<img src="logo.png" alt="GoL BUY SMART – App de compras inteligente" />
-<p>Bem-vindo ao seu app de compras inteligente</p>
-</div>
 <div id="hamburger">☰</div>
 <div id="sidebar">
 <button onclick="irPara('home')">🏠 Home</button>
@@ -869,6 +838,8 @@ const Storage = {
   get: (k, f = []) => JSON.parse(localStorage.getItem(k)) || f,
   set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
 };
+
+// ✅ Carrega dados do localStorage imediatamente
 let produtos = Storage.get("produtos");
 let carrinho = Storage.get("carrinho");
 let historico = Storage.get("historicoCompras");
@@ -1229,11 +1200,11 @@ function atualizarScannerChart() {
     const ctx = canvas.getContext("2d");
     categoriaChart = new Chart(ctx, {
       type: 'bar',
-      data: {
+       {
         labels: labels,
         datasets: [{
           label: 'Número de Produtos',
-          data: values,
+           values,
           backgroundColor: labels.map((_, i) => cores[i % cores.length]),
           borderWidth: 0
         }]
@@ -1429,20 +1400,8 @@ function iniciarApp() {
   }, 500);
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-  const splash = $("splash");
-  if (splash) {
-    setTimeout(() => {
-      splash.style.opacity = '0';
-      setTimeout(() => {
-        if (splash.parentNode) splash.remove();
-        iniciarApp();
-      }, 500);
-    }, 2000);
-  } else {
-    iniciarApp();
-  }
-});
+// ✅ INICIA O APP IMEDIATAMENTE — sem splash!
+document.addEventListener('DOMContentLoaded', iniciarApp);
 </script>
 </body>
 </html>
