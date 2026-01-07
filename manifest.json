@@ -2,10 +2,10 @@
   "name": "GoL BUY SMART",
   "short_name": "GoL BUY",
   "start_url": "./index.html",
-  "scope": "/",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#1e293b",
-  "theme_color": "#4361ee", // ← Padrão (azul)
+  "theme_color": "#4361ee",
   "orientation": "portrait",
   "description": "App inteligente para scanner de produtos e controle de orçamento.",
   "icons": [
