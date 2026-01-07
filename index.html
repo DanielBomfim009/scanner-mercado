@@ -31,6 +31,7 @@ if ('serviceWorker' in navigator) {
 </script>
 
 <style>
+/* ... (todo o CSS permanece EXATAMENTE IGUAL, sem nenhuma alteração) */
 :root {
 --primary: #4361ee;
 --primary-dark: #3a56d4;
@@ -833,13 +834,13 @@ Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
 </div>
 </div>
 <script>
+// === VARIÁVEIS GLOBAIS ===
 const $ = id => document.getElementById(id);
 const Storage = {
   get: (k, f = []) => JSON.parse(localStorage.getItem(k)) || f,
   set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
 };
 
-// Estado global
 let produtos = Storage.get("produtos");
 let carrinho = Storage.get("carrinho");
 let historico = Storage.get("historicoCompras");
@@ -849,7 +850,7 @@ const repeticoes = 3;
 const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 let categoriaChart;
 
-// === FUNÇÕES GLOBAIS (devem existir antes do DOM) ===
+// === FUNÇÕES GLOBAIS (disponíveis para onclick) ===
 function irPara(tela) {
   document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
   $(tela).classList.add("active");
@@ -924,7 +925,7 @@ function removerDoCarrinho(idx) {
   atualizarCarrinho();
 }
 
-// === Funções auxiliares ===
+// === Funções auxiliares (mantidas como estão) ===
 function mudarTema(tema) {
   document.body.className = document.body.className.replace(/tema-\w+/g, '').trim();
   if (tema !== 'padrao') {
@@ -1293,50 +1294,8 @@ function atualizarScannerChart() {
   }
 }
 
-// Event listeners
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    if ($("modalCarrinho")?.classList.contains("active")) fecharCarrinho();
-    if ($("quantidadeModal").style.display === "block") fecharQuantidade();
-  }
-});
-
-if ($("modalCarrinho")) {
-  $("modalCarrinho").addEventListener('click', (e) => {
-    if (e.target === $("modalCarrinho")) fecharCarrinho();
-  });
-}
-
-$("overlayQuantidade").addEventListener('click', fecharQuantidade);
-
-// Função de salvamento original
-function salvarOriginal() {
-  const novo = {
-    codigo: $("codigoCadastro").value.trim(),
-    nome: $("nomeCadastro").value.trim(),
-    categoria: $("categoriaCadastro").value,
-    tipo: $("tipoCadastro").value,
-    valor: Number($("valorCadastro").value)
-  };
-  if (!novo.codigo || !novo.nome || !novo.valor || isNaN(novo.valor)) {
-    alert("Preencha todos os campos corretamente");
-    return;
-  }
-  produtos.push(novo);
-  Storage.set("produtos", produtos);
-  atualizarProdutosTable();
-  atualizarScannerChart();
-  $("codigoCadastro").value = "";
-  $("nomeCadastro").value = "";
-  $("valorCadastro").value = "";
-  $("categoriaCadastro").value = "Alimentos";
-  $("tipoCadastro").value = "UN";
-  $("cadastro-title").innerText = "Cadastro de Produto";
-  irPara("produtos");
-}
-
-// Inicialização
-function iniciarApp() {
+// === INICIALIZAÇÃO (só depois que o DOM estiver pronto) ===
+document.addEventListener('DOMContentLoaded', () => {
   // Carregar tema
   const temaSalvo = localStorage.getItem('tema') || 'padrao';
   if (temaSalvo !== 'padrao') {
@@ -1346,7 +1305,7 @@ function iniciarApp() {
     $("temaSelector").value = temaSalvo;
   }
 
-  // Configurar eventos
+  // Configurar eventos dinâmicos
   if ($("toggleScannerBtn")) {
     $("toggleScannerBtn").onclick = alternarScanner;
   }
@@ -1369,19 +1328,58 @@ function iniciarApp() {
     });
   }
 
+  // Função de salvamento
+  function salvarOriginal() {
+    const novo = {
+      codigo: $("codigoCadastro").value.trim(),
+      nome: $("nomeCadastro").value.trim(),
+      categoria: $("categoriaCadastro").value,
+      tipo: $("tipoCadastro").value,
+      valor: Number($("valorCadastro").value)
+    };
+    if (!novo.codigo || !novo.nome || !novo.valor || isNaN(novo.valor)) {
+      alert("Preencha todos os campos corretamente");
+      return;
+    }
+    produtos.push(novo);
+    Storage.set("produtos", produtos);
+    atualizarProdutosTable();
+    atualizarScannerChart();
+    $("codigoCadastro").value = "";
+    $("nomeCadastro").value = "";
+    $("valorCadastro").value = "";
+    $("categoriaCadastro").value = "Alimentos";
+    $("tipoCadastro").value = "UN";
+    $("cadastro-title").innerText = "Cadastro de Produto";
+    irPara("produtos");
+  }
+
   if ($("salvarCadastro")) {
     $("salvarCadastro").onclick = salvarOriginal;
   }
+
+  // Eventos de teclado e clique
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if ($("modalCarrinho")?.classList.contains("active")) fecharCarrinho();
+      if ($("quantidadeModal").style.display === "block") fecharQuantidade();
+    }
+  });
+
+  if ($("modalCarrinho")) {
+    $("modalCarrinho").addEventListener('click', (e) => {
+      if (e.target === $("modalCarrinho")) fecharCarrinho();
+    });
+  }
+
+  $("overlayQuantidade").addEventListener('click', fecharQuantidade);
 
   // Inicializar dados
   atualizarHistorico();
   atualizarProdutosTable();
   atualizarCarrinho();
   setTimeout(() => atualizarScannerChart(), 500);
-}
-
-// ✅ Inicia após o DOM estar pronto
-document.addEventListener('DOMContentLoaded', iniciarApp);
+});
 </script>
 </body>
 </html>
