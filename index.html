@@ -7,9 +7,11 @@
 <meta name="theme-color" content="#4361ee" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-<link rel="manifest" href="/manifest.json" />
-<link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
-<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+<!-- Removido manifest e icons temporariamente para evitar erros em GitHub Pages -->
+<!-- <link rel="manifest" href="/manifest.json" /> -->
+<!-- <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" /> -->
+<!-- <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" /> -->
+
 <!-- Bibliotecas externas -->
 <script src="https://unpkg.com/@zxing/library@0.21.2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -339,7 +341,7 @@ width: 100%;
 height: 100%;
 object-fit: cover;
 border-radius: var(--radius);
-display: none; /* ✅ Inicia escondido */
+display: none;
 }
 #camera .reiniciando {
 position: absolute;
@@ -370,7 +372,7 @@ border: 3px solid var(--secondary);
 border-radius: 8px;
 pointer-events: none;
 box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.1);
-display: none; /* ✅ Inicia escondido */
+display: none;
 }
 .scan-overlay::before,
 .scan-overlay::after {
@@ -399,7 +401,7 @@ height: 4px;
 background: var(--secondary);
 box-shadow: 0 0 12px var(--secondary);
 animation: scan 2.5s linear infinite;
-display: none; /* ✅ Inicia escondido */
+display: none;
 }
 @keyframes scan {
 0% { top: 15%; }
@@ -757,7 +759,6 @@ Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
 <section id="scanner" class="view">
 <div class="box">
 <h2 style="text-align:center; margin-bottom:16px;">Scanner de Produtos</h2>
-<!-- ✅ Botão para controlar o scanner -->
 <div style="text-align: center; margin-bottom: 16px;">
   <button id="toggleScannerBtn" style="
     background: var(--primary);
@@ -853,14 +854,41 @@ Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
 </div>
 <script>
 const $ = id => document.getElementById(id);
+
+// ✅ Robustez no localStorage
 const Storage = {
-  get: (k, f = []) => JSON.parse(localStorage.getItem(k)) || f,
-  set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
+  get: (k, f = []) => {
+    try {
+      return JSON.parse(localStorage.getItem(k)) || f;
+    } catch (e) {
+      console.warn(`Erro ao ler ${k} do localStorage`, e);
+      return f;
+    }
+  },
+  set: (k, v) => {
+    try {
+      localStorage.setItem(k, JSON.stringify(v));
+    } catch (e) {
+      console.warn(`Erro ao salvar ${k} no localStorage`, e);
+    }
+  }
 };
-let produtos = Storage.get("produtos");
-let carrinho = Storage.get("carrinho");
-let historico = Storage.get("historicoCompras");
-let orcamento = Storage.get("orcamento") || 0;
+
+// ✅ Inicializa variáveis com fallback seguro
+let produtos = [];
+let carrinho = [];
+let historico = [];
+let orcamento = 0;
+
+try {
+  produtos = Storage.get("produtos");
+  carrinho = Storage.get("carrinho");
+  historico = Storage.get("historicoCompras");
+  orcamento = Storage.get("orcamento") || 0;
+} catch (e) {
+  console.warn("Falha ao carregar dados do localStorage. Usando valores padrão.", e);
+}
+
 let reader = null, stream = null, buffer = [], scannerAtivo = false;
 const repeticoes = 3;
 const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
@@ -1197,7 +1225,6 @@ function iniciarApp() {
     $(tela).classList.add("active");
     
     if (tela === "scanner") {
-      // ✅ Entra com interface limpa, sem ativar câmera
       resetarScannerUI();
     } else {
       pararScanner();
@@ -1306,7 +1333,7 @@ function iniciarApp() {
     }
     const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
     historico.push({
-       new Date().toLocaleString("pt-BR"),
+      data: new Date().toLocaleString("pt-BR"),
       total,
       itens: [...carrinho]
     });
@@ -1435,18 +1462,29 @@ window.addEventListener('resize', () => {
   }
 });
 
+// ✅ Tratamento robusto da inicialização
 window.addEventListener('DOMContentLoaded', () => {
-  const splash = $("splash");
-  if (splash) {
-    setTimeout(() => {
-      splash.style.opacity = '0';
+  try {
+    const splash = $("splash");
+    if (splash) {
       setTimeout(() => {
-        if (splash.parentNode) splash.remove();
-        iniciarApp();
-      }, 500);
-    }, 2000);
-  } else {
-    iniciarApp();
+        splash.style.opacity = '0';
+        setTimeout(() => {
+          if (splash.parentNode) splash.remove();
+          try {
+            iniciarApp();
+          } catch (e) {
+            console.error("Erro ao iniciar app:", e);
+            alert("Erro ao carregar o app. Recarregue a página.");
+          }
+        }, 500);
+      }, 2000);
+    } else {
+      iniciarApp();
+    }
+  } catch (e) {
+    console.error("Erro crítico na inicialização:", e);
+    alert("Erro ao carregar o app. Recarregue a página ou verifique o console.");
   }
 });
 </script>
