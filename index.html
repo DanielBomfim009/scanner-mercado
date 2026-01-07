@@ -7,15 +7,13 @@
 <meta name="theme-color" content="#4361ee" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-<!-- Removido manifest e icons temporariamente para evitar erros em GitHub Pages -->
-<!-- <link rel="manifest" href="/manifest.json" /> -->
-<!-- <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" /> -->
-<!-- <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" /> -->
-
+<link rel="manifest" href="/manifest.json" />
+<link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
 <!-- Bibliotecas externas -->
-<script src="https://unpkg.com/@zxing/library@0.21.2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/@zxing/library@0.21.2  "></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js  "></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter  :wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
 :root {
 --primary: #4361ee;
@@ -341,7 +339,6 @@ width: 100%;
 height: 100%;
 object-fit: cover;
 border-radius: var(--radius);
-display: none;
 }
 #camera .reiniciando {
 position: absolute;
@@ -372,7 +369,6 @@ border: 3px solid var(--secondary);
 border-radius: 8px;
 pointer-events: none;
 box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.1);
-display: none;
 }
 .scan-overlay::before,
 .scan-overlay::after {
@@ -401,7 +397,6 @@ height: 4px;
 background: var(--secondary);
 box-shadow: 0 0 12px var(--secondary);
 animation: scan 2.5s linear infinite;
-display: none;
 }
 @keyframes scan {
 0% { top: 15%; }
@@ -757,38 +752,43 @@ Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
 </div>
 </section>
 <section id="scanner" class="view">
-<div class="box">
-<h2 style="text-align:center; margin-bottom:16px;">Scanner de Produtos</h2>
-<div style="text-align: center; margin-bottom: 16px;">
-  <button id="toggleScannerBtn" style="
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 14px;
-    font-weight: 600;
-    font-size: 16px;
-    cursor: pointer;
-    transition: var(--transition);
-  ">Iniciar Scanner</button>
-</div>
-<div id="camera">
-<video id="video" playsinline></video>
-<div class="reiniciando" id="reiniciandoMensagem">Reiniciando câmera...</div>
-<div class="scan-overlay"></div>
-<div class="scan-line"></div>
-</div>
-<div id="scannerInfo">
-<p><strong>Código detectado:</strong> <span id="detected">—</span></p>
-<p><strong>Total produtos cadastrados:</strong> <span id="totalProdutos">0</span></p>
-<div id="scannerChartBox">
-<canvas id="categoriaChart"></canvas>
-</div>
-</div>
-<div id="barraValidacao">
-<div id="barraValidacaoInner" data-pct="0%"></div>
-</div>
-</div>
+  <div class="box">
+    <h2 style="text-align:center; margin-bottom:16px;">Scanner de Produtos</h2>
+    
+    <!-- ✅ Botão de controle do scanner -->
+    <div style="text-align: center; margin-bottom: 16px;">
+      <button id="toggleScannerBtn" style="
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 14px;
+        font-weight: 600;
+        font-size: 16px;
+        cursor: pointer;
+        transition: var(--transition);
+      ">Iniciar Scanner</button>
+    </div>
+
+    <div id="camera">
+      <video id="video" playsinline style="display:none;"></video>
+      <div class="reiniciando" id="reiniciandoMensagem">Reiniciando câmera...</div>
+      <div class="scan-overlay" style="display:none;"></div>
+      <div class="scan-line" style="display:none;"></div>
+    </div>
+    
+    <div id="scannerInfo" style="margin-top: 20px;">
+      <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
+      <p><strong>Total produtos cadastrados:</strong> <span id="totalProdutos">0</span></p>
+      <div id="scannerChartBox">
+        <canvas id="categoriaChart"></canvas>
+      </div>
+    </div>
+    
+    <div id="barraValidacao">
+      <div id="barraValidacaoInner" data-pct="0%"></div>
+    </div>
+  </div>
 </section>
 <section id="produtos" class="view">
 <div id="produtosBox" class="box">
@@ -854,41 +854,14 @@ Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
 </div>
 <script>
 const $ = id => document.getElementById(id);
-
-// ✅ Robustez no localStorage
 const Storage = {
-  get: (k, f = []) => {
-    try {
-      return JSON.parse(localStorage.getItem(k)) || f;
-    } catch (e) {
-      console.warn(`Erro ao ler ${k} do localStorage`, e);
-      return f;
-    }
-  },
-  set: (k, v) => {
-    try {
-      localStorage.setItem(k, JSON.stringify(v));
-    } catch (e) {
-      console.warn(`Erro ao salvar ${k} no localStorage`, e);
-    }
-  }
+  get: (k, f = []) => JSON.parse(localStorage.getItem(k)) || f,
+  set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
 };
-
-// ✅ Inicializa variáveis com fallback seguro
-let produtos = [];
-let carrinho = [];
-let historico = [];
-let orcamento = 0;
-
-try {
-  produtos = Storage.get("produtos");
-  carrinho = Storage.get("carrinho");
-  historico = Storage.get("historicoCompras");
-  orcamento = Storage.get("orcamento") || 0;
-} catch (e) {
-  console.warn("Falha ao carregar dados do localStorage. Usando valores padrão.", e);
-}
-
+let produtos = Storage.get("produtos");
+let carrinho = Storage.get("carrinho");
+let historico = Storage.get("historicoCompras");
+let orcamento = Storage.get("orcamento") || 0;
 let reader = null, stream = null, buffer = [], scannerAtivo = false;
 const repeticoes = 3;
 const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
@@ -1041,26 +1014,26 @@ function resetarScannerUI() {
   scannerAtivo = false;
   if (reader) reader.reset();
   
-  // Esconde elementos visuais
-  const video = $("video");
-  const overlay = document.querySelector(".scan-overlay");
-  const line = document.querySelector(".scan-line");
-  if (video) video.style.display = "none";
-  if (overlay) overlay.style.display = "none";
-  if (line) line.style.display = "none";
+  // Esconde elementos visuais do scanner
+  if ($("video")) $("video").style.display = "none";
+  if ($(".scan-overlay")) $(".scan-overlay").style.display = "none";
+  if ($(".scan-line")) $(".scan-line").style.display = "none";
   
   // Atualiza texto do botão
   const btn = $("toggleScannerBtn");
   if (btn) btn.innerText = "Iniciar Scanner";
 }
 
-// ✅ Nova função: alternar scanner manualmente
+// ✅ Nova função: ativar/desativar scanner manualmente
 function alternarScanner() {
   const btn = $("toggleScannerBtn");
   if (scannerAtivo) {
+    // Parar
     pararScanner();
-    resetarScannerUI();
+    resetarScannerUI(); // já inclui esconder elementos
+    btn.innerText = "Iniciar Scanner";
   } else {
+    // Iniciar
     btn.innerText = "Parar Scanner";
     setTimeout(iniciarScanner, 100);
   }
@@ -1068,6 +1041,7 @@ function alternarScanner() {
 
 async function iniciarScanner() {
   if (scannerAtivo || !navigator.mediaDevices) return;
+  
   scannerAtivo = true;
   buffer = [];
   
@@ -1083,8 +1057,8 @@ async function iniciarScanner() {
         video.srcObject = stream;
         await video.play().catch(e => console.warn("Erro ao play:", e));
         // Mostra overlays
-        const overlay = document.querySelector(".scan-overlay");
-        const line = document.querySelector(".scan-line");
+        const overlay = document.querySelector("#camera .scan-overlay");
+        const line = document.querySelector("#camera .scan-line");
         if (overlay) overlay.style.display = "block";
         if (line) line.style.display = "block";
       }
@@ -1096,8 +1070,8 @@ async function iniciarScanner() {
           video.style.display = "block";
           video.srcObject = stream;
           await video.play().catch(e => console.warn("Erro fallback:", e));
-          const overlay = document.querySelector(".scan-overlay");
-          const line = document.querySelector(".scan-line");
+          const overlay = document.querySelector("#camera .scan-overlay");
+          const line = document.querySelector("#camera .scan-line");
           if (overlay) overlay.style.display = "block";
           if (line) line.style.display = "block";
         }
@@ -1207,14 +1181,11 @@ function pararScanner() {
   }
   const video = $("video");
   if (video) {
-    if (video.srcObject) {
-      video.srcObject.getTracks().forEach(t => t.stop());
-    }
     video.srcObject = null;
     video.style.display = "none";
   }
-  const overlay = document.querySelector(".scan-overlay");
-  const line = document.querySelector(".scan-line");
+  const overlay = document.querySelector("#camera .scan-overlay");
+  const line = document.querySelector("#camera .scan-line");
   if (overlay) overlay.style.display = "none";
   if (line) line.style.display = "none";
 }
@@ -1225,6 +1196,7 @@ function iniciarApp() {
     $(tela).classList.add("active");
     
     if (tela === "scanner") {
+      // ✅ Reset completo, mas NÃO inicia a câmera
       resetarScannerUI();
     } else {
       pararScanner();
@@ -1232,11 +1204,12 @@ function iniciarApp() {
     }
   };
 
-  // Configura o botão do scanner
+  // Configura o botão do scanner (só quando o DOM estiver pronto)
   if ($("toggleScannerBtn")) {
     $("toggleScannerBtn").onclick = alternarScanner;
   }
 
+  // Restante da inicialização...
   const sidebar = $("sidebar");
   const content = $("content");
   const hamburger = $("hamburger");
@@ -1369,7 +1342,7 @@ function iniciarApp() {
   setTimeout(() => atualizarScannerChart(), 500);
 }
 
-// Funções auxiliares de gráfico
+// Funções auxiliares de gráfico (mantidas)
 function atualizarScannerChart() {
   const categorias = {};
   produtos.forEach(p => {
@@ -1462,29 +1435,18 @@ window.addEventListener('resize', () => {
   }
 });
 
-// ✅ Tratamento robusto da inicialização
 window.addEventListener('DOMContentLoaded', () => {
-  try {
-    const splash = $("splash");
-    if (splash) {
+  const splash = $("splash");
+  if (splash) {
+    setTimeout(() => {
+      splash.style.opacity = '0';
       setTimeout(() => {
-        splash.style.opacity = '0';
-        setTimeout(() => {
-          if (splash.parentNode) splash.remove();
-          try {
-            iniciarApp();
-          } catch (e) {
-            console.error("Erro ao iniciar app:", e);
-            alert("Erro ao carregar o app. Recarregue a página.");
-          }
-        }, 500);
-      }, 2000);
-    } else {
-      iniciarApp();
-    }
-  } catch (e) {
-    console.error("Erro crítico na inicialização:", e);
-    alert("Erro ao carregar o app. Recarregue a página ou verifique o console.");
+        if (splash.parentNode) splash.remove();
+        iniciarApp();
+      }, 500);
+    }, 2000);
+  } else {
+    iniciarApp();
   }
 });
 </script>
