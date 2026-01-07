@@ -1008,7 +1008,10 @@ function resetarScannerUI() {
   }
   buffer = [];
   scannerAtivo = false;
-  if (reader) reader.reset();
+  if (reader) {
+    reader.reset();
+    reader = null; // 👈 ESTA LINHA É A CHAVE!
+  }
 }
 
 // ✅ Nova função: alternar scanner manualmente
@@ -1145,7 +1148,11 @@ function processarCodigo(codigoNormalizado) {
 
 function pararScanner() {
   scannerAtivo = false;
-  if (reader) reader.reset();
+  // ✅ Destrói o leitor completamente
+  if (reader) {
+    reader.reset();
+    reader = null; // ← força a recriação depois
+  }
   if (stream) {
     stream.getTracks().forEach(t => t.stop());
     stream = null;
