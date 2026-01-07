@@ -3,10 +3,7 @@ const urlsToCache = [
   './index.html',
   './logo.png',
   './manifest.json',
-  './service-worker.js',
-  'https://unpkg.com/@zxing/library@0.21.2',
-  'https://cdn.jsdelivr.net/npm/chart.js',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
+  './service-worker.js'
 ];
 
 self.addEventListener('install', event => {
