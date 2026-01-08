@@ -2,857 +2,969 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
-<title>GoL BUY SMART</title>
+<title>GoL COMPRE COM INTELIGÊNCIA</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <meta name="theme-color" content="#4361ee" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-<link rel="manifest" href="/manifest.json" />
-<link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
-<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" sizes="192x192" href="logo.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="logo.png" />
 <!-- Bibliotecas externas -->
 <script src="https://unpkg.com/@zxing/library@0.21.2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
 :root {
---primary: #4361ee;
---primary-dark: #3a56d4;
---primary-light: #4895ef;
---secondary: #3a56d4;
---success: #4ade80;
---danger: #f87171;
---background: #f8f9ff;
---card: #ffffff;
---text: #1e293b;
---text-muted: #64748b;
---border: #e2e8f0;
---radius: 20px;
---shadow: 0 10px 25px -5px rgba(67, 97, 238, 0.1);
---transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --primary: #4361ee;
+  --primary-rgb: 67, 97, 238;
+  --primary-dark: #3a56d4;
+  --primary-light: #4895ef;
+  --secondary: #3a56d4;
+  --success: #4ade80;
+  --danger: #f87171;
+  --background: #f8f9ff;
+  --card: #ffffff;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 20px;
+  --shadow: 0 10px 25px -5px rgba(67, 97, 238, 0.1);
+  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
-/* Temas personalizáveis */
+
 body.tema-verde {
---primary: #22c55e;
---primary-dark: #16a34a;
---primary-light: #4ade80;
---secondary: #16a34a;
+  --primary: #22c55e;
+  --primary-rgb: 34, 197, 94;
+  --primary-dark: #16a34a;
+  --primary-light: #4ade80;
+  --secondary: #16a34a;
 }
+
 body.tema-roxo {
---primary: #8b5cf6;
---primary-dark: #7c3aed;
---primary-light: #a78bfa;
---secondary: #7c3aed;
+  --primary: #8b5cf6;
+  --primary-rgb: 139, 92, 246;
+  --primary-dark: #7c3aed;
+  --primary-light: #a78bfa;
+  --secondary: #7c3aed;
 }
+
 body.tema-laranja {
---primary: #fb923c;
---primary-dark: #f97316;
---primary-light: #fdba74;
---secondary: #f97316;
+  --primary: #fb923c;
+  --primary-rgb: 251, 146, 60;
+  --primary-dark: #f97316;
+  --primary-light: #fdba74;
+  --secondary: #f97316;
 }
+
 @media (prefers-color-scheme: dark) {
-:root,
-body.tema-verde,
-body.tema-roxo,
-body.tema-laranja {
---background: #0f172a;
---card: #1e293b;
---text: #f1f5f9;
---text-muted: #94a3b8;
---border: #334155;
---shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+  :root,
+  body.tema-verde,
+  body.tema-roxo,
+  body.tema-laranja {
+    --background: #0f172a;
+    --card: #1e293b;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+  }
 }
-}
+
 * {
-margin: 0;
-padding: 0;
-box-sizing: border-box;
-font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
+
 body {
-background: var(--background);
-display: flex;
-height: 100dvh;
-overflow-x: hidden;
-font-size: 16px;
-color: var(--text);
+  background: var(--background);
+  display: flex;
+  height: 100dvh;
+  overflow-x: hidden;
+  font-size: 16px;
+  color: var(--text);
 }
+
 #splash {
-position: fixed;
-inset: 0;
-background: #1e293b;
-color: white;
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-z-index: 2000;
-opacity: 1;
-transition: opacity 0.5s;
+  position: fixed;
+  inset: 0;
+  background: #1e293b;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  opacity: 1;
+  transition: opacity 0.5s;
 }
+
 #splash img {
-width: 300px;
-height: 300px;
-object-fit: contain;
-filter: drop-shadow(0 12px 28px rgba(0,0,0,0.4)) brightness(1.1);
-z-index: 2001;
+  width: 300px;
+  height: 300px;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 28px rgba(0,0,0,0.4)) brightness(1.1);
+  z-index: 2001;
 }
+
 #splash p {
-margin-top: 15px;
-font-size: 18px;
-font-weight: 600;
-z-index: 2001;
-text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  margin-top: 15px;
+  font-size: 18px;
+  font-weight: 600;
+  z-index: 2001;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
+
 #sidebar {
-position: fixed;
-top: 0;
-left: 0;
-bottom: 0;
-width: 220px;
-background: var(--primary);
-color: white;
-display: flex;
-flex-direction: column;
-padding-top: 60px;
-transition: transform 0.3s;
-z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 220px;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding-top: 60px;
+  transition: transform 0.3s;
+  z-index: 1000;
 }
+
 #sidebar.hide {
-transform: translateX(-100%);
+  transform: translateX(-100%);
 }
+
 #sidebar button {
-background: none;
-border: none;
-color: white;
-text-align: left;
-padding: 16px 20px;
-font-size: 17px;
-font-weight: 600;
-display: flex;
-align-items: center;
-gap: 12px;
-cursor: pointer;
-border-radius: 0 12px 12px 0;
-width: 100%;
-transition: var(--transition);
+  background: none;
+  border: none;
+  color: white;
+  text-align: left;
+  padding: 16px 20px;
+  font-size: 17px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  border-radius: 0 12px 12px 0;
+  width: 100%;
+  transition: var(--transition);
 }
+
 #sidebar button:hover {
-background: rgba(255, 255, 255, 0.15);
-padding-left: 28px;
+  background: rgba(255, 255, 255, 0.15);
+  padding-left: 28px;
 }
+
 #hamburger {
-position: fixed;
-top: 16px;
-left: 16px;
-width: 52px;
-height: 52px;
-background: var(--primary);
-color: white;
-display: flex;
-align-items: center;
-justify-content: center;
-border-radius: 14px;
-z-index: 1001;
-cursor: pointer;
-font-size: 28px;
-box-shadow: var(--shadow);
-transition: var(--transition);
-touch-action: manipulation;
--webkit-tap-highlight-color: transparent;
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  width: 52px;
+  height: 52px;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  z-index: 1001;
+  cursor: pointer;
+  font-size: 28px;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
+
 #hamburger:hover {
-transform: rotate(90deg);
-background: var(--primary-light);
+  transform: rotate(90deg);
+  background: var(--primary-light);
 }
+
 #content {
-margin-left: 220px;
-flex: 1;
-padding: 24px 20px;
-transition: margin-left 0.3s;
-overflow-y: auto;
+  margin-left: 220px;
+  flex: 1;
+  padding: 24px 20px;
+  transition: margin-left 0.3s;
+  overflow-y: auto;
 }
+
 #content.full {
-margin-left: 0;
+  margin-left: 0;
 }
+
 .view {
-display: none;
-animation: fadeIn 0.3s ease;
+  display: none;
+  animation: fadeIn 0.3s ease;
 }
+
 .view.active {
-display: block;
+  display: block;
 }
+
 @keyframes fadeIn {
-from { opacity: 0; transform: translateY(8px); }
-to { opacity: 1; transform: none; }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
 }
+
 #orcamentoAlerta {
-position: fixed;
-top: 20px;
-right: 20px;
-background: var(--danger);
-color: white;
-padding: 12px 20px;
-border-radius: 12px;
-font-weight: 600;
-box-shadow: 0 6px 16px rgba(0,0,0,0.2);
-z-index: 1000;
-opacity: 0;
-transform: translateY(-20px);
-transition: opacity 0.3s, transform 0.3s;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--danger);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.3s, transform 0.3s;
 }
+
 #orcamentoAlerta.show {
-opacity: 1;
-transform: translateY(0);
+  opacity: 1;
+  transform: translateY(0);
 }
+
 #home {
-text-align: center;
-padding-top: 20px;
+  text-align: center;
+  padding-top: 20px;
 }
+
 #home .logo-home {
-width: 280px;
-height: 280px;
-object-fit: contain;
-margin: 0 auto 20px;
-filter: drop-shadow(0 8px 16px rgba(67, 97, 238, 0.15));
+  width: 280px;
+  height: 280px;
+  object-fit: contain;
+  margin: 0 auto 20px;
+  filter: drop-shadow(0 8px 16px rgba(67, 97, 238, 0.15));
 }
+
 #home h2 {
-margin: 10px 0;
-color: var(--primary);
-font-weight: 800;
-font-size: 1.8rem;
-letter-spacing: -0.5px;
+  margin: 10px 0;
+  color: var(--primary);
+  font-weight: 800;
+  font-size: 1.8rem;
+  letter-spacing: -0.5px;
 }
+
 #temaContainer {
-margin: 16px auto 24px;
-max-width: 320px;
+  margin: 16px auto 24px;
+  max-width: 320px;
 }
+
 #temaSelector {
-width: 100%;
-padding: 10px 14px;
-border-radius: 12px;
-border: 1px solid var(--border);
-background: var(--card);
-color: var(--text);
-font-size: 15px;
-box-shadow: var(--shadow);
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-size: 15px;
+  box-shadow: var(--shadow);
 }
+
 #orcamento {
-position: relative;
-max-width: 400px;
-margin: 20px auto;
+  position: relative;
+  max-width: 400px;
+  margin: 20px auto;
 }
+
 #orcamento h3 {
-margin-bottom: 12px;
-font-weight: 700;
-color: var(--text);
+  margin-bottom: 12px;
+  font-weight: 700;
+  color: var(--text);
 }
+
 .orcamento-input-container {
-position: relative;
-display: flex;
-align-items: center;
-width: 100%;
-margin-top: 12px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-top: 12px;
 }
+
 .real-prefix {
-position: absolute;
-left: 16px;
-color: var(--text-muted);
-font-weight: 700;
-font-size: 18px;
-pointer-events: none;
-z-index: 1;
+  position: absolute;
+  left: 16px;
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 18px;
+  pointer-events: none;
+  z-index: 1;
 }
+
 #orcamentoInput {
-width: 100%;
-padding: 14px 14px 14px 52px !important;
-border-radius: 14px;
-border: 1px solid var(--border);
-font-size: 16px;
-background: var(--card);
-color: var(--text);
-transition: var(--transition);
+  width: 100%;
+  padding: 14px 14px 14px 52px !important;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  font-size: 16px;
+  background: var(--card);
+  color: var(--text);
+  transition: var(--transition);
 }
+
 #orcamentoInput:focus {
-outline: none;
-border-color: var(--primary);
-box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.2);
 }
+
+/* Aplica borda primária nos temas personalizados */
+body.tema-verde #orcamentoInput,
+body.tema-roxo #orcamentoInput,
+body.tema-laranja #orcamentoInput {
+  border-color: var(--primary);
+}
+
 #orcamentoBarra {
-height: 14px;
-background: #e2e8f0;
-border-radius: 7px;
-margin-top: 12px;
-overflow: hidden;
-border: 1px solid var(--border);
+  height: 14px;
+  background: #e2e8f0;
+  border-radius: 7px;
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
 }
+
 #orcamentoBarraInner {
-height: 100%;
-width: 0%;
-background: linear-gradient(90deg, var(--secondary), var(--primary-light));
-border-radius: 7px;
-text-align: center;
-color: white;
-font-weight: 700;
-transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-position: relative;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--secondary), var(--primary-light));
+  border-radius: 7px;
+  text-align: center;
+  color: white;
+  font-weight: 700;
+  transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
 }
+
 #orcamentoBarraInner::after {
-content: attr(data-pct);
-position: absolute;
-right: 8px;
-top: 50%;
-transform: translateY(-50%);
-font-size: 11px;
-text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  content: attr(data-pct);
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
+
 .box {
-background: var(--card);
-border-radius: var(--radius);
-padding: 24px;
-margin-bottom: 24px;
-box-shadow: var(--shadow);
-border: 1px solid var(--border);
-transition: var(--transition);
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  transition: var(--transition);
 }
+
 .box:hover {
-transform: translateY(-3px);
-box-shadow: 0 14px 32px -8px rgba(0, 0, 0, 0.18);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 32px -8px rgba(0, 0, 0, 0.18);
 }
+
 #scannerInfo {
-display: flex;
-flex-direction: column;
-gap: 16px;
-margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
 }
+
 #camera {
-width: 100%;
-height: 260px;
-background: #000;
-border-radius: var(--radius);
-overflow: hidden;
-position: relative;
-box-shadow: var(--shadow);
+  width: 100%;
+  height: 260px;
+  background: #000;
+  border-radius: var(--radius);
+  overflow: hidden;
+  position: relative;
+  box-shadow: var(--shadow);
 }
+
 #camera video {
-width: 100%;
-height: 100%;
-object-fit: cover;
-border-radius: var(--radius);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius);
 }
+
 #camera .reiniciando {
-position: absolute;
-top: 0;
-left: 0;
-width: 100%;
-height: 100%;
-background: rgba(0, 0, 0, 0.85);
-color: white;
-display: flex;
-align-items: center;
-justify-content: center;
-font-size: 16px;
-font-weight: 600;
-border-radius: var(--radius);
-z-index: 10;
-opacity: 0;
-pointer-events: none;
-transition: opacity 0.2s;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: var(--radius);
+  z-index: 10;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
 }
+
 .scan-overlay {
-position: absolute;
-top: 15%;
-left: 15%;
-width: 70%;
-height: 70%;
-border: 3px solid var(--secondary);
-border-radius: 8px;
-pointer-events: none;
-box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.1);
+  position: absolute;
+  top: 15%;
+  left: 15%;
+  width: 70%;
+  height: 70%;
+  border: 3px solid var(--secondary);
+  border-radius: 8px;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.1);
 }
+
 .scan-overlay::before,
 .scan-overlay::after {
-content: '';
-position: absolute;
-width: 32px;
-height: 32px;
-border: 3px solid var(--secondary);
+  content: '';
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--secondary);
 }
+
 .scan-overlay::before {
-top: -3px; left: -3px;
-border-right: none;
-border-bottom: none;
+  top: -3px; left: -3px;
+  border-right: none;
+  border-bottom: none;
 }
+
 .scan-overlay::after {
-bottom: -3px; right: -3px;
-border-left: none;
-border-top: none;
+  bottom: -3px; right: -3px;
+  border-left: none;
+  border-top: none;
 }
+
 .scan-line {
-position: absolute;
-top: 15%;
-left: 15%;
-width: 70%;
-height: 4px;
-background: var(--secondary);
-box-shadow: 0 0 12px var(--secondary);
-animation: scan 2.5s linear infinite;
+  position: absolute;
+  top: 15%;
+  left: 15%;
+  width: 70%;
+  height: 4px;
+  background: var(--secondary);
+  box-shadow: 0 0 12px var(--secondary);
+  animation: scan 2.5s linear infinite;
 }
+
 @keyframes scan {
-0% { top: 15%; }
-50% { top: 85%; }
-100% { top: 15%; }
+  0% { top: 15%; }
+  50% { top: 85%; }
+  100% { top: 15%; }
 }
+
 #produtosBox {
-overflow-x: auto;
+  overflow-x: auto;
 }
+
 table {
-width: 100%;
-border-collapse: collapse;
-margin-top: 12px;
-font-size: 15px;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 15px;
 }
+
 th, td {
-padding: 12px 10px;
-text-align: center;
-border-bottom: 1px solid var(--border);
+  padding: 12px 10px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
 }
+
 th {
-font-weight: 700;
-color: var(--text);
+  font-weight: 700;
+  color: var(--text);
 }
+
 tr:last-child td {
-border-bottom: none;
+  border-bottom: none;
 }
+
 tr:nth-child(even) {
-background: rgba(67, 97, 238, 0.03);
+  background: rgba(67, 97, 238, 0.03);
 }
+
 @media (prefers-color-scheme: dark) {
-tr:nth-child(even) {
-background: rgba(67, 97, 238, 0.08);
+  tr:nth-child(even) {
+    background: rgba(67, 97, 238, 0.08);
+  }
 }
-}
+
 button.editBtn {
-background: var(--success);
-color: #000;
-margin-right: 6px;
-border: none;
-padding: 8px 14px;
-border-radius: 8px;
-cursor: pointer;
-font-weight: 600;
-transition: var(--transition);
+  background: var(--success);
+  color: #000;
+  margin-right: 6px;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: var(--transition);
 }
+
 button.editBtn:hover {
-background: #ffcc33;
-transform: translateY(-2px);
+  background: #ffcc33;
+  transform: translateY(-2px);
 }
+
 button.deleteBtn {
-background: var(--danger);
-color: white;
-border: none;
-padding: 8px 14px;
-border-radius: 8px;
-cursor: pointer;
-font-weight: 600;
-transition: var(--transition);
+  background: var(--danger);
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: var(--transition);
 }
+
 button.deleteBtn:hover {
-background: #ff6b6b;
-transform: translateY(-2px);
+  background: #ff6b6b;
+  transform: translateY(-2px);
 }
+
 .historico-card {
-background: var(--card);
-border-radius: 14px;
-padding: 18px;
-margin-bottom: 16px;
-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-border: 1px solid var(--border);
+  background: var(--card);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border);
 }
+
 .historico-card h4 {
-margin-bottom: 8px;
-color: var(--primary);
-font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--primary);
+  font-weight: 700;
 }
+
 .historico-card small {
-color: var(--text-muted);
-display: block;
-margin-bottom: 10px;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 10px;
 }
+
 .historico-card details {
-margin-top: 8px;
+  margin-top: 8px;
 }
+
 .historico-card details ul {
-padding-left: 24px;
-margin: 8px 0;
-max-height: 150px;
-overflow-y: auto;
+  padding-left: 24px;
+  margin: 8px 0;
+  max-height: 150px;
+  overflow-y: auto;
 }
+
 #carrinhoIcone {
-position: fixed;
-bottom: max(24px, env(safe-area-inset-bottom));
-right: 24px;
-width: 72px;
-height: 72px;
-background: var(--secondary);
-border-radius: 50%;
-color: white;
-display: flex;
-align-items: center;
-justify-content: center;
-font-size: 28px;
-cursor: pointer;
-z-index: 200;
-box-shadow: 0 8px 20px rgba(58, 86, 212, 0.4);
-transition: var(--transition);
+  position: fixed;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  right: 24px;
+  width: 72px;
+  height: 72px;
+  background: var(--secondary);
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  cursor: pointer;
+  z-index: 200;
+  box-shadow: 0 8px 20px rgba(58, 86, 212, 0.4);
+  transition: var(--transition);
 }
+
 #carrinhoIcone:hover {
-transform: scale(1.12) rotate(10deg);
-box-shadow: 0 10px 25px rgba(58, 86, 212, 0.6);
+  transform: scale(1.12) rotate(10deg);
+  box-shadow: 0 10px 25px rgba(58, 86, 212, 0.6);
 }
+
 #carrinhoIcone span {
-position: absolute;
-top: -4px;
-right: -4px;
-width: 24px;
-height: 24px;
-background: var(--primary);
-color: white;
-border-radius: 50%;
-font-size: 12px;
-display: flex;
-align-items: center;
-justify-content: center;
-font-weight: 700;
-box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 24px;
+  height: 24px;
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
+
 #modalCarrinho {
-position: fixed;
-inset: 0;
-background: rgba(0, 0, 0, 0.7);
-display: none;
-z-index: 1000;
-align-items: center;
-justify-content: center;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: none;
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
 }
+
 #modalCarrinho .modal-content {
-background: var(--card);
-width: 95%;
-max-width: 480px;
-margin: 40px auto;
-padding: 28px;
-border-radius: var(--radius);
-box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-border: 1px solid var(--border);
-transform: scale(0.95);
-opacity: 0;
-transition: transform 0.3s, opacity 0.3s;
+  background: var(--card);
+  width: 95%;
+  max-width: 480px;
+  margin: 40px auto;
+  padding: 28px;
+  border-radius: var(--radius);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border);
+  transform: scale(0.95);
+  opacity: 0;
+  transition: transform 0.3s, opacity 0.3s;
 }
+
 #modalCarrinho.active .modal-content {
-transform: scale(1);
-opacity: 1;
+  transform: scale(1);
+  opacity: 1;
 }
+
 #modalCarrinho table {
-width: 100%;
-margin-bottom: 16px;
+  width: 100%;
+  margin-bottom: 16px;
 }
+
 #modalCarrinho button {
-width: 100%;
-padding: 14px;
-margin-top: 12px;
-border: none;
-border-radius: 14px;
-color: white;
-background: var(--primary);
-cursor: pointer;
-font-weight: 700;
-font-size: 17px;
-transition: var(--transition);
+  width: 100%;
+  padding: 14px;
+  margin-top: 12px;
+  border: none;
+  border-radius: 14px;
+  color: white;
+  background: var(--primary);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 17px;
+  transition: var(--transition);
 }
+
 #modalCarrinho button:hover {
-background: var(--primary-light);
-transform: translateY(-2px);
+  background: var(--primary-light);
+  transform: translateY(-2px);
 }
+
 #cadastroBox {
-max-width: 420px;
-margin: 20px auto;
-position: relative;
+  max-width: 420px;
+  margin: 20px auto;
+  position: relative;
 }
+
 #cadastroBox h2 {
-margin-bottom: 20px;
-color: var(--primary);
-text-align: center;
+  margin-bottom: 20px;
+  color: var(--primary);
+  text-align: center;
 }
+
 #cadastroBox input,
 #cadastroBox select,
 #cadastroBox button {
-width: 100%;
-padding: 14px;
-margin-top: 10px;
-border-radius: 14px;
-border: 1px solid var(--border);
-font-size: 16px;
-background: var(--card);
-color: var(--text);
-transition: var(--transition);
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  font-size: 16px;
+  background: var(--card);
+  color: var(--text);
+  transition: var(--transition);
 }
+
 #cadastroBox input:focus,
 #cadastroBox select:focus {
-outline: none;
-border-color: var(--primary);
-box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.2);
 }
+
 #cadastroBox button {
-background: var(--primary);
-color: white;
-border: none;
-font-weight: 700;
-transition: var(--transition);
+  background: var(--primary);
+  color: white;
+  border: none;
+  font-weight: 700;
+  transition: var(--transition);
 }
+
 #cadastroBox button:hover {
-background: var(--primary-light);
-transform: translateY(-2px);
+  background: var(--primary-light);
+  transform: translateY(-2px);
 }
+
 #scannerChartBox {
-margin-top: 24px;
-height: 200px;
+  margin-top: 24px;
+  height: 200px;
 }
+
 #barraValidacao {
-height: 14px;
-background: #e2e8f0;
-border-radius: 7px;
-margin-top: 12px;
-overflow: hidden;
-border: 1px solid var(--border);
+  height: 14px;
+  background: #e2e8f0;
+  border-radius: 7px;
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
 }
+
 #barraValidacaoInner {
-height: 100%;
-width: 0%;
-background: linear-gradient(90deg, var(--secondary), var(--primary-light));
-border-radius: 7px;
-text-align: center;
-color: white;
-font-weight: 700;
-transition: width 0.5s;
-position: relative;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--secondary), var(--primary-light));
+  border-radius: 7px;
+  text-align: center;
+  color: white;
+  font-weight: 700;
+  transition: width 0.5s;
+  position: relative;
 }
+
 #barraValidacaoInner::after {
-content: attr(data-pct);
-position: absolute;
-right: 8px;
-top: 50%;
-transform: translateY(-50%);
-font-size: 11px;
-text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  content: attr(data-pct);
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
+
 @media (max-width: 768px) {
-#sidebar { width: 200px; }
-#content { margin-left: 200px; padding: 20px 16px; }
-.box { padding: 20px; }
+  #sidebar { width: 200px; }
+  #content { margin-left: 200px; padding: 20px 16px; }
+  .box { padding: 20px; }
 }
+
 @media (max-width: 480px) {
-#sidebar { width: 180px; transform: translateX(-100%); }
-#sidebar.hide { transform: translateX(-100%); }
-#content { margin-left: 180px; padding: 16px 12px; }
-#home .logo-home { width: 240px; height: 240px; }
-#hamburger { width: 48px; height: 48px; }
-#orcamento input { font-size: 15px; }
+  #sidebar { width: 180px; transform: translateX(-100%); }
+  #sidebar.hide { transform: translateX(-100%); }
+  #content { margin-left: 180px; padding: 16px 12px; }
+  #home .logo-home { width: 240px; height: 240px; }
+  #hamburger { width: 48px; height: 48px; }
+  #orcamento input { font-size: 15px; }
 }
+
 @keyframes pulse {
-0%, 100% { transform: scale(1); }
-50% { transform: scale(1.2); }
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
 }
+
 .quantidade-modal {
-position: fixed;
-top: 50%;
-left: 50%;
-transform: translate(-50%, -50%);
-background: var(--card);
-padding: 24px;
-border-radius: 16px;
-box-shadow: 0 12px 32px rgba(0,0,0,0.3);
-z-index: 1100;
-border: 1px solid var(--border);
-text-align: center;
-max-width: 320px;
-width: 90vw;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--card);
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+  z-index: 1100;
+  border: 1px solid var(--border);
+  text-align: center;
+  max-width: 320px;
+  width: 90vw;
 }
+
 .quantidade-modal input {
-width: 100%;
-padding: 12px;
-margin: 12px 0;
-border: 1px solid var(--border);
-border-radius: 12px;
-font-size: 18px;
-text-align: center;
-background: var(--card);
-color: var(--text);
+  width: 100%;
+  padding: 12px;
+  margin: 12px 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 18px;
+  text-align: center;
+  background: var(--card);
+  color: var(--text);
 }
+
 .quantidade-modal button {
-background: var(--primary);
-color: white;
-border: none;
-border-radius: 12px;
-padding: 10px 20px;
-font-weight: 600;
-margin: 0 6px;
-cursor: pointer;
-transition: var(--transition);
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 20px;
+  font-weight: 600;
+  margin: 0 6px;
+  cursor: pointer;
+  transition: var(--transition);
 }
+
 .quantidade-modal button:hover {
-background: var(--primary-light);
+  background: var(--primary-light);
 }
+
 #overlayQuantidade {
-position: fixed;
-inset: 0;
-background: rgba(0,0,0,0.5);
-z-index: 1050;
-display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1050;
+  display: none;
 }
 </style>
 </head>
 <body>
 <div id="splash">
-<img src="logo.png" alt="GoL BUY SMART – App de compras inteligente" />
-<p>Bem-vindo ao seu app de compras inteligente</p>
+  <img src="logo.png" alt="GoL COMPRE COM INTELIGÊNCIA" />
+  <p>Bem-vindo ao seu app de compras inteligente</p>
 </div>
 <div id="hamburger">☰</div>
 <div id="sidebar">
-<button onclick="irPara('home')">🏠 Home</button>
-<button onclick="irPara('scanner')">📷 Scanner</button>
-<button onclick="irPara('produtos')">📦 Produtos</button>
-<button onclick="irPara('cadastro')">📝 Cadastro</button>
-<button onclick="irPara('historico')">🧾 Histórico</button>
+  <button onclick="irPara('home')">🏠 Home</button>
+  <button onclick="irPara('scanner')">📷 Scanner</button>
+  <button onclick="irPara('produtos')">📦 Produtos</button>
+  <button onclick="irPara('cadastro')">📝 Cadastro</button>
+  <button onclick="irPara('historico')">🧾 Histórico</button>
 </div>
+
 <div id="orcamentoAlerta">⚠️ Orçamento excedido!</div>
+
 <div id="content">
-<section id="home" class="view active">
-<img src="logo.png" class="logo-home" alt="GoL BUY SMART – App de compras inteligente" />
-<h2>Bem-vindo ao GoL BUY SMART</h2>
-<div id="temaContainer">
-<select id="temaSelector" onchange="mudarTema(this.value)">
-<option value="padrao">Tema Padrão (Azul)</option>
-<option value="verde">Tema Verde</option>
-<option value="roxo">Tema Roxo</option>
-<option value="laranja">Tema Laranja</option>
-</select>
+  <section id="home" class="view active">
+    <img src="logo.png" class="logo-home" alt="GoL COMPRE COM INTELIGÊNCIA" />
+    <h2>Bem-vindo ao GoL COMPRE COM INTELIGÊNCIA</h2>
+    <div id="temaContainer">
+      <select id="temaSelector" onchange="mudarTema(this.value)">
+        <option value="padrao">Tema Padrão (Azul)</option>
+        <option value="verde">Tema Verde</option>
+        <option value="roxo">Tema Roxo</option>
+        <option value="laranja">Tema Laranja</option>
+      </select>
+    </div>
+    <div id="orcamento" class="box">
+      <h3>💰 Orçamento Mensal</h3>
+      <div class="orcamento-input-container">
+        <span class="real-prefix">R$</span>
+        <input type="number" id="orcamentoInput" placeholder="0,00" min="0" step="0.01" />
+      </div>
+      <div id="orcamentoBarra">
+        <div id="orcamentoBarraInner" data-pct="0%"></div>
+      </div>
+      <p style="margin-top: 12px; color: var(--text-muted);">
+        Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
+      </p>
+    </div>
+  </section>
+
+  <section id="scanner" class="view">
+    <div class="box">
+      <h2 style="text-align:center; margin-bottom:16px;">Scanner de Produtos</h2>
+      <div style="text-align: center; margin-bottom: 16px;">
+        <button id="toggleScannerBtn" style="
+          background: var(--primary);
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 14px;
+          font-weight: 600;
+          font-size: 16px;
+          cursor: pointer;
+          transition: var(--transition);
+        ">Iniciar Scanner</button>
+      </div>
+      <div id="camera">
+        <video id="video" playsinline></video>
+        <div class="reiniciando" id="reiniciandoMensagem">Reiniciando câmera...</div>
+        <div class="scan-overlay"></div>
+        <div class="scan-line"></div>
+      </div>
+      <div id="scannerInfo">
+        <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
+        <p><strong>Total produtos cadastrados:</strong> <span id="totalProdutos">0</span></p>
+        <div id="scannerChartBox">
+          <canvas id="categoriaChart"></canvas>
+        </div>
+      </div>
+      <div id="barraValidacao">
+        <div id="barraValidacaoInner" data-pct="0%"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="produtos" class="view">
+    <div id="produtosBox" class="box">
+      <h2 style="margin-bottom:16px;">Produtos Cadastrados</h2>
+      <table id="produtosTable">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nome</th>
+            <th>Categoria</th>
+            <th>Tipo</th>
+            <th>Valor</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="cadastro" class="view">
+    <div id="cadastroBox" class="box">
+      <h2 id="cadastro-title">Cadastro de Produto</h2>
+      <input id="codigoCadastro" placeholder="Código" />
+      <input id="nomeCadastro" placeholder="Nome" />
+      <select id="categoriaCadastro">
+        <option value="Alimentos">Alimentos</option>
+        <option value="Limpeza">Limpeza</option>
+        <option value="Bebida">Bebida</option>
+        <option value="Farmácia">Farmácia</option>
+        <option value="Higiene">Higiene</option>
+        <option value="Outros">Outros</option>
+      </select>
+      <select id="tipoCadastro">
+        <option>UN</option>
+        <option>KG</option>
+      </select>
+      <input id="valorCadastro" type="number" step="0.01" placeholder="Valor" />
+      <button id="salvarCadastro">Salvar Produto</button>
+    </div>
+  </section>
+
+  <section id="historico" class="view">
+    <div class="box" id="historicoConteudo"></div>
+  </section>
 </div>
-<div id="orcamento" class="box">
-<h3>💰 Orçamento Mensal</h3>
-<div class="orcamento-input-container">
-<span class="real-prefix">R$</span>
-<input type="number" id="orcamentoInput" placeholder="0,00" min="0" step="0.01" />
-</div>
-<div id="orcamentoBarra">
-<div id="orcamentoBarraInner" data-pct="0%"></div>
-</div>
-<p style="margin-top: 12px; color: var(--text-muted);">
-Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
-</p>
-</div>
-</section>
-<section id="scanner" class="view">
-<div class="box">
-<h2 style="text-align:center; margin-bottom:16px;">Scanner de Produtos</h2>
-<div style="text-align: center; margin-bottom: 16px;">
-  <button id="toggleScannerBtn" style="
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 14px;
-    font-weight: 600;
-    font-size: 16px;
-    cursor: pointer;
-    transition: var(--transition);
-  ">Iniciar Scanner</button>
-</div>
-<div id="camera">
-<video id="video" playsinline></video>
-<div class="reiniciando" id="reiniciandoMensagem">Reiniciando câmera...</div>
-<div class="scan-overlay"></div>
-<div class="scan-line"></div>
-</div>
-<div id="scannerInfo">
-<p><strong>Código detectado:</strong> <span id="detected">—</span></p>
-<p><strong>Total produtos cadastrados:</strong> <span id="totalProdutos">0</span></p>
-<div id="scannerChartBox">
-<canvas id="categoriaChart"></canvas>
-</div>
-</div>
-<div id="barraValidacao">
-<div id="barraValidacaoInner" data-pct="0%"></div>
-</div>
-</div>
-</section>
-<section id="produtos" class="view">
-<div id="produtosBox" class="box">
-<h2 style="margin-bottom:16px;">Produtos Cadastrados</h2>
-<table id="produtosTable">
-<thead>
-<tr>
-<th>Código</th>
-<th>Nome</th>
-<th>Categoria</th>
-<th>Tipo</th>
-<th>Valor</th>
-<th>Ações</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-</div>
-</section>
-<section id="cadastro" class="view">
-<div id="cadastroBox" class="box">
-<h2 id="cadastro-title">Cadastro de Produto</h2>
-<input id="codigoCadastro" placeholder="Código" />
-<input id="nomeCadastro" placeholder="Nome" />
-<select id="categoriaCadastro">
-<option value="Alimentos">Alimentos</option>
-<option value="Limpeza">Limpeza</option>
-<option value="Bebida">Bebida</option>
-<option value="Farmácia">Farmácia</option>
-<option value="Higiene">Higiene</option>
-<option value="Outros">Outros</option>
-</select>
-<select id="tipoCadastro">
-<option>UN</option>
-<option>KG</option>
-</select>
-<input id="valorCadastro" type="number" step="0.01" placeholder="Valor" />
-<button id="salvarCadastro">Salvar Produto</button>
-</div>
-</section>
-<section id="historico" class="view">
-<div class="box" id="historicoConteudo"></div>
-</section>
-</div>
+
 <div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️<span id="badge">0</span></div>
+
 <div id="modalCarrinho">
-<div class="modal-content">
-<h3 style="margin-bottom:16px; color: var(--primary);">Carrinho</h3>
-<table id="tabelaCarrinho"></table>
-<p id="total" style="font-weight:700; color: var(--primary); margin:16px 0;">Total: R$ 0,00</p>
-<button onclick="finalizarCompra()">Finalizar</button>
-<button onclick="fecharCarrinho()">Fechar</button>
+  <div class="modal-content">
+    <h3 style="margin-bottom:16px; color: var(--primary);">Carrinho</h3>
+    <table id="tabelaCarrinho"></table>
+    <p id="total" style="font-weight:700; color: var(--primary); margin:16px 0;">Total: R$ 0,00</p>
+    <button onclick="finalizarCompra()">Finalizar</button>
+    <button onclick="fecharCarrinho()">Fechar</button>
+  </div>
 </div>
-</div>
+
 <div id="overlayQuantidade"></div>
 <div id="quantidadeModal" class="quantidade-modal" style="display:none;">
-<h3 id="tituloQuantidade">Informe a quantidade</h3>
-<input type="number" id="inputQuantidade" min="1" value="1" step="1" />
-<div>
-<button id="btnConfirmarQtd">Confirmar</button>
-<button id="btnCancelarQtd">Cancelar</button>
+  <h3 id="tituloQuantidade">Informe a quantidade</h3>
+  <input type="number" id="inputQuantidade" min="1" value="1" step="1" />
+  <div>
+    <button id="btnConfirmarQtd">Confirmar</button>
+    <button id="btnCancelarQtd">Cancelar</button>
+  </div>
 </div>
-</div>
+
 <script>
 const $ = id => document.getElementById(id);
 const Storage = {
   get: (k, f = []) => JSON.parse(localStorage.getItem(k)) || f,
   set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
 };
+
 let produtos = Storage.get("produtos");
 let carrinho = Storage.get("carrinho");
 let historico = Storage.get("historicoCompras");
@@ -860,9 +972,8 @@ let orcamento = Storage.get("orcamento") || 0;
 let reader = null, stream = null, buffer = [], scannerAtivo = false;
 const repeticoes = 3;
 const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
-
 let categoriaChart;
-let ultimoCodigoProcessado = null; // ✅ Previne reprocessamento imediato
+let ultimoCodigoProcessado = null;
 
 // Carregar tema salvo
 const temaSalvo = localStorage.getItem('tema') || 'padrao';
@@ -871,37 +982,21 @@ if (temaSalvo !== 'padrao') {
 }
 if ($("temaSelector")) {
   $("temaSelector").value = temaSalvo;
+  // Atualiza a meta tag para o tema-color
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--primary'));
 }
 
 function mudarTema(tema) {
-  // ✅ Remove temas anteriores
   document.body.className = document.body.className.replace(/tema-\w+/g, '').trim();
   if (tema !== 'padrao') {
     document.body.classList.add(`tema-${tema}`);
   }
   localStorage.setItem('tema', tema);
-  // ✅ Atualiza cores de elementos que usam --primary (como input)
-  aplicarEstiloTema();
+  // Atualiza a cor do tema na barra do navegador (PWA)
+  const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary');
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', primaryColor);
   if (document.getElementById("scanner").classList.contains("active")) {
     setTimeout(atualizarScannerChart, 100);
-  }
-}
-
-// ✅ Aplica o estilo do tema a elementos que não herdam via CSS (ex: borda do input)
-function aplicarEstiloTema() {
-  const root = getComputedStyle(document.documentElement);
-  const primary = root.getPropertyValue('--primary').trim();
-  const boxShadow = `0 0 0 3px ${primary.replace(')', ', 0.2)')}`;
-  
-  const input = $("orcamentoInput");
-  if (input) {
-    input.style.borderColor = primary;
-    input.addEventListener('focus', () => {
-      input.style.boxShadow = boxShadow;
-    });
-    input.addEventListener('blur', () => {
-      input.style.boxShadow = 'none';
-    });
   }
 }
 
@@ -1018,7 +1113,6 @@ function atualizarHistorico() {
   });
 }
 
-// ✅ Resetar interface do scanner SEM iniciar câmera
 function resetarScannerUI() {
   fecharQuantidade();
   if ($("detected")) $("detected").innerText = "—";
@@ -1029,11 +1123,10 @@ function resetarScannerUI() {
   }
   buffer = [];
   scannerAtivo = false;
-  ultimoCodigoProcessado = null; // ✅ Limpa código processado
+  ultimoCodigoProcessado = null;
   if (reader) reader.reset();
 }
 
-// ✅ Nova função: alternar scanner manualmente
 function alternarScanner() {
   const btn = $("toggleScannerBtn");
   if (scannerAtivo) {
@@ -1102,14 +1195,11 @@ async function iniciarScanner() {
 }
 
 function processarCodigo(codigoNormalizado) {
-  // ✅ Evita processar o mesmo código imediatamente
   if (codigoNormalizado === ultimoCodigoProcessado) {
     buffer = [];
     return;
   }
-
   if ($("quantidadeModal")?.style.display === "block") return;
-
   try {
     ultimoCodigoProcessado = codigoNormalizado;
     navigator.vibrate?.(50);
@@ -1288,11 +1378,7 @@ if ($("modalCarrinho")) {
 
 $("overlayQuantidade").addEventListener('click', fecharQuantidade);
 
-// ✅ Inicialização principal
 function iniciarApp() {
-  // Aplica o tema salvo ao input de orçamento
-  aplicarEstiloTema();
-
   if ($("toggleScannerBtn")) {
     $("toggleScannerBtn").onclick = alternarScanner;
   }
@@ -1300,7 +1386,6 @@ function iniciarApp() {
   window.irPara = function(tela) {
     document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
     $(tela).classList.add("active");
-    
     if (tela === "scanner") {
       resetarScannerUI();
     } else {
@@ -1389,7 +1474,6 @@ function iniciarApp() {
     atualizarCarrinho();
   };
 
-  // ✅ Fechar carrinho com reset total do scanner
   window.fecharCarrinho = function() {
     $("modalCarrinho").classList.remove("active");
     setTimeout(() => {
