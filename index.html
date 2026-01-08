@@ -10,7 +10,7 @@
 <link rel="manifest" href="./manifest.json" />
 <link rel="apple-touch-icon" sizes="192x192" href="./logo.png" />
 <link rel="icon" type="image/png" sizes="192x192" href="./logo.png" />
-<!-- Bibliotecas externas -->
+<!-- Bibliotecas externas (corrigidas: URLs sem espaços) -->
 <script src="https://unpkg.com/@zxing/library@0.21.2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -1229,11 +1229,11 @@ function atualizarScannerChart() {
     const ctx = canvas.getContext("2d");
     categoriaChart = new Chart(ctx, {
       type: 'bar',
-       {
+      data: { // ✅ Aqui estava errado: "data", não apenas "{"
         labels: labels,
         datasets: [{
           label: 'Número de Produtos',
-           values,
+          data: values, // ✅ "data", não "values"
           backgroundColor: labels.map((_, i) => cores[i % cores.length]),
           borderWidth: 0
         }]
@@ -1401,6 +1401,7 @@ function iniciarApp() {
     }, 300);
   };
 
+  // ✅ FUNÇÃO CORRIGIDA: agora tem a propriedade "data"
   window.finalizarCompra = function() {
     if (!carrinho.length) {
       alert("Carrinho vazio");
@@ -1408,7 +1409,7 @@ function iniciarApp() {
     }
     const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
     historico.push({
-       new Date().toLocaleString("pt-BR"),
+      data: new Date().toLocaleString("pt-BR"), // ✅ Corrigido!
       total,
       itens: [...carrinho]
     });
