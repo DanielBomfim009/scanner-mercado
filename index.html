@@ -746,7 +746,7 @@ button.deleteBtn:hover {
 @media (max-width: 480px) {
   #sidebar { width: 180px; transform: translateX(-100%); }
   #sidebar.hide { transform: translateX(-100%); }
-  #content { margin-left: 180px; padding: 16px 12px; }
+  #content { margin-left: 0; padding: 16px 12px; }
   #home .logo-home { width: 240px; height: 240px; }
   #hamburger { width: 48px; height: 48px; }
   #orcamento input { font-size: 15px; }
@@ -1222,9 +1222,14 @@ function processarCodigo(codigoNormalizado) {
     const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
     if (produto) {
       solicitarQuantidade(produto.nome, (q) => {
-        carrinho.push({ ...produto, qtd: q });
-        Storage.set("carrinho", carrinho);
-        abrirCarrinho();
+carrinho.push({ ...produto, qtd: q });
+Storage.set("carrinho", carrinho);
+abrirCarrinho();
+
+setTimeout(() => {
+  resetarScannerUI();
+  iniciarScanner();
+}, 500);
       });
     } else {
       $("codigoCadastro").value = codigoNormalizado;
@@ -1325,47 +1330,35 @@ function atualizarScannerChart() {
   ];
   try {
     const ctx = canvas.getContext("2d");
-    categoriaChart = new Chart(ctx, {
-      type: 'bar',
-       {
-        labels: labels,
-        datasets: [{
-          label: 'Número de Produtos',
-           values,
-          backgroundColor: labels.map((_, i) => cores[i % cores.length]),
-          borderWidth: 0
-        }]
-      },
-      options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            titleColor: textColor,
-            bodyColor: textColor,
-            backgroundColor: rootStyles.getPropertyValue('--card').trim(),
-            borderColor: rootStyles.getPropertyValue('--border').trim(),
-            borderWidth: 1,
-            callbacks: {
-              label: (ctx) => ` ${ctx.parsed.x} produtos`
-            }
-          }
-        },
-        scales: {
-          x: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { color: textMutedColor }
-          },
-          y: {
-            grid: { display: false },
-            ticks: { color: textColor }
-          }
+categoriaChart = new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: labels,
+    datasets: [{
+      label: 'Número de Produtos',
+      data: values,
+      backgroundColor: labels.map((_, i) => cores[i % cores.length]),
+      borderWidth: 0
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (ctx) => ` ${ctx.parsed.x} produtos`
         }
       }
-    });
+    },
+    scales: {
+      x: { beginAtZero: true },
+      y: { grid: { display: false } }
+    }
+  }
+});
   } catch (e) {
     console.error("Erro ao criar gráfico:", e);
     setTimeout(atualizarScannerChart, 200);
@@ -1484,7 +1477,8 @@ function iniciarApp() {
   };
 
   window.abrirCarrinho = function() {
-    $("modalCarrinho").style.display = "flex";
+pararScanner();
+$("modalCarrinho").style.display = "flex";
     setTimeout(() => $("modalCarrinho").classList.add("active"), 10);
     atualizarCarrinho();
   };
@@ -1506,11 +1500,11 @@ function iniciarApp() {
       return;
     }
     const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
-    historico.push({
-       new Date().toLocaleString("pt-BR"), // ✅ Propriedade 'data' adicionada
-      total,
-      itens: [...carrinho]
-    });
+historico.push({
+  data: new Date().toLocaleString("pt-BR"),
+  total,
+  itens: [...carrinho]
+});
     Storage.set("historicoCompras", historico);
     carrinho = [];
     Storage.set("carrinho", carrinho);
