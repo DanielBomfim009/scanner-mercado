@@ -975,15 +975,18 @@ const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.o
 let categoriaChart;
 let ultimoCodigoProcessado = null;
 
-// Carregar tema salvo
+// Carregar tema salvo e aplicar cor da barra do navegador
 const temaSalvo = localStorage.getItem('tema') || 'padrao';
 if (temaSalvo !== 'padrao') {
   document.body.classList.add(`tema-${temaSalvo}`);
 }
+
+// ✅ Aplicar a cor do tema à barra do navegador (top bar) imediatamente
+const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+document.querySelector('meta[name="theme-color"]').setAttribute('content', primaryColor);
+
 if ($("temaSelector")) {
   $("temaSelector").value = temaSalvo;
-  // Atualiza a meta tag para o tema-color
-  document.querySelector('meta[name="theme-color"]').setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--primary'));
 }
 
 function mudarTema(tema) {
@@ -992,9 +995,11 @@ function mudarTema(tema) {
     document.body.classList.add(`tema-${tema}`);
   }
   localStorage.setItem('tema', tema);
-  // Atualiza a cor do tema na barra do navegador (PWA)
-  const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary');
+
+  // ✅ Atualiza a barra do navegador com a cor do novo tema
+  const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
   document.querySelector('meta[name="theme-color"]').setAttribute('content', primaryColor);
+
   if (document.getElementById("scanner").classList.contains("active")) {
     setTimeout(atualizarScannerChart, 100);
   }
