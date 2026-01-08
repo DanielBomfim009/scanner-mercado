@@ -2,16 +2,14 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
-<title>GoL BUY SMART</title>
+<title>GoL COMPRE COM INTELIGÊNCIA</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<!-- ✅ Meta tag de cor da barra do navegador (controlável via JS) -->
 <meta name="theme-color" content="#4361ee" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 <link rel="manifest" href="manifest.json" />
 <link rel="apple-touch-icon" sizes="192x192" href="logo.png" />
 <link rel="icon" type="image/png" sizes="192x192" href="logo.png" />
-<!-- Bibliotecas externas -->
 <script src="https://unpkg.com/@zxing/library@0.21.2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -316,7 +314,6 @@ body {
   box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.2);
 }
 
-/* Aplica borda primária nos temas personalizados */
 body.tema-verde #orcamentoInput,
 body.tema-roxo #orcamentoInput,
 body.tema-laranja #orcamentoInput {
@@ -832,7 +829,7 @@ button.deleteBtn:hover {
 <div id="content">
   <section id="home" class="view active">
     <img src="logo.png" class="logo-home" alt="GoL COMPRE COM INTELIGÊNCIA" />
-    <h2>Bem-vindo ao GoL BUY SMART</h2>
+    <h2>Bem-vindo ao GoL COMPRE COM INTELIGÊNCIA</h2>
     <div id="temaContainer">
       <select id="temaSelector" onchange="mudarTema(this.value)">
         <option value="padrao">Tema Padrão (Azul)</option>
@@ -966,7 +963,6 @@ const Storage = {
   set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
 };
 
-// ✅ Mapeamento de cores HEX para cada tema (obrigatório para theme-color)
 const TEMA_CORES = {
   padrao: '#4361ee',
   verde: '#22c55e',
@@ -980,9 +976,18 @@ let historico = Storage.get("historicoCompras");
 let orcamento = Storage.get("orcamento") || 0;
 let reader = null, stream = null, buffer = [], scannerAtivo = false;
 const repeticoes = 3;
-const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 let categoriaChart;
 let ultimoCodigoProcessado = null;
+
+// Função segura para beep
+function playBeep() {
+  try {
+    const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+    beep.play().catch(e => console.debug("Beep não reproduzido:", e));
+  } catch (e) {
+    console.debug("Erro ao criar beep:", e);
+  }
+}
 
 // Carregar tema salvo
 const temaSalvo = localStorage.getItem('tema') || 'padrao';
@@ -990,7 +995,6 @@ if (temaSalvo !== 'padrao') {
   document.body.classList.add(`tema-${temaSalvo}`);
 }
 
-// ✅ Aplicar cor HEX exata à barra do navegador
 const corHexInicial = TEMA_CORES[temaSalvo] || TEMA_CORES.padrao;
 document.querySelector('meta[name="theme-color"]').setAttribute('content', corHexInicial);
 
@@ -998,18 +1002,14 @@ if ($("temaSelector")) {
   $("temaSelector").value = temaSalvo;
 }
 
-// ✅ Função atualizada para usar cores HEX exatas
 function mudarTema(tema) {
   document.body.className = document.body.className.replace(/tema-\w+/g, '').trim();
   if (tema !== 'padrao') {
     document.body.classList.add(`tema-${tema}`);
   }
   localStorage.setItem('tema', tema);
-
-  // ✅ Atualiza a cor da barra do navegador com HEX válido
   const corHex = TEMA_CORES[tema] || TEMA_CORES.padrao;
   document.querySelector('meta[name="theme-color"]').setAttribute('content', corHex);
-
   if (document.getElementById("scanner").classList.contains("active")) {
     setTimeout(atualizarScannerChart, 100);
   }
@@ -1218,7 +1218,7 @@ function processarCodigo(codigoNormalizado) {
   try {
     ultimoCodigoProcessado = codigoNormalizado;
     navigator.vibrate?.(50);
-    beep.play().catch(e => console.warn("Beep não reproduzido:", e));
+    playBeep(); // Usa função segura
     const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
     if (produto) {
       solicitarQuantidade(produto.nome, (q) => {
@@ -1499,6 +1499,7 @@ function iniciarApp() {
     }, 300);
   };
 
+  // ✅ CORREÇÃO CRÍTICA: objeto de histórico agora tem propriedade 'data'
   window.finalizarCompra = function() {
     if (!carrinho.length) {
       alert("Carrinho vazio");
@@ -1506,7 +1507,7 @@ function iniciarApp() {
     }
     const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
     historico.push({
-       new Date().toLocaleString("pt-BR"),
+       new Date().toLocaleString("pt-BR"), // ✅ Propriedade 'data' adicionada
       total,
       itens: [...carrinho]
     });
@@ -1542,6 +1543,7 @@ window.addEventListener('resize', () => {
   }
 });
 
+// ✅ Garante que o app inicie mesmo se houver erros anteriores
 window.addEventListener('DOMContentLoaded', () => {
   const splash = $("splash");
   if (splash) {
@@ -1549,7 +1551,15 @@ window.addEventListener('DOMContentLoaded', () => {
       splash.style.opacity = '0';
       setTimeout(() => {
         if (splash.parentNode) splash.remove();
-        iniciarApp();
+        try {
+          iniciarApp();
+        } catch (e) {
+          console.error("Erro ao iniciar app:", e);
+          // Mesmo com erro, remove splash
+          if (splash.parentNode) splash.remove();
+          // Tenta novamente
+          setTimeout(iniciarApp, 500);
+        }
       }, 500);
     }, 2000);
   } else {
