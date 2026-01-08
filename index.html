@@ -4,32 +4,16 @@
 <meta charset="UTF-8" />
 <title>GoL BUY SMART</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<meta name="theme-color" id="themeColorMeta" content="#4361ee" />
+<meta name="theme-color" content="#4361ee" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-<link rel="manifest" href="./manifest.json" />
-<link rel="apple-touch-icon" sizes="192x192" href="./logo.png" />
-<link rel="icon" type="image/png" sizes="192x192" href="./logo.png" />
+<link rel="manifest" href="/manifest.json" />
+<link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
 <!-- Bibliotecas externas -->
-<script src="https://unpkg.com/@zxing/library@0.21.2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-
-<!-- Service Worker registration -->
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js')
-      .then(registration => {
-        console.log('Service Worker registrado:', registration.scope);
-      })
-      .catch(error => {
-        console.error('Erro ao registrar Service Worker:', error);
-      });
-  });
-}
-</script>
-
+<script src="https://unpkg.com/@zxing/library@0.21.2   "></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js   "></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter   :wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
 :root {
 --primary: #4361ee;
@@ -770,6 +754,7 @@ Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
 <section id="scanner" class="view">
 <div class="box">
 <h2 style="text-align:center; margin-bottom:16px;">Scanner de Produtos</h2>
+<!-- ✅ Botão adicionado aqui -->
 <div style="text-align: center; margin-bottom: 16px;">
   <button id="toggleScannerBtn" style="
     background: var(--primary);
@@ -875,7 +860,7 @@ let historico = Storage.get("historicoCompras");
 let orcamento = Storage.get("orcamento") || 0;
 let reader = null, stream = null, buffer = [], scannerAtivo = false;
 const repeticoes = 3;
-const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg   ");
 
 let categoriaChart;
 
@@ -888,24 +873,12 @@ if ($("temaSelector")) {
   $("temaSelector").value = temaSalvo;
 }
 
-// ✅ Função atualizada: muda tema + cor da barra
 function mudarTema(tema) {
   document.body.className = document.body.className.replace(/tema-\w+/g, '').trim();
   if (tema !== 'padrao') {
     document.body.classList.add(`tema-${tema}`);
   }
   localStorage.setItem('tema', tema);
-
-  // ✅ Atualiza a cor da barra do navegador
-  const themeColorMeta = document.getElementById('themeColorMeta');
-  let themeColor = '#4361ee'; // padrão azul
-  if (tema === 'verde') themeColor = '#22c55e';
-  else if (tema === 'roxo') themeColor = '#8b5cf6';
-  else if (tema === 'laranja') themeColor = '#fb923c';
-  if (themeColorMeta) {
-    themeColorMeta.setAttribute('content', themeColor);
-  }
-
   if (document.getElementById("scanner").classList.contains("active")) {
     setTimeout(atualizarScannerChart, 100);
   }
@@ -925,21 +898,13 @@ function verificarOrcamento() {
   }
 }
 
-// ✅ Função com tratamento de erro
 function solicitarQuantidade(produtoNome, callback) {
   $("tituloQuantidade").innerText = `Produto: ${produtoNome}\nInforme a quantidade`;
   $("inputQuantidade").value = "1";
   $("btnConfirmarQtd").onclick = () => {
-    try {
-      const q = Number($("inputQuantidade").value);
-      fecharQuantidade();
-      if (q > 0 && typeof callback === 'function') {
-        callback(q);
-      }
-    } catch (e) {
-      console.error("Erro ao confirmar quantidade:", e);
-      alert("Erro ao adicionar produto. Tente novamente.");
-    }
+    const q = Number($("inputQuantidade").value);
+    fecharQuantidade();
+    if (q > 0) callback(q);
   };
   $("btnCancelarQtd").onclick = fecharQuantidade;
   $("overlayQuantidade").style.display = "block";
@@ -1032,7 +997,7 @@ function atualizarHistorico() {
   });
 }
 
-// ✅ Função corrigida: destrói o leitor completamente
+// ✅ Nova função: resetar interface do scanner SEM iniciar câmera
 function resetarScannerUI() {
   fecharQuantidade();
   if ($("detected")) $("detected").innerText = "—";
@@ -1043,12 +1008,10 @@ function resetarScannerUI() {
   }
   buffer = [];
   scannerAtivo = false;
-  if (reader) {
-    reader.reset();
-    reader = null; // 👈 CHAVE para evitar leitura fantasma
-  }
+  if (reader) reader.reset();
 }
 
+// ✅ Nova função: alternar scanner manualmente
 function alternarScanner() {
   const btn = $("toggleScannerBtn");
   if (scannerAtivo) {
@@ -1134,7 +1097,6 @@ function processarCodigo(codigoNormalizado) {
       $("valorCadastro").value = "";
       $("cadastro-title").innerText = "Cadastro Rápido";
       irPara("cadastro");
-
       const handlerRapido = () => {
         const novo = {
           codigo: $("codigoCadastro").value.trim(),
@@ -1147,17 +1109,13 @@ function processarCodigo(codigoNormalizado) {
           alert("Preencha nome e valor corretamente.");
           return;
         }
-
-        // ✅ SALVA O PRODUTO IMEDIATAMENTE AO CONFIRMAR A QUANTIDADE
         produtos.push(novo);
         Storage.set("produtos", produtos);
-
         solicitarQuantidade(novo.nome, (q) => {
           if (q > 0) {
             carrinho.push({ ...novo, qtd: q });
             Storage.set("carrinho", carrinho);
           }
-          // Limpa os campos e volta ao estado original
           $("codigoCadastro").value = "";
           $("nomeCadastro").value = "";
           $("valorCadastro").value = "";
@@ -1172,9 +1130,7 @@ function processarCodigo(codigoNormalizado) {
           abrirCarrinho();
         });
       };
-
       $("salvarCadastro").onclick = handlerRapido;
-
       if ($("barraValidacaoInner")) {
         $("barraValidacaoInner").style.width = "0%";
         $("barraValidacaoInner").setAttribute('data-pct', '0%');
@@ -1189,9 +1145,10 @@ function processarCodigo(codigoNormalizado) {
 
 function pararScanner() {
   scannerAtivo = false;
+  // ✅ Destrói o leitor completamente
   if (reader) {
     reader.reset();
-    reader = null;
+    reader = null; // ← força a recriação depois
   }
   if (stream) {
     stream.getTracks().forEach(t => t.stop());
@@ -1236,11 +1193,11 @@ function atualizarScannerChart() {
     const ctx = canvas.getContext("2d");
     categoriaChart = new Chart(ctx, {
       type: 'bar',
-       { // ✅ Corrigido: "data"
+      data: {
         labels: labels,
         datasets: [{
           label: 'Número de Produtos',
-          data: values, // ✅ Corrigido: "data"
+          data: values,
           backgroundColor: labels.map((_, i) => cores[i % cores.length]),
           borderWidth: 0
         }]
@@ -1302,7 +1259,9 @@ if ($("modalCarrinho")) {
 
 $("overlayQuantidade").addEventListener('click', fecharQuantidade);
 
+// ✅ Inicialização principal
 function iniciarApp() {
+  // Configura o botão do scanner
   if ($("toggleScannerBtn")) {
     $("toggleScannerBtn").onclick = alternarScanner;
   }
@@ -1310,8 +1269,10 @@ function iniciarApp() {
   window.irPara = function(tela) {
     document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
     $(tela).classList.add("active");
+    
     if (tela === "scanner") {
-      resetarScannerUI();
+      // ✅ NÃO inicia scanner automaticamente
+      resetarScannerUI(); // só limpa a interface
     } else {
       pararScanner();
       fecharQuantidade();
@@ -1408,7 +1369,6 @@ function iniciarApp() {
     }, 300);
   };
 
-  // ✅ FUNÇÃO CORRIGIDA: agora tem a propriedade "data"
   window.finalizarCompra = function() {
     if (!carrinho.length) {
       alert("Carrinho vazio");
@@ -1416,7 +1376,7 @@ function iniciarApp() {
     }
     const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
     historico.push({
-       new Date().toLocaleString("pt-BR"), // ✅ Corrigido!
+      data: new Date().toLocaleString("pt-BR"),
       total,
       itens: [...carrinho]
     });
@@ -1436,6 +1396,21 @@ function iniciarApp() {
     atualizarScannerChart();
   }, 500);
 }
+
+if ($("scanner")) {
+  const observer = new MutationObserver(() => {
+    if ($("scanner").classList.contains("active")) {
+      setTimeout(atualizarScannerChart, 100);
+    }
+  });
+  observer.observe($("scanner"), { attributes: true, attributeFilter: ['class'] });
+}
+
+window.addEventListener('resize', () => {
+  if (document.getElementById("scanner")?.classList.contains("active")) {
+    setTimeout(atualizarScannerChart, 100);
+  }
+});
 
 window.addEventListener('DOMContentLoaded', () => {
   const splash = $("splash");
