@@ -2,8 +2,9 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
-<title>GoL COMPRE COM INTELIGÊNCIA</title>
+<title>GoL BUY SMART</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<!-- ✅ Meta tag de cor da barra do navegador (controlável via JS) -->
 <meta name="theme-color" content="#4361ee" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black" />
@@ -831,7 +832,7 @@ button.deleteBtn:hover {
 <div id="content">
   <section id="home" class="view active">
     <img src="logo.png" class="logo-home" alt="GoL COMPRE COM INTELIGÊNCIA" />
-    <h2>Bem-vindo ao GoL COMPRE COM INTELIGÊNCIA</h2>
+    <h2>Bem-vindo ao GoL BUY SMART</h2>
     <div id="temaContainer">
       <select id="temaSelector" onchange="mudarTema(this.value)">
         <option value="padrao">Tema Padrão (Azul)</option>
@@ -965,6 +966,14 @@ const Storage = {
   set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
 };
 
+// ✅ Mapeamento de cores HEX para cada tema (obrigatório para theme-color)
+const TEMA_CORES = {
+  padrao: '#4361ee',
+  verde: '#22c55e',
+  roxo: '#8b5cf6',
+  laranja: '#fb923c'
+};
+
 let produtos = Storage.get("produtos");
 let carrinho = Storage.get("carrinho");
 let historico = Storage.get("historicoCompras");
@@ -975,20 +984,21 @@ const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.o
 let categoriaChart;
 let ultimoCodigoProcessado = null;
 
-// Carregar tema salvo e aplicar cor da barra do navegador
+// Carregar tema salvo
 const temaSalvo = localStorage.getItem('tema') || 'padrao';
 if (temaSalvo !== 'padrao') {
   document.body.classList.add(`tema-${temaSalvo}`);
 }
 
-// ✅ Aplicar a cor do tema à barra do navegador (top bar) imediatamente
-const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
-document.querySelector('meta[name="theme-color"]').setAttribute('content', primaryColor);
+// ✅ Aplicar cor HEX exata à barra do navegador
+const corHexInicial = TEMA_CORES[temaSalvo] || TEMA_CORES.padrao;
+document.querySelector('meta[name="theme-color"]').setAttribute('content', corHexInicial);
 
 if ($("temaSelector")) {
   $("temaSelector").value = temaSalvo;
 }
 
+// ✅ Função atualizada para usar cores HEX exatas
 function mudarTema(tema) {
   document.body.className = document.body.className.replace(/tema-\w+/g, '').trim();
   if (tema !== 'padrao') {
@@ -996,9 +1006,9 @@ function mudarTema(tema) {
   }
   localStorage.setItem('tema', tema);
 
-  // ✅ Atualiza a barra do navegador com a cor do novo tema
-  const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
-  document.querySelector('meta[name="theme-color"]').setAttribute('content', primaryColor);
+  // ✅ Atualiza a cor da barra do navegador com HEX válido
+  const corHex = TEMA_CORES[tema] || TEMA_CORES.padrao;
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', corHex);
 
   if (document.getElementById("scanner").classList.contains("active")) {
     setTimeout(atualizarScannerChart, 100);
@@ -1317,11 +1327,11 @@ function atualizarScannerChart() {
     const ctx = canvas.getContext("2d");
     categoriaChart = new Chart(ctx, {
       type: 'bar',
-      data: {
+       {
         labels: labels,
         datasets: [{
           label: 'Número de Produtos',
-          data: values,
+           values,
           backgroundColor: labels.map((_, i) => cores[i % cores.length]),
           borderWidth: 0
         }]
@@ -1496,7 +1506,7 @@ function iniciarApp() {
     }
     const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
     historico.push({
-      data: new Date().toLocaleString("pt-BR"),
+       new Date().toLocaleString("pt-BR"),
       total,
       itens: [...carrinho]
     });
