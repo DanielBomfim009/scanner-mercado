@@ -1,15 +1,15 @@
 {
-  "name": "GoL BUY SMART",
-  "short_name": "GoL BUY",
-  "start_url": "./index.html",
-  "scope": "./",
+  "name": "GoL COMPRE COM INTELIGÊNCIA",
+  "short_name": "GoL Compras",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#1e293b",
   "theme_color": "#4361ee",
-  "orientation": "portrait",
-  "description": "App inteligente para scanner de produtos e controle de orçamento.",
   "icons": [
-    { "src": "logo.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "logo.png", "sizes": "512x512", "type": "image/png" }
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
   ]
 }
