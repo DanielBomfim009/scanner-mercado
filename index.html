@@ -1134,6 +1134,7 @@ function processarCodigo(codigoNormalizado) {
       $("valorCadastro").value = "";
       $("cadastro-title").innerText = "Cadastro Rápido";
       irPara("cadastro");
+
       const handlerRapido = () => {
         const novo = {
           codigo: $("codigoCadastro").value.trim(),
@@ -1146,13 +1147,17 @@ function processarCodigo(codigoNormalizado) {
           alert("Preencha nome e valor corretamente.");
           return;
         }
+
+        // ✅ SALVA O PRODUTO IMEDIATAMENTE AO CONFIRMAR A QUANTIDADE
         produtos.push(novo);
         Storage.set("produtos", produtos);
+
         solicitarQuantidade(novo.nome, (q) => {
           if (q > 0) {
             carrinho.push({ ...novo, qtd: q });
             Storage.set("carrinho", carrinho);
           }
+          // Limpa os campos e volta ao estado original
           $("codigoCadastro").value = "";
           $("nomeCadastro").value = "";
           $("valorCadastro").value = "";
@@ -1167,7 +1172,9 @@ function processarCodigo(codigoNormalizado) {
           abrirCarrinho();
         });
       };
+
       $("salvarCadastro").onclick = handlerRapido;
+
       if ($("barraValidacaoInner")) {
         $("barraValidacaoInner").style.width = "0%";
         $("barraValidacaoInner").setAttribute('data-pct', '0%');
@@ -1229,11 +1236,11 @@ function atualizarScannerChart() {
     const ctx = canvas.getContext("2d");
     categoriaChart = new Chart(ctx, {
       type: 'bar',
-      data: { // ✅ Aqui estava errado: "data", não apenas "{"
+       { // ✅ Aqui estava errado: "data", não apenas "{"
         labels: labels,
         datasets: [{
           label: 'Número de Produtos',
-          data: values, // ✅ "data", não "values"
+           values, // ✅ "data", não "values"
           backgroundColor: labels.map((_, i) => cores[i % cores.length]),
           borderWidth: 0
         }]
@@ -1409,7 +1416,7 @@ function iniciarApp() {
     }
     const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
     historico.push({
-      data: new Date().toLocaleString("pt-BR"), // ✅ Corrigido!
+       new Date().toLocaleString("pt-BR"), // ✅ Corrigido!
       total,
       itens: [...carrinho]
     });
