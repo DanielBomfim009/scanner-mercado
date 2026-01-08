@@ -11,9 +11,9 @@
 <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
 <!-- Bibliotecas externas -->
-<script src="https://unpkg.com/@zxing/library@0.21.2   "></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js   "></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter   :wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/@zxing/library@0.21.2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
 :root {
 --primary: #4361ee;
@@ -754,7 +754,6 @@ Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
 <section id="scanner" class="view">
 <div class="box">
 <h2 style="text-align:center; margin-bottom:16px;">Scanner de Produtos</h2>
-<!-- ✅ Botão adicionado aqui -->
 <div style="text-align: center; margin-bottom: 16px;">
   <button id="toggleScannerBtn" style="
     background: var(--primary);
@@ -860,9 +859,10 @@ let historico = Storage.get("historicoCompras");
 let orcamento = Storage.get("orcamento") || 0;
 let reader = null, stream = null, buffer = [], scannerAtivo = false;
 const repeticoes = 3;
-const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg   ");
+const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
 let categoriaChart;
+let ultimoCodigoProcessado = null; // ✅ Previne reprocessamento imediato
 
 // Carregar tema salvo
 const temaSalvo = localStorage.getItem('tema') || 'padrao';
@@ -874,13 +874,34 @@ if ($("temaSelector")) {
 }
 
 function mudarTema(tema) {
+  // ✅ Remove temas anteriores
   document.body.className = document.body.className.replace(/tema-\w+/g, '').trim();
   if (tema !== 'padrao') {
     document.body.classList.add(`tema-${tema}`);
   }
   localStorage.setItem('tema', tema);
+  // ✅ Atualiza cores de elementos que usam --primary (como input)
+  aplicarEstiloTema();
   if (document.getElementById("scanner").classList.contains("active")) {
     setTimeout(atualizarScannerChart, 100);
+  }
+}
+
+// ✅ Aplica o estilo do tema a elementos que não herdam via CSS (ex: borda do input)
+function aplicarEstiloTema() {
+  const root = getComputedStyle(document.documentElement);
+  const primary = root.getPropertyValue('--primary').trim();
+  const boxShadow = `0 0 0 3px ${primary.replace(')', ', 0.2)')}`;
+  
+  const input = $("orcamentoInput");
+  if (input) {
+    input.style.borderColor = primary;
+    input.addEventListener('focus', () => {
+      input.style.boxShadow = boxShadow;
+    });
+    input.addEventListener('blur', () => {
+      input.style.boxShadow = 'none';
+    });
   }
 }
 
@@ -997,7 +1018,7 @@ function atualizarHistorico() {
   });
 }
 
-// ✅ Nova função: resetar interface do scanner SEM iniciar câmera
+// ✅ Resetar interface do scanner SEM iniciar câmera
 function resetarScannerUI() {
   fecharQuantidade();
   if ($("detected")) $("detected").innerText = "—";
@@ -1008,6 +1029,7 @@ function resetarScannerUI() {
   }
   buffer = [];
   scannerAtivo = false;
+  ultimoCodigoProcessado = null; // ✅ Limpa código processado
   if (reader) reader.reset();
 }
 
@@ -1080,8 +1102,16 @@ async function iniciarScanner() {
 }
 
 function processarCodigo(codigoNormalizado) {
+  // ✅ Evita processar o mesmo código imediatamente
+  if (codigoNormalizado === ultimoCodigoProcessado) {
+    buffer = [];
+    return;
+  }
+
   if ($("quantidadeModal")?.style.display === "block") return;
+
   try {
+    ultimoCodigoProcessado = codigoNormalizado;
     navigator.vibrate?.(50);
     beep.play().catch(e => console.warn("Beep não reproduzido:", e));
     const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
@@ -1145,10 +1175,9 @@ function processarCodigo(codigoNormalizado) {
 
 function pararScanner() {
   scannerAtivo = false;
-  // ✅ Destrói o leitor completamente
   if (reader) {
     reader.reset();
-    reader = null; // ← força a recriação depois
+    reader = null;
   }
   if (stream) {
     stream.getTracks().forEach(t => t.stop());
@@ -1261,7 +1290,9 @@ $("overlayQuantidade").addEventListener('click', fecharQuantidade);
 
 // ✅ Inicialização principal
 function iniciarApp() {
-  // Configura o botão do scanner
+  // Aplica o tema salvo ao input de orçamento
+  aplicarEstiloTema();
+
   if ($("toggleScannerBtn")) {
     $("toggleScannerBtn").onclick = alternarScanner;
   }
@@ -1271,8 +1302,7 @@ function iniciarApp() {
     $(tela).classList.add("active");
     
     if (tela === "scanner") {
-      // ✅ NÃO inicia scanner automaticamente
-      resetarScannerUI(); // só limpa a interface
+      resetarScannerUI();
     } else {
       pararScanner();
       fecharQuantidade();
@@ -1359,6 +1389,7 @@ function iniciarApp() {
     atualizarCarrinho();
   };
 
+  // ✅ Fechar carrinho com reset total do scanner
   window.fecharCarrinho = function() {
     $("modalCarrinho").classList.remove("active");
     setTimeout(() => {
