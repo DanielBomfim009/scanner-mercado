@@ -10,7 +10,7 @@
 <link rel="manifest" href="./manifest.json" />
 <link rel="apple-touch-icon" sizes="192x192" href="./logo.png" />
 <link rel="icon" type="image/png" sizes="192x192" href="./logo.png" />
-<!-- Bibliotecas externas (corrigidas: URLs sem espaços) -->
+<!-- Bibliotecas externas -->
 <script src="https://unpkg.com/@zxing/library@0.21.2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -1236,11 +1236,11 @@ function atualizarScannerChart() {
     const ctx = canvas.getContext("2d");
     categoriaChart = new Chart(ctx, {
       type: 'bar',
-       { // ✅ Aqui estava errado: "data", não apenas "{"
+       { // ✅ Corrigido: "data"
         labels: labels,
         datasets: [{
           label: 'Número de Produtos',
-           values, // ✅ "data", não "values"
+          data: values, // ✅ Corrigido: "data"
           backgroundColor: labels.map((_, i) => cores[i % cores.length]),
           borderWidth: 0
         }]
