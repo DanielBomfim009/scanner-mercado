@@ -1,2516 +1,1565 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Couply - Controle Financeiro Inteligente</title>
-  <style>
-    :root {
-      --primary: #00C853;
-      --dark: #0D1B2A;
-      --darker: #0A141F;
-      --light: #E9F5DB;
-      --red: #FF5252;
-      --green: #66BB6A;
-      --yellow: #FFCA28;
-      --blue: #42A5F5;
-      --gray: #424242;
-      --card-bg: #121E2B;
-      --border: #2D3748;
-      --shadow: rgba(0,0,0,0.3);
-      --transition: all 0.2s ease;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      transition: var(--transition);
-    }
-
-    body {
-      background: var(--primary);
-      color: white;
-      min-height: 100vh;
-      padding: 0;
-      overflow-x: hidden;
-      position: relative;
-    }
-
-    .app-container {
-      max-width: 480px;
-      margin: 0 auto;
-      background: var(--dark);
-      min-height: 100vh;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* Header */
-    .header {
-      background: var(--primary);
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 8px var(--shadow);
-    }
-
-    .header h1 {
-      font-size: 18px;
-      font-weight: 600;
-    }
-
-    .header-icons {
-      display: flex;
-      gap: 16px;
-    }
-
-    .icon-btn {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 20px;
-      cursor: pointer;
-      opacity: 0.9;
-    }
-
-    .icon-btn:hover {
-      opacity: 1;
-    }
-
-    /* Sidebar Menu */
-    .sidebar {
-      position: fixed;
-      top: 0;
-      left: -300px;
-      width: 280px;
-      height: 100%;
-      background: var(--darker);
-      z-index: 200;
-      transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      padding: 20px 16px;
-      overflow-y: auto;
-      box-shadow: 2px 0 10px var(--shadow);
-    }
-
-    .sidebar.active {
-      left: 0;
-    }
-
-    .sidebar-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 20px;
-    }
-
-    .sidebar-logo {
-      font-size: 24px;
-      color: var(--primary);
-    }
-
-    .sidebar-title {
-      font-weight: bold;
-      font-size: 14px;
-    }
-
-    .menu-section {
-      margin-bottom: 20px;
-    }
-
-    .menu-title {
-      color: var(--gray);
-      font-size: 12px;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-      padding-left: 10px;
-    }
-
-    .menu-item {
-      display: flex;
-      align-items: center;
-      padding: 12px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-bottom: 4px;
-      position: relative;
-    }
-
-    .menu-item:hover {
-      background: rgba(255,255,255,0.05);
-    }
-
-    .menu-item.active {
-      background: rgba(255,255,255,0.05);
-    }
-
-    .menu-item i {
-      margin-right: 10px;
-      font-size: 18px;
-    }
-
-    .user-profile {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 8px;
-      margin-top: 20px;
-    }
-
-    .avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-    }
-
-    /* Main Content */
-    .main-content {
-      padding: 16px;
-      padding-top: 60px;
-      min-height: calc(100vh - 60px);
-      overflow-y: auto;
-    }
-
-    .page {
-      display: none;
-    }
-
-    .page.active {
-      display: block;
-    }
-
-    .card {
-      background: var(--card-bg);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-
-    .card-title {
-      font-size: 16px;
-      font-weight: 600;
-    }
-
-    .card-icon {
-      background: rgba(255,255,255,0.1);
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-    }
-
-    .stat-card {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px;
-      background: var(--card-bg);
-      border-radius: 12px;
-      margin-bottom: 12px;
-    }
-
-    .stat-value {
-      font-size: 20px;
-      font-weight: bold;
-    }
-
-    .stat-label {
-      font-size: 14px;
-      color: var(--gray);
-    }
-
-    .stat-change {
-      font-size: 12px;
-      color: var(--red);
-    }
-
-    .stat-change.positive {
-      color: var(--green);
-    }
-
-    /* Quick Actions */
-    .quick-actions {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .action-btn {
-      background: var(--card-bg);
-      border-radius: 12px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-
-    .action-btn:hover {
-      transform: translateY(-2px);
-    }
-
-    .action-icon {
-      font-size: 24px;
-      margin-bottom: 8px;
-    }
-
-    .action-label {
-      font-size: 12px;
-      font-weight: 500;
-    }
-
-    /* Floating Button */
-    .fab {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 56px;
-      height: 56px;
-      background: var(--primary);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      cursor: pointer;
-      z-index: 99;
-      animation: pulse 2s infinite;
-    }
-
-    .fab i {
-      font-size: 24px;
-      color: white;
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
-    }
-
-    /* Transaction Form */
-    .transaction-form {
-      display: none;
-      background: var(--card-bg);
-      border-radius: 12px;
-      padding: 16px;
-      margin-top: 16px;
-    }
-
-    .form-row {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .form-group {
-      flex: 1;
-    }
-
-    .form-label {
-      display: block;
-      margin-bottom: 4px;
-      font-size: 12px;
-      color: var(--gray);
-    }
-
-    .form-input {
-      width: 100%;
-      padding: 8px 12px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: white;
-      font-size: 14px;
-    }
-
-    .form-input:focus {
-      outline: none;
-      border-color: var(--primary);
-    }
-
-    .form-select {
-      width: 100%;
-      padding: 8px 12px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: white;
-      font-size: 14px;
-    }
-
-    .form-checkbox {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin: 8px 0;
-    }
-
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 40px;
-      height: 20px;
-    }
-
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: var(--gray);
-      transition: .4s;
-      border-radius: 20px;
-    }
-
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 16px;
-      width: 16px;
-      left: 2px;
-      bottom: 2px;
-      background: white;
-      transition: .4s;
-      border-radius: 50%;
-    }
-
-    input:checked + .slider {
-      background: var(--primary);
-    }
-
-    input:checked + .slider:before {
-      transform: translateX(20px);
-    }
-
-    .btn {
-      width: 100%;
-      padding: 12px;
-      background: var(--primary);
-      border: none;
-      border-radius: 8px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 12px;
-    }
-
-    .btn-secondary {
-      background: rgba(255,255,255,0.1);
-    }
-
-    /* Tabs */
-    .tabs {
-      display: flex;
-      background: var(--card-bg);
-      border-radius: 8px;
-      overflow: hidden;
-      margin-bottom: 16px;
-    }
-
-    .tab {
-      flex: 1;
-      padding: 12px;
-      text-align: center;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .tab.active {
-      background: var(--primary);
-      color: white;
-    }
-
-    /* Calendar */
-    .calendar {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 4px;
-      margin-bottom: 16px;
-    }
-
-    .calendar-header {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      text-align: center;
-      font-size: 12px;
-      color: var(--gray);
-      padding: 8px 0;
-    }
-
-    .calendar-day {
-      text-align: center;
-      padding: 8px;
-      border-radius: 8px;
-      cursor: pointer;
-      position: relative;
-    }
-
-    .calendar-day:hover {
-      background: rgba(255,255,255,0.05);
-    }
-
-    .calendar-day.selected {
-      background: var(--primary);
-      color: white;
-    }
-
-    .calendar-day.today {
-      border: 2px solid var(--primary);
-    }
-
-    .calendar-day.has-data::after {
-      content: '';
-      position: absolute;
-      bottom: 2px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 6px;
-      height: 6px;
-      background: var(--primary);
-      border-radius: 50%;
-    }
-
-    /* Chart */
-    .chart-container {
-      height: 200px;
-      display: flex;
-      align-items: flex-end;
-      gap: 8px;
-      padding: 16px 0;
-    }
-
-    .chart-bar {
-      flex: 1;
-      background: var(--primary);
-      border-radius: 4px 4px 0 0;
-      position: relative;
-    }
-
-    .chart-bar.receitas {
-      background: var(--green);
-    }
-
-    .chart-bar.despesas {
-      background: var(--red);
-    }
-
-    .chart-bar.economia {
-      background: var(--yellow);
-    }
-
-    .chart-label {
-      position: absolute;
-      bottom: -20px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 10px;
-      text-align: center;
-    }
-
-    .chart-value {
-      position: absolute;
-      top: -20px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 10px;
-      font-weight: bold;
-    }
-
-    /* List */
-    .transaction-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .transaction-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px;
-      background: var(--card-bg);
-      border-radius: 8px;
-    }
-
-    .transaction-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .transaction-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-    }
-
-    .transaction-details {
-      flex: 1;
-    }
-
-    .transaction-title {
-      font-weight: 500;
-      margin-bottom: 4px;
-    }
-
-    .transaction-date {
-      font-size: 12px;
-      color: var(--gray);
-    }
-
-    .transaction-amount {
-      font-weight: bold;
-    }
-
-    .transaction-amount.negative {
-      color: var(--red);
-    }
-
-    .transaction-amount.positive {
-      color: var(--green);
-    }
-
-    /* Modal */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.7);
-      z-index: 300;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .modal.active {
-      display: flex;
-    }
-
-    .modal-content {
-      background: var(--card-bg);
-      border-radius: 12px;
-      padding: 20px;
-      width: 90%;
-      max-width: 400px;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-
-    .modal-title {
-      font-size: 18px;
-      font-weight: 600;
-    }
-
-    .close-btn {
-      background: none;
-      border: none;
-      color: var(--gray);
-      font-size: 24px;
-      cursor: pointer;
-    }
-
-    /* AI Assistant */
-    .ai-chat {
-      height: 300px;
-      overflow-y: auto;
-      padding: 16px;
-      background: var(--card-bg);
-      border-radius: 8px;
-      margin-bottom: 16px;
-    }
-
-    .message {
-      margin-bottom: 12px;
-      padding: 12px;
-      border-radius: 8px;
-      max-width: 80%;
-    }
-
-    .message.user {
-      background: rgba(255,255,255,0.1);
-      align-self: flex-end;
-      margin-left: auto;
-    }
-
-    .message.ai {
-      background: rgba(0,200,83,0.1);
-      align-self: flex-start;
-    }
-
-    .ai-input {
-      display: flex;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    .ai-input input {
-      flex: 1;
-      padding: 8px 12px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: white;
-    }
-
-    .ai-input button {
-      background: var(--primary);
-      border: none;
-      border-radius: 8px;
-      padding: 8px 16px;
-      color: white;
-      cursor: pointer;
-    }
-
-    /* Settings */
-    .settings-tabs {
-      display: flex;
-      background: var(--card-bg);
-      border-radius: 8px;
-      overflow: hidden;
-      margin-bottom: 16px;
-    }
-
-    .settings-tab {
-      flex: 1;
-      padding: 12px;
-      text-align: center;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .settings-tab.active {
-      background: var(--primary);
-      color: white;
-    }
-
-    .profile-info {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 16px;
-      background: var(--card-bg);
-      border-radius: 12px;
-      margin-bottom: 16px;
-    }
-
-    .profile-avatar {
-      width: 64px;
-      height: 64px;
-      border-radius: 50%;
-      background: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      font-weight: bold;
-    }
-
-    .profile-details {
-      flex: 1;
-    }
-
-    .profile-name {
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .profile-email {
-      font-size: 12px;
-      color: var(--gray);
-    }
-
-    .input-group {
-      margin-bottom: 16px;
-    }
-
-    .input-label {
-      display: block;
-      margin-bottom: 4px;
-      font-size: 12px;
-      color: var(--gray);
-    }
-
-    .input-field {
-      width: 100%;
-      padding: 8px 12px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: white;
-      font-size: 14px;
-    }
-
-    .toggle-group {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px;
-      background: var(--card-bg);
-      border-radius: 8px;
-      margin-bottom: 8px;
-    }
-
-    .toggle-label {
-      font-size: 14px;
-    }
-
-    /* Category List */
-    .category-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .category-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px;
-      background: var(--card-bg);
-      border-radius: 8px;
-    }
-
-    .category-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .category-icon {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-    }
-
-    .category-name {
-      font-size: 14px;
-    }
-
-    .category-progress {
-      width: 100%;
-      height: 4px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 2px;
-      margin: 8px 0;
-    }
-
-    .category-progress-fill {
-      height: 100%;
-      background: var(--primary);
-      border-radius: 2px;
-    }
-
-    .category-amount {
-      font-weight: bold;
-    }
-
-    /* Month Evolution */
-    .month-evolution {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .month-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px;
-      background: var(--card-bg);
-      border-radius: 8px;
-    }
-
-    .month-name {
-      font-weight: 500;
-    }
-
-    .month-stats {
-      display: flex;
-      gap: 16px;
-      font-size: 12px;
-    }
-
-    .month-stat {
-      text-align: right;
-    }
-
-    .month-stat label {
-      display: block;
-      color: var(--gray);
-    }
-
-    .month-stat.value {
-      font-weight: bold;
-    }
-
-    /* Goal Card */
-    .goal-card {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 16px;
-      background: var(--card-bg);
-      border-radius: 12px;
-      margin-bottom: 16px;
-    }
-
-    .goal-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-    }
-
-    .goal-info {
-      flex: 1;
-    }
-
-    .goal-title {
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .goal-progress {
-      width: 100%;
-      height: 4px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 2px;
-      margin: 8px 0;
-    }
-
-    .goal-progress-fill {
-      height: 100%;
-      background: var(--primary);
-      border-radius: 2px;
-    }
-
-    .goal-percentage {
-      font-size: 12px;
-      color: var(--gray);
-    }
-
-    /* No Data */
-    .no-data {
-      text-align: center;
-      padding: 32px;
-      color: var(--gray);
-    }
-
-    .no-data i {
-      font-size: 48px;
-      margin-bottom: 16px;
-      color: var(--gray);
-    }
-
-    .no-data-button {
-      background: var(--primary);
-      border: none;
-      border-radius: 8px;
-      padding: 12px 24px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 16px;
-    }
-
-    /* Filter Section */
-    .filter-section {
-      background: var(--card-bg);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 16px;
-    }
-
-    .filter-title {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 12px;
-    }
-
-    .filter-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 8px;
-      margin-bottom: 8px;
-    }
-
-    .filter-label {
-      font-size: 14px;
-    }
-
-    .filter-value {
-      font-size: 14px;
-      color: var(--primary);
-    }
-
-    /* Timeline */
-    .timeline {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .timeline-item {
-      display: flex;
-      align-items: center;
-      padding: 16px;
-      background: var(--card-bg);
-      border-radius: 12px;
-    }
-
-    .timeline-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      margin-right: 16px;
-    }
-
-    .timeline-content {
-      flex: 1;
-    }
-
-    .timeline-title {
-      font-weight: 500;
-      margin-bottom: 4px;
-    }
-
-    .timeline-date {
-      font-size: 12px;
-      color: var(--gray);
-    }
-
-    .timeline-amount {
-      font-weight: bold;
-    }
-
-    /* Notification Panel */
-    .notification-panel {
-      position: fixed;
-      top: 60px;
-      right: 20px;
-      width: 300px;
-      background: var(--card-bg);
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      z-index: 1000;
-      display: none;
-    }
-
-    .notification-panel.active {
-      display: block;
-    }
-
-    .notification-title {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 12px;
-    }
-
-    .notification-item {
-      padding: 12px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 8px;
-      margin-bottom: 8px;
-    }
-
-    .notification-text {
-      font-size: 14px;
-    }
-
-    .notification-time {
-      font-size: 12px;
-      color: var(--gray);
-    }
-
-    /* Responsive */
-    @media (max-width: 480px) {
-      .form-row {
-        flex-direction: column;
-      }
-
-      .stat-card {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .stat-value {
-        font-size: 18px;
-      }
-
-      .chart-container {
-        height: 150px;
-      }
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>GoL COMPRE COM INTELIGÊNCIA</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#4361ee" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" sizes="192x192" href="logo.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="logo.png" />
+<script src="https://unpkg.com/@zxing/library@0.21.2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --primary: #4361ee;
+  --primary-rgb: 67, 97, 238;
+  --primary-dark: #3a56d4;
+  --primary-light: #4895ef;
+  --secondary: #3a56d4;
+  --success: #4ade80;
+  --danger: #f87171;
+  --background: #f8f9ff;
+  --card: #ffffff;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 20px;
+  --shadow: 0 10px 25px -5px rgba(67, 97, 238, 0.1);
+  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.tema-verde {
+  --primary: #22c55e;
+  --primary-rgb: 34, 197, 94;
+  --primary-dark: #16a34a;
+  --primary-light: #4ade80;
+  --secondary: #16a34a;
+}
+
+body.tema-roxo {
+  --primary: #8b5cf6;
+  --primary-rgb: 139, 92, 246;
+  --primary-dark: #7c3aed;
+  --primary-light: #a78bfa;
+  --secondary: #7c3aed;
+}
+
+body.tema-laranja {
+  --primary: #fb923c;
+  --primary-rgb: 251, 146, 60;
+  --primary-dark: #f97316;
+  --primary-light: #fdba74;
+  --secondary: #f97316;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root,
+  body.tema-verde,
+  body.tema-roxo,
+  body.tema-laranja {
+    --background: #0f172a;
+    --card: #1e293b;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+  background: var(--background);
+  display: flex;
+  height: 100dvh;
+  overflow-x: hidden;
+  font-size: 16px;
+  color: var(--text);
+}
+
+#splash {
+  position: fixed;
+  inset: 0;
+  background: #1e293b;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  opacity: 1;
+  transition: opacity 0.5s;
+}
+
+#splash img {
+  width: 300px;
+  height: 300px;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 28px rgba(0,0,0,0.4)) brightness(1.1);
+  z-index: 2001;
+}
+
+#splash p {
+  margin-top: 15px;
+  font-size: 18px;
+  font-weight: 600;
+  z-index: 2001;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+#sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 220px;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding-top: 60px;
+  transition: transform 0.3s;
+  z-index: 1000;
+}
+
+#sidebar.hide {
+  transform: translateX(-100%);
+}
+
+#sidebar button {
+  background: none;
+  border: none;
+  color: white;
+  text-align: left;
+  padding: 16px 20px;
+  font-size: 17px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  border-radius: 0 12px 12px 0;
+  width: 100%;
+  transition: var(--transition);
+}
+
+#sidebar button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  padding-left: 28px;
+}
+
+#hamburger {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  width: 52px;
+  height: 52px;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  z-index: 1001;
+  cursor: pointer;
+  font-size: 28px;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#hamburger:hover {
+  transform: rotate(90deg);
+  background: var(--primary-light);
+}
+
+#content {
+  margin-left: 220px;
+  flex: 1;
+  padding: 24px 20px;
+  transition: margin-left 0.3s;
+  overflow-y: auto;
+}
+
+#content.full {
+  margin-left: 0;
+}
+
+.view {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.view.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+#orcamentoAlerta {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--danger);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+#orcamentoAlerta.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#home {
+  text-align: center;
+  padding-top: 20px;
+}
+
+#home .logo-home {
+  width: 280px;
+  height: 280px;
+  object-fit: contain;
+  margin: 0 auto 20px;
+  filter: drop-shadow(0 8px 16px rgba(67, 97, 238, 0.15));
+}
+
+#home h2 {
+  margin: 10px 0;
+  color: var(--primary);
+  font-weight: 800;
+  font-size: 1.8rem;
+  letter-spacing: -0.5px;
+}
+
+#temaContainer {
+  margin: 16px auto 24px;
+  max-width: 320px;
+}
+
+#temaSelector {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-size: 15px;
+  box-shadow: var(--shadow);
+}
+
+#orcamento {
+  position: relative;
+  max-width: 400px;
+  margin: 20px auto;
+}
+
+#orcamento h3 {
+  margin-bottom: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.orcamento-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-top: 12px;
+}
+
+.real-prefix {
+  position: absolute;
+  left: 16px;
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 18px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+#orcamentoInput {
+  width: 100%;
+  padding: 14px 14px 14px 52px !important;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  font-size: 16px;
+  background: var(--card);
+  color: var(--text);
+  transition: var(--transition);
+}
+
+#orcamentoInput:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.2);
+}
+
+body.tema-verde #orcamentoInput,
+body.tema-roxo #orcamentoInput,
+body.tema-laranja #orcamentoInput {
+  border-color: var(--primary);
+}
+
+#orcamentoBarra {
+  height: 14px;
+  background: #e2e8f0;
+  border-radius: 7px;
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+#orcamentoBarraInner {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--secondary), var(--primary-light));
+  border-radius: 7px;
+  text-align: center;
+  color: white;
+  font-weight: 700;
+  transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+}
+
+#orcamentoBarraInner::after {
+  content: attr(data-pct);
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.box {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  transition: var(--transition);
+}
+
+.box:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 32px -8px rgba(0, 0, 0, 0.18);
+}
+
+#scannerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+#camera {
+  width: 100%;
+  height: 260px;
+  background: #000;
+  border-radius: var(--radius);
+  overflow: hidden;
+  position: relative;
+  box-shadow: var(--shadow);
+}
+
+#camera video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+#camera .reiniciando {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: var(--radius);
+  z-index: 10;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.scan-overlay {
+  position: absolute;
+  top: 15%;
+  left: 15%;
+  width: 70%;
+  height: 70%;
+  border: 3px solid var(--secondary);
+  border-radius: 8px;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+.scan-overlay::before,
+.scan-overlay::after {
+  content: '';
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--secondary);
+}
+
+.scan-overlay::before {
+  top: -3px; left: -3px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.scan-overlay::after {
+  bottom: -3px; right: -3px;
+  border-left: none;
+  border-top: none;
+}
+
+.scan-line {
+  position: absolute;
+  top: 15%;
+  left: 15%;
+  width: 70%;
+  height: 4px;
+  background: var(--secondary);
+  box-shadow: 0 0 12px var(--secondary);
+  animation: scan 2.5s linear infinite;
+}
+
+@keyframes scan {
+  0% { top: 15%; }
+  50% { top: 85%; }
+  100% { top: 15%; }
+}
+
+#produtosBox {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 15px;
+}
+
+th, td {
+  padding: 12px 10px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  font-weight: 700;
+  color: var(--text);
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:nth-child(even) {
+  background: rgba(67, 97, 238, 0.03);
+}
+
+@media (prefers-color-scheme: dark) {
+  tr:nth-child(even) {
+    background: rgba(67, 97, 238, 0.08);
+  }
+}
+
+button.editBtn {
+  background: var(--success);
+  color: #000;
+  margin-right: 6px;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+button.editBtn:hover {
+  background: #ffcc33;
+  transform: translateY(-2px);
+}
+
+button.deleteBtn {
+  background: var(--danger);
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+button.deleteBtn:hover {
+  background: #ff6b6b;
+  transform: translateY(-2px);
+}
+
+.historico-card {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border);
+}
+
+.historico-card h4 {
+  margin-bottom: 8px;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.historico-card small {
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 10px;
+}
+
+.historico-card details {
+  margin-top: 8px;
+}
+
+.historico-card details ul {
+  padding-left: 24px;
+  margin: 8px 0;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+#carrinhoIcone {
+  position: fixed;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  right: 24px;
+  width: 72px;
+  height: 72px;
+  background: var(--secondary);
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  cursor: pointer;
+  z-index: 200;
+  box-shadow: 0 8px 20px rgba(58, 86, 212, 0.4);
+  transition: var(--transition);
+}
+
+#carrinhoIcone:hover {
+  transform: scale(1.12) rotate(10deg);
+  box-shadow: 0 10px 25px rgba(58, 86, 212, 0.6);
+}
+
+#carrinhoIcone span {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 24px;
+  height: 24px;
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+#modalCarrinho {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: none;
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+#modalCarrinho .modal-content {
+  background: var(--card);
+  width: 95%;
+  max-width: 480px;
+  margin: 40px auto;
+  padding: 28px;
+  border-radius: var(--radius);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border);
+  transform: scale(0.95);
+  opacity: 0;
+  transition: transform 0.3s, opacity 0.3s;
+}
+
+#modalCarrinho.active .modal-content {
+  transform: scale(1);
+  opacity: 1;
+}
+
+#modalCarrinho table {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+#modalCarrinho button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 12px;
+  border: none;
+  border-radius: 14px;
+  color: white;
+  background: var(--primary);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 17px;
+  transition: var(--transition);
+}
+
+#modalCarrinho button:hover {
+  background: var(--primary-light);
+  transform: translateY(-2px);
+}
+
+#cadastroBox {
+  max-width: 420px;
+  margin: 20px auto;
+  position: relative;
+}
+
+#cadastroBox h2 {
+  margin-bottom: 20px;
+  color: var(--primary);
+  text-align: center;
+}
+
+#cadastroBox input,
+#cadastroBox select,
+#cadastroBox button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  font-size: 16px;
+  background: var(--card);
+  color: var(--text);
+  transition: var(--transition);
+}
+
+#cadastroBox input:focus,
+#cadastroBox select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.2);
+}
+
+#cadastroBox button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  font-weight: 700;
+  transition: var(--transition);
+}
+
+#cadastroBox button:hover {
+  background: var(--primary-light);
+  transform: translateY(-2px);
+}
+
+#scannerChartBox {
+  margin-top: 24px;
+  height: 200px;
+}
+
+#barraValidacao {
+  height: 14px;
+  background: #e2e8f0;
+  border-radius: 7px;
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+#barraValidacaoInner {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--secondary), var(--primary-light));
+  border-radius: 7px;
+  text-align: center;
+  color: white;
+  font-weight: 700;
+  transition: width 0.5s;
+  position: relative;
+}
+
+#barraValidacaoInner::after {
+  content: attr(data-pct);
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+@media (max-width: 768px) {
+  #sidebar { width: 200px; }
+  #content { margin-left: 200px; padding: 20px 16px; }
+  .box { padding: 20px; }
+}
+
+@media (max-width: 480px) {
+  #sidebar { width: 180px; transform: translateX(-100%); }
+  #sidebar.hide { transform: translateX(-100%); }
+  #content { margin-left: 0; padding: 16px 12px; }
+  #home .logo-home { width: 240px; height: 240px; }
+  #hamburger { width: 48px; height: 48px; }
+  #orcamento input { font-size: 15px; }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+.quantidade-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--card);
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+  z-index: 1100;
+  border: 1px solid var(--border);
+  text-align: center;
+  max-width: 320px;
+  width: 90vw;
+}
+
+.quantidade-modal input {
+  width: 100%;
+  padding: 12px;
+  margin: 12px 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 18px;
+  text-align: center;
+  background: var(--card);
+  color: var(--text);
+}
+
+.quantidade-modal button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 20px;
+  font-weight: 600;
+  margin: 0 6px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.quantidade-modal button:hover {
+  background: var(--primary-light);
+}
+
+#overlayQuantidade {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1050;
+  display: none;
+}
+</style>
 </head>
 <body>
-  <div class="app-container">
-    <!-- Header -->
-    <div class="header">
-      <button class="icon-btn" id="menuBtn">☰</button>
-      <h1>Dashboard Financeiro</h1>
-      <div class="header-icons">
-        <button class="icon-btn" id="notificationsBtn">🔔</button>
+<div id="splash">
+  <img src="logo.png" alt="GoL COMPRE COM INTELIGÊNCIA" />
+  <p>Bem-vindo ao seu app de compras inteligente</p>
+</div>
+<div id="hamburger">☰</div>
+<div id="sidebar">
+  <button onclick="irPara('home')">🏠 Home</button>
+  <button onclick="irPara('scanner')">📷 Scanner</button>
+  <button onclick="irPara('produtos')">📦 Produtos</button>
+  <button onclick="irPara('cadastro')">📝 Cadastro</button>
+  <button onclick="irPara('historico')">🧾 Histórico</button>
+</div>
+
+<div id="orcamentoAlerta">⚠️ Orçamento excedido!</div>
+
+<div id="content">
+  <section id="home" class="view active">
+    <img src="logo.png" class="logo-home" alt="GoL COMPRE COM INTELIGÊNCIA" />
+    <h2>Bem-vindo ao GoL COMPRE COM INTELIGÊNCIA</h2>
+    <div id="temaContainer">
+      <select id="temaSelector" onchange="mudarTema(this.value)">
+        <option value="padrao">Tema Padrão (Azul)</option>
+        <option value="verde">Tema Verde</option>
+        <option value="roxo">Tema Roxo</option>
+        <option value="laranja">Tema Laranja</option>
+      </select>
+    </div>
+    <div id="orcamento" class="box">
+      <h3>💰 Orçamento Mensal</h3>
+      <div class="orcamento-input-container">
+        <span class="real-prefix">R$</span>
+        <input type="number" id="orcamentoInput" placeholder="0,00" min="0" step="0.01" />
+      </div>
+      <div id="orcamentoBarra">
+        <div id="orcamentoBarraInner" data-pct="0%"></div>
+      </div>
+      <p style="margin-top: 12px; color: var(--text-muted);">
+        Gasto atual: <strong>R$ <span id="orcamentoGasto">0.00</span></strong>
+      </p>
+    </div>
+  </section>
+
+  <section id="scanner" class="view">
+    <div class="box">
+      <h2 style="text-align:center; margin-bottom:16px;">Scanner de Produtos</h2>
+      <div style="text-align: center; margin-bottom: 16px;">
+        <button id="toggleScannerBtn" style="
+          background: var(--primary);
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 14px;
+          font-weight: 600;
+          font-size: 16px;
+          cursor: pointer;
+          transition: var(--transition);
+        ">Iniciar Scanner</button>
+      </div>
+      <div id="camera">
+        <video id="video" playsinline></video>
+        <div class="reiniciando" id="reiniciandoMensagem">Reiniciando câmera...</div>
+        <div class="scan-overlay"></div>
+        <div class="scan-line"></div>
+      </div>
+      <div id="scannerInfo">
+        <p><strong>Código detectado:</strong> <span id="detected">—</span></p>
+        <p><strong>Total produtos cadastrados:</strong> <span id="totalProdutos">0</span></p>
+        <div id="scannerChartBox">
+          <canvas id="categoriaChart"></canvas>
+        </div>
+      </div>
+      <div id="barraValidacao">
+        <div id="barraValidacaoInner" data-pct="0%"></div>
       </div>
     </div>
+  </section>
 
-    <!-- Sidebar Menu -->
-    <div class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <div class="sidebar-logo">💰</div>
-        <div class="sidebar-title">Couply</div>
-      </div>
-      
-      <div class="menu-section">
-        <div class="menu-title">Principal</div>
-        <div class="menu-item active" data-page="dashboard">
-          <i>📊</i> Dashboard
-        </div>
-        <div class="menu-item" data-page="newTransaction">
-          <i>➕</i> Novo Lançamento
-        </div>
-        <div class="menu-item" data-page="transactions">
-          <i>📋</i> Transações
-        </div>
-      </div>
-      
-      <div class="menu-section">
-        <div class="menu-title">Casal</div>
-        <div class="menu-item" data-page="casal">
-          <i>❤️</i> Finanças do Casal
-        </div>
-      </div>
-      
-      <div class="menu-section">
-        <div class="menu-title">Planejamento</div>
-        <div class="menu-item" data-page="calendar">
-          <i>📅</i> Calendário
-        </div>
-        <div class="menu-item" data-page="goals">
-          <i>🎯</i> Metas
-        </div>
-        <div class="menu-item" data-page="reports">
-          <i>📈</i> Relatórios
-        </div>
-        <div class="menu-item" data-page="timeline">
-          <i>⏳</i> Timeline
-        </div>
-      </div>
-      
-      <div class="menu-section">
-        <div class="menu-title">Ferramentas</div>
-        <div class="menu-item" data-page="assistant">
-          <i>🤖</i> Assistente Financeiro
-        </div>
-        <div class="menu-item" data-page="settings">
-          <i>⚙️</i> Configurações
-        </div>
-      </div>
-      
-      <div class="user-profile">
-        <div class="avatar">D</div>
-        <div>
-          <div>Daniel Neves de Souza do Bomfim</div>
-          <div style="font-size: 10px; color: var(--gray)">Conta pessoal</div>
-        </div>
-      </div>
+  <section id="produtos" class="view">
+    <div id="produtosBox" class="box">
+      <h2 style="margin-bottom:16px;">Produtos Cadastrados</h2>
+      <table id="produtosTable">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nome</th>
+            <th>Categoria</th>
+            <th>Tipo</th>
+            <th>Valor</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
+  </section>
 
-    <!-- Main Content -->
-    <div class="main-content" id="mainContent">
-      <!-- Dashboard -->
-      <div id="dashboard" class="page active">
-        <!-- Financial Summary -->
-        <div class="stat-card">
-          <div>
-            <div class="stat-label">Saldo Atual</div>
-            <div class="stat-value">R$ 801,00</div>
-          </div>
-          <div class="stat-change negative">-90,7% vs mês anterior</div>
-        </div>
-        
-        <div class="stat-card">
-          <div>
-            <div class="stat-label">Receitas</div>
-            <div class="stat-value">R$ 11.400,00</div>
-          </div>
-          <div class="stat-change positive">+165,1% vs mês anterior</div>
-        </div>
-        
-        <div class="stat-card">
-          <div>
-            <div class="stat-label">Despesas</div>
-            <div class="stat-value">R$ 10.599,00</div>
-          </div>
-          <div class="stat-change positive">+235,1% vs mês anterior</div>
-        </div>
-        
-        <div class="stat-card">
-          <div>
-            <div class="stat-label">Economia</div>
-            <div class="stat-value">R$ 801,00</div>
-          </div>
-          <div class="stat-change positive">+90,7% vs mês anterior</div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">Ações Rápidas</div>
-            <div class="card-icon">⏱️</div>
-          </div>
-          <div class="quick-actions">
-            <div class="action-btn" id="newTransactionBtn">
-              <div class="action-icon">➕</div>
-              <div class="action-label">Novo Lançamento</div>
-            </div>
-            <div class="action-btn" id="calendarBtn">
-              <div class="action-icon">📅</div>
-              <div class="action-label">Calendário</div>
-            </div>
-            <div class="action-btn" id="reportsBtn">
-              <div class="action-icon">📈</div>
-              <div class="action-label">Relatórios</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Categories -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">Gastos por Categoria</div>
-            <div class="card-icon">📊</div>
-          </div>
-          <div class="category-list">
-            <div class="category-item">
-              <div class="category-info">
-                <div class="category-icon" style="background: var(--primary);">💳</div>
-                <div class="category-name">Cartão de crédito</div>
-              </div>
-              <div class="category-amount">R$ 6.750,00</div>
-            </div>
-            <div class="category-item">
-              <div class="category-info">
-                <div class="category-icon" style="background: var(--yellow);">🏠</div>
-                <div class="category-name">Apartamento</div>
-              </div>
-              <div class="category-amount">R$ 1.330,00</div>
-            </div>
-            <div class="category-item">
-              <div class="category-info">
-                <div class="category-icon" style="background: var(--red);">🍽️</div>
-                <div class="category-name">Alimentação</div>
-              </div>
-              <div class="category-amount">R$ 1.000,00</div>
-            </div>
-            <div class="category-item">
-              <div class="category-info">
-                <div class="category-icon" style="background: var(--green);">🛒</div>
-                <div class="category-name">Cartão</div>
-              </div>
-              <div class="category-amount">R$ 560,00</div>
-            </div>
-            <div class="category-item">
-              <div class="category-info">
-                <div class="category-icon" style="background: var(--blue);">📈</div>
-                <div class="category-name">Investimento</div>
-              </div>
-              <div class="category-amount">R$ 500,00</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Monthly Evolution -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">Evolução Mensal</div>
-            <div class="card-icon">📉</div>
-          </div>
-          <div class="month-evolution">
-            <div class="month-item">
-              <div class="month-name">Set 2025</div>
-              <div class="month-stats">
-                <div class="month-stat">
-                  <label>Economia</label>
-                  <div class="month-stat value">R$ 0,00</div>
-                </div>
-                <div class="month-stat">
-                  <label>Despesas</label>
-                  <div class="month-stat value">R$ 0,00</div>
-                </div>
-              </div>
-            </div>
-            <div class="month-item">
-              <div class="month-name">Out 2025</div>
-              <div class="month-stats">
-                <div class="month-stat">
-                  <label>Economia</label>
-                  <div class="month-stat value">R$ 0,00</div>
-                </div>
-                <div class="month-stat">
-                  <label>Despesas</label>
-                  <div class="month-stat value">R$ 0,00</div>
-                </div>
-              </div>
-            </div>
-            <div class="month-item">
-              <div class="month-name">Nov 2025</div>
-              <div class="month-stats">
-                <div class="month-stat">
-                  <label>Economia</label>
-                  <div class="month-stat value">R$ 0,00</div>
-                </div>
-                <div class="month-stat">
-                  <label>Despesas</label>
-                  <div class="month-stat value">R$ 0,00</div>
-                </div>
-              </div>
-            </div>
-            <div class="month-item">
-              <div class="month-name">Dez 2025</div>
-              <div class="month-stats">
-                <div class="month-stat">
-                  <label>Economia</label>
-                  <div class="month-stat value">R$ 1.314,84</div>
-                </div>
-                <div class="month-stat">
-                  <label>Despesas</label>
-                  <div class="month-stat value">R$ 2.305,00</div>
-                </div>
-              </div>
-            </div>
-            <div class="month-item">
-              <div class="month-name">Jan 2026</div>
-              <div class="month-stats">
-                <div class="month-stat">
-                  <label>Economia</label>
-                  <div class="month-stat value">R$ 801,00</div>
-                </div>
-                <div class="month-stat">
-                  <label>Despesas</label>
-                  <div class="month-stat value">R$ 10.599,00</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Financial Goals -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">Metas Financeiras</div>
-            <div class="card-icon">🎯</div>
-          </div>
-          <div class="no-data">
-            <i>🎯</i>
-            <div>Nenhuma meta financeira registrada ainda.</div>
-            <div>Configure suas metas na seção <strong>Metas</strong>.</div>
-            <button class="no-data-button" id="createGoalBtn">Criar Nova Meta</button>
-          </div>
-        </div>
-
-        <!-- Family Activity -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">Atividade do Casal</div>
-            <div class="card-icon">❤️</div>
-          </div>
-          <div class="transaction-list">
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--green);">🎁</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Bolsa família</div>
-                  <div class="transaction-date">20 dez, 21:00 • Thaina Santana</div>
-                </div>
-              </div>
-              <div class="transaction-amount positive">+R$ 800,00</div>
-            </div>
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--red);">💸</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Empréstimo</div>
-                  <div class="transaction-date">20 dez, 21:00 • Thaina Santana</div>
-                </div>
-              </div>
-              <div class="transaction-amount negative">-R$ 326,34</div>
-            </div>
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--red);">💸</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Karina</div>
-                  <div class="transaction-date">20 dez, 21:00 • Thaina Santana</div>
-                </div>
-              </div>
-              <div class="transaction-amount negative">-R$ 74,81</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- New Transaction -->
-      <div id="newTransaction" class="page">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">Nova Transação</div>
-            <div class="card-icon">➕</div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <div class="form-label">Tipo de Transação</div>
-              <div class="tabs">
-                <div class="tab active" id="expenseTab">Despesa</div>
-                <div class="tab" id="incomeTab">Receita</div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <div class="form-label">Valor *</div>
-              <input type="text" class="form-input" placeholder="R$ 0,00" id="transactionValue" value="R$ 0,00">
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <div class="form-label">Descrição *</div>
-            <input type="text" class="form-input" placeholder="Ex: Supermercado Extra" id="transactionDescription" value="Ex: Supermercado Extra">
-          </div>
-          
-          <div class="form-group">
-            <div class="form-label">Data</div>
-            <input type="date" class="form-input" id="transactionDate" value="2026-01-07">
-          </div>
-          
-          <div class="form-group">
-            <div class="form-label">Método de Pagamento</div>
-            <select class="form-select" id="paymentMethod">
-              <option selected>Cartão de Crédito</option>
-              <option>Cartão de Débito</option>
-              <option>Dinheiro</option>
-              <option>Pix</option>
-              <option>Transferência</option>
-            </select>
-          </div>
-          
-          <div class="form-group">
-            <div class="form-label">Categoria *</div>
-            <input type="text" class="form-input" placeholder="Digite ou selecione uma categoria" id="transactionCategory" value="Digite ou selecione uma categoria">
-          </div>
-          
-          <div class="form-group">
-            <div class="form-label">Subcategoria</div>
-            <input type="text" class="form-input" placeholder="Informe uma subcategoria (opcional)" id="transactionSubcategory" value="Informe uma subcategoria (opcional)">
-          </div>
-          
-          <div class="form-group">
-            <div class="form-label">Observações</div>
-            <textarea class="form-input" rows="3" placeholder="Observações adicionais..." id="transactionNotes">Observações adicionais...</textarea>
-          </div>
-          
-          <div class="form-checkbox">
-            <label>Transação Recorrente</label>
-            <div class="switch">
-              <input type="checkbox" id="recurringTransaction">
-              <span class="slider"></span>
-            </div>
-          </div>
-          
-          <button class="btn" id="saveTransactionBtn">Salvar</button>
-          <button class="btn btn-secondary" id="cancelTransactionBtn">Cancelar</button>
-        </div>
-      </div>
-
-      <!-- Transactions -->
-      <div id="transactions" class="page">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">Transações</div>
-            <div class="card-icon">📋</div>
-          </div>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <input type="text" class="form-input" placeholder="Buscar transações...">
-            </div>
-          </div>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <select class="form-select">
-                <option>Todas</option>
-                <option>Despesas</option>
-                <option>Receitas</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <select class="form-select">
-                <option>Este Mês</option>
-                <option>Últimos 3 Meses</option>
-                <option>Último Ano</option>
-              </select>
-            </div>
-          </div>
-          
-          <div class="card">
-            <div class="card-title">19 transações encontradas</div>
-          </div>
-          
-          <div class="transaction-list">
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--red);">🛒</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Compras do mês</div>
-                  <div class="transaction-date">31/01/2026</div>
-                </div>
-              </div>
-              <div class="transaction-amount negative">-R$ 1.000,00</div>
-            </div>
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--green);">💰</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Salário</div>
-                  <div class="transaction-date">31/01/2026</div>
-                </div>
-              </div>
-              <div class="transaction-amount positive">+R$ 5.400,00</div>
-            </div>
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--red);">🏢</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Condomínio</div>
-                  <div class="transaction-date">31/01/2026</div>
-                </div>
-              </div>
-              <div class="transaction-amount negative">-R$ 230,00</div>
-            </div>
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--red);">⚡</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Energia</div>
-                  <div class="transaction-date">31/01/2026</div>
-                </div>
-              </div>
-              <div class="transaction-amount negative">-R$ 400,00</div>
-            </div>
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--red);">🌐</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Internet</div>
-                  <div class="transaction-date">31/01/2026</div>
-                </div>
-              </div>
-              <div class="transaction-amount negative">-R$ 100,00</div>
-            </div>
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--red);">🏦</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Caixa Iloburque</div>
-                  <div class="transaction-date">31/01/2026</div>
-                </div>
-              </div>
-              <div class="transaction-amount negative">-R$ 500,00</div>
-            </div>
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--red);">🚗</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Gasolina</div>
-                  <div class="transaction-date">31/01/2026</div>
-                </div>
-              </div>
-              <div class="transaction-amount negative">-R$ 200,00</div>
-            </div>
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--red);">💊</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Remédios</div>
-                  <div class="transaction-date">31/01/2026</div>
-                </div>
-              </div>
-              <div class="transaction-amount negative">-R$ 150,00</div>
-            </div>
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--red);">🎬</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Netflix</div>
-                  <div class="transaction-date">31/01/2026</div>
-                </div>
-              </div>
-              <div class="transaction-amount negative">-R$ 30,00</div>
-            </div>
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--red);">📱</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Celular</div>
-                  <div class="transaction-date">31/01/2026</div>
-                </div>
-              </div>
-              <div class="transaction-amount negative">-R$ 80,00</div>
-            </div>
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--red);">🍔</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Fast Food</div>
-                  <div class="transaction-date">31/01/2026</div>
-                </div>
-              </div>
-              <div class="transaction-amount negative">-R$ 60,00</div>
-            </div>
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--red);">📚</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Livros</div>
-                  <div class="transaction-date">31/01/2026</div>
-                </div>
-              </div>
-              <div class="transaction-amount negative">-R$ 120,00</div>
-            </div>
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--red);">🎮</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Jogos</div>
-                  <div class="transaction-date">31/01/2026</div>
-                </div>
-              </div>
-              <div class="transaction-amount negative">-R$ 90,00</div>
-            </div>
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--red);">👕</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Roupas</div>
-                  <div class="transaction-date">31/01/2026</div>
-                </div>
-              </div>
-              <div class="transaction-amount negative">-R$ 180,00</div>
-            </div>
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--red);">🚗</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Manutenção Carro</div>
-                  <div class="transaction-date">31/01/2026</div>
-                </div>
-              </div>
-              <div class="transaction-amount negative">-R$ 350,00</div>
-            </div>
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--red);">🏥</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Médico</div>
-                  <div class="transaction-date">31/01/2026</div>
-                </div>
-              </div>
-              <div class="transaction-amount negative">-R$ 250,00</div>
-            </div>
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--red);">✈️</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Viagem</div>
-                  <div class="transaction-date">31/01/2026</div>
-                </div>
-              </div>
-              <div class="transaction-amount negative">-R$ 1.200,00</div>
-            </div>
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--red);">🎭</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Teatro</div>
-                  <div class="transaction-date">31/01/2026</div>
-                </div>
-              </div>
-              <div class="transaction-amount negative">-R$ 100,00</div>
-            </div>
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--red);">🎸</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Instrumentos</div>
-                  <div class="transaction-date">31/01/2026</div>
-                </div>
-              </div>
-              <div class="transaction-amount negative">-R$ 400,00</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Calendar -->
-      <div id="calendar" class="page">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">Calendário Financeiro</div>
-            <div class="card-icon">📅</div>
-          </div>
-          
-          <div class="calendar-header">
-            <div>Dom</div>
-            <div>Seg</div>
-            <div>Ter</div>
-            <div>Qua</div>
-            <div>Qui</div>
-            <div>Sex</div>
-            <div>Sáb</div>
-          </div>
-          
-          <div class="calendar">
-            <div class="calendar-day">29</div>
-            <div class="calendar-day">30</div>
-            <div class="calendar-day">31</div>
-            <div class="calendar-day">1</div>
-            <div class="calendar-day">2</div>
-            <div class="calendar-day">3</div>
-            <div class="calendar-day">4</div>
-            <div class="calendar-day">5</div>
-            <div class="calendar-day">6</div>
-            <div class="calendar-day selected">7</div>
-            <div class="calendar-day">8</div>
-            <div class="calendar-day">9</div>
-            <div class="calendar-day">10</div>
-            <div class="calendar-day">11</div>
-            <div class="calendar-day">12</div>
-            <div class="calendar-day">13</div>
-            <div class="calendar-day">14</div>
-            <div class="calendar-day">15</div>
-            <div class="calendar-day">16</div>
-            <div class="calendar-day">17</div>
-            <div class="calendar-day">18</div>
-            <div class="calendar-day">19</div>
-            <div class="calendar-day">20</div>
-            <div class="calendar-day">21</div>
-            <div class="calendar-day">22</div>
-            <div class="calendar-day">23</div>
-            <div class="calendar-day">24</div>
-            <div class="calendar-day">25</div>
-            <div class="calendar-day">26</div>
-            <div class="calendar-day">27</div>
-            <div class="calendar-day">28</div>
-            <div class="calendar-day today has-data">29</div>
-            <div class="calendar-day has-data">30</div>
-            <div class="calendar-day has-data">31</div>
-          </div>
-          
-          <div class="card">
-            <div class="card-title">Resumo do Mês</div>
-            <div class="stat-card">
-              <div>
-                <div class="stat-label">Receitas</div>
-                <div class="stat-value">R$ 11.400,00</div>
-              </div>
-              <div>
-                <div class="stat-label">Despesas</div>
-                <div class="stat-value">R$ 10.599,00</div>
-              </div>
-              <div>
-                <div class="stat-label">Saldo</div>
-                <div class="stat-value">R$ 801,00</div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="card">
-            <div class="card-title">20 de janeiro de 2026</div>
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--green);">💰</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Adiantamento Salário</div>
-                  <div class="transaction-date">Salário • PIX</div>
-                </div>
-              </div>
-              <div class="transaction-amount positive">+R$ 2.350,00</div>
-            </div>
-          </div>
-          
-          <div class="card">
-            <div class="card-title">31 de janeiro de 2026</div>
-            <div class="transaction-item">
-              <div class="transaction-info">
-                <div class="transaction-icon" style="background: var(--red);">🛒</div>
-                <div class="transaction-details">
-                  <div class="transaction-title">Compras do mês</div>
-                  <div class="transaction-date">Cartão de Crédito</div>
-                </div>
-              </div>
-              <div class="transaction-amount negative">-R$ 1.000,00</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Goals -->
-      <div id="goals" class="page">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">Metas Financeiras</div>
-            <div class="card-icon">🎯</div>
-          </div>
-          
-          <div class="goal-card">
-            <div class="goal-icon">📊</div>
-            <div class="goal-info">
-              <div class="goal-title">Total de Metas</div>
-              <div class="goal-percentage">0</div>
-            </div>
-          </div>
-          
-          <div class="goal-card">
-            <div class="goal-icon">✅</div>
-            <div class="goal-info">
-              <div class="goal-title">Concluídas</div>
-              <div class="goal-percentage">0</div>
-            </div>
-          </div>
-          
-          <div class="goal-card">
-            <div class="goal-icon">💰</div>
-            <div class="goal-info">
-              <div class="goal-title">Valor Total</div>
-              <div class="goal-percentage">R$ 0</div>
-            </div>
-          </div>
-          
-          <div class="goal-card">
-            <div class="goal-icon">🔵</div>
-            <div class="goal-info">
-              <div class="goal-title">Economizado</div>
-              <div class="goal-percentage">R$ 0</div>
-            </div>
-          </div>
-          
-          <div class="filter-section">
-            <div class="filter-title">Filtros</div>
-            <div class="filter-item">
-              <div class="filter-label">Todas</div>
-              <div class="filter-value">✓</div>
-            </div>
-            <div class="filter-item">
-              <div class="filter-label">Individuais</div>
-              <div class="filter-value">+</div>
-            </div>
-            <div class="filter-item">
-              <div class="filter-label">Compartilhadas</div>
-              <div class="filter-value">+</div>
-            </div>
-            <div class="filter-item">
-              <div class="filter-label">Ativas</div>
-              <div class="filter-value">+</div>
-            </div>
-            <div class="filter-item">
-              <div class="filter-label">Concluídas</div>
-              <div class="filter-value">+</div>
-            </div>
-            <div class="filter-item">
-              <div class="filter-label">Alta Prioridade</div>
-              <div class="filter-value">+</div>
-            </div>
-          </div>
-          
-          <div class="card">
-            <div class="card-title">Progresso Geral</div>
-            <div class="goal-progress">
-              <div class="goal-progress-fill" style="width: 0%;"></div>
-            </div>
-            <div class="goal-percentage">0%</div>
-            <div>Faltam R$ 0 para atingir todas as metas</div>
-          </div>
-          
-          <div class="card">
-            <div class="card-title">0 metas encontradas</div>
-            <div class="no-data">
-              <i>🎯</i>
-              <div>Nenhuma meta encontrada</div>
-              <div>Crie sua primeira meta financeira para começar</div>
-              <button class="no-data-button" id="createGoalBtn2">Criar Nova Meta</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Reports -->
-      <div id="reports" class="page">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">Relatórios</div>
-            <div class="card-icon">📈</div>
-          </div>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <select class="form-select">
-                <option>Todas as datas</option>
-                <option>Este Mês</option>
-                <option>Últimos 3 Meses</option>
-                <option>Último Ano</option>
-              </select>
-            </div>
-          </div>
-          
-          <div class="card">
-            <div class="card-title">Tendência Financeira</div>
-          </div>
-          
-          <div class="chart-container">
-            <div class="chart-bar receitas" style="height: 60%;">
-              <div class="chart-value">R$ 11.400,00</div>
-              <div class="chart-label">Receitas</div>
-            </div>
-            <div class="chart-bar despesas" style="height: 55%;">
-              <div class="chart-value">R$ 10.599,00</div>
-              <div class="chart-label">Despesas</div>
-            </div>
-            <div class="chart-bar economia" style="height: 20%;">
-              <div class="chart-value">R$ 801,00</div>
-              <div class="chart-label">Economia</div>
-            </div>
-          </div>
-          
-          <div class="card">
-            <div class="card-title">Top Categorias</div>
-            <div class="category-list">
-              <div class="category-item">
-                <div class="category-info">
-                  <div class="category-icon" style="background: var(--primary);">💳</div>
-                  <div class="category-name">Cartão de crédito</div>
-                </div>
-                <div class="category-amount">63,7%</div>
-              </div>
-              <div class="category-item">
-                <div class="category-info">
-                  <div class="category-icon" style="background: var(--yellow);">🏠</div>
-                  <div class="category-name">Apartamento</div>
-                </div>
-                <div class="category-amount">12,5%</div>
-              </div>
-              <div class="category-item">
-                <div class="category-info">
-                  <div class="category-icon" style="background: var(--red);">🍽️</div>
-                  <div class="category-name">Alimentação</div>
-                </div>
-                <div class="category-amount">9,4%</div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="card">
-            <div class="card-title">Insights do Período</div>
-            <div style="padding: 12px; font-size: 12px;">
-              <div style="margin-bottom: 8px;">• Atenção aos gastos: As despesas aumentaram mais de 235% em relação ao período anterior.</div>
-              <div style="margin-bottom: 8px;">• Categoria predominante: Cartão de crédito. Esta categoria concentra boa parte dos gastos. Verifique se há oportunidades de otimização.</div>
-              <div style="margin-bottom: 8px;">• Médias: Média por despesa: R$ 75,07 | Média por receita: R$ 2.280</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Timeline -->
-      <div id="timeline" class="page">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">Timeline Financeira</div>
-            <div class="card-icon">⏳</div>
-          </div>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <input type="text" class="form-input" placeholder="Buscar eventos...">
-            </div>
-          </div>
-          
-          <div class="filter-section">
-            <div class="filter-title">Filtrar por Tipo</div>
-            <div class="filter-item">
-              <div class="filter-label">Todos</div>
-              <div class="filter-value">✓</div>
-            </div>
-            <div class="filter-item">
-              <div class="filter-label">Transações</div>
-              <div class="filter-value">+</div>
-            </div>
-            <div class="filter-item">
-              <div class="filter-label">Metas</div>
-              <div class="filter-value">+</div>
-            </div>
-            <div class="filter-item">
-              <div class="filter-label">Alertas</div>
-              <div class="filter-value">+</div>
-            </div>
-            <div class="filter-item">
-              <div class="filter-label">Conquistas</div>
-              <div class="filter-value">+</div>
-            </div>
-          </div>
-          
-          <div class="filter-section">
-            <div class="filter-title">Período</div>
-            <div class="filter-item">
-              <div class="filter-label">Esta Semana</div>
-              <div class="filter-value">+</div>
-            </div>
-            <div class="filter-item">
-              <div class="filter-label">Este Mês</div>
-              <div class="filter-value">✓</div>
-            </div>
-            <div class="filter-item">
-              <div class="filter-label">Este Trimestre</div>
-              <div class="filter-value">+</div>
-            </div>
-            <div class="filter-item">
-              <div class="filter-label">Ano</div>
-              <div class="filter-value">+</div>
-            </div>
-            <div class="filter-item">
-              <div class="filter-label">Personalizado</div>
-              <div class="filter-value">+</div>
-            </div>
-          </div>
-          
-          <div class="card">
-            <div class="card-title">Resumo do Período</div>
-            <div class="stat-card">
-              <div>
-                <div class="stat-label">Receitas</div>
-                <div class="stat-value">R$ 0,00</div>
-              </div>
-              <div>
-                <div class="stat-label">Despesas</div>
-                <div class="stat-value">R$ 0,00</div>
-              </div>
-              <div>
-                <div class="stat-label">Saldo</div>
-                <div class="stat-value">R$ 0,00</div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="card">
-            <div class="card-title">0 eventos encontrados</div>
-            <div class="no-data">
-              <i>⏳</i>
-              <div>Nenhum evento encontrado</div>
-              <div>Tente ajustar os filtros ou o termo de busca</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Assistant -->
-      <div id="assistant" class="page">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">Assistente Financeiro IA</div>
-            <div class="card-icon">🤖</div>
-          </div>
-          
-          <div class="ai-chat">
-            <div class="message ai">
-              Olá! Como posso ajudar você hoje com suas finanças?
-            </div>
-            <div class="message ai">
-              Posso te ajudar a analisar seus gastos, criar metas, sugerir economias ou responder dúvidas sobre seu orçamento.
-            </div>
-          </div>
-          
-          <div class="ai-input">
-            <input type="text" placeholder="Digite sua pergunta sobre finanças...">
-            <button>➤</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Settings -->
-      <div id="settings" class="page">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">Configurações</div>
-            <div class="card-icon">⚙️</div>
-          </div>
-          
-          <div class="settings-tabs">
-            <div class="settings-tab active" data-tab="profile">Perfil</div>
-            <div class="settings-tab" data-tab="bank">Contas Bancárias</div>
-            <div class="settings-tab" data-tab="couple">Casal</div>
-          </div>
-          
-          <div id="profileTab" class="settings-content">
-            <div class="profile-info">
-              <div class="profile-avatar">D</div>
-              <div class="profile-details">
-                <div class="profile-name">Daniel Neves de Souza do Bomfim</div>
-                <div class="profile-email">danielbomfim00@gmail.com</div>
-              </div>
-            </div>
-            
-            <div class="input-group">
-              <div class="input-label">Nome Completo</div>
-              <input type="text" class="input-field" value="Daniel Neves de Souza do Bomfim">
-            </div>
-            
-            <div class="input-group">
-              <div class="input-label">Email</div>
-              <input type="email" class="input-field" value="danielbomfim00@gmail.com">
-            </div>
-            
-            <div class="input-group">
-              <div class="input-label">Telefone</div>
-              <input type="text" class="input-field" value="(01) 88180-1281">
-            </div>
-            
-            <div class="input-group">
-              <div class="input-label">Data de Nascimento</div>
-              <input type="date" class="input-field" value="2003-08-10">
-            </div>
-            
-            <div class="input-group">
-              <div class="input-label">Profissão</div>
-              <select class="input-field">
-                <option>Técnico de Planejamento</option>
-                <option>Analista Financeiro</option>
-                <option>Gerente de Projetos</option>
-              </select>
-            </div>
-            
-            <div class="input-group">
-              <div class="input-label">Localização</div>
-              <input type="text" class="input-field" value="Jequié">
-            </div>
-            
-            <div class="input-group">
-              <div class="input-label">Bio</div>
-              <textarea class="input-field" rows="2">Conte um pouco sobre você...</textarea>
-            </div>
-            
-            <button class="btn">Salvar Alterações</button>
-          </div>
-          
-          <div id="bankTab" class="settings-content" style="display: none;">
-            <div class="card">
-              <div class="card-title">Conexões Bancárias</div>
-            </div>
-            
-            <div class="card">
-              <div class="card-title">Nenhuma conexão bancária</div>
-              <div style="margin-top: 8px; font-size: 12px; color: var(--gray);">
-                Conecte sua conta bancária via Open Finance para automatizar seus lançamentos e saldos.
-              </div>
-              <button class="btn" style="margin-top: 12px;">Conectar Primeira Conta</button>
-            </div>
-          </div>
-          
-          <div id="coupleTab" class="settings-content" style="display: none;">
-            <div class="card">
-              <div class="card-title">Configurações do Casal</div>
-            </div>
-            
-            <div class="card">
-              <div class="card-title">Thaina Santana</div>
-              <div style="display: flex; justify-content: space-between; margin: 8px 0; font-size: 12px;">
-                <div>Contribuição: 0,0%</div>
-                <div>Metas ativas: 0</div>
-                <div>Sincronização: 88%</div>
-              </div>
-              <div style="margin-top: 8px; display: flex; gap: 8px;">
-                <input type="email" class="input-field" placeholder="Email do Parceiro(a)">
-                <button class="btn" style="padding: 8px 12px; font-size: 12px;">Convidar</button>
-              </div>
-            </div>
-            
-            <div class="card">
-              <div class="card-title">Membros do Casal</div>
-              <div style="margin-top: 8px; display: flex; align-items: center; gap: 8px;">
-                <div style="flex: 1; display: flex; align-items: center; gap: 8px;">
-                  <div class="avatar">D</div>
-                  <div>
-                    <div>Daniel Neves de Souza do Bomfim</div>
-                    <div style="font-size: 10px; color: var(--gray)">Membro desde 12/12/2025</div>
-                  </div>
-                </div>
-                <div style="display: flex; gap: 4px;">
-                  <div style="background: var(--primary); color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px;">Voz</div>
-                  <div style="background: var(--green); color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px;">Principal</div>
-                </div>
-              </div>
-              
-              <div style="margin-top: 8px; display: flex; align-items: center; gap: 8px;">
-                <div style="flex: 1; display: flex; align-items: center; gap: 8px;">
-                  <div class="avatar">T</div>
-                  <div>
-                    <div>Thaina Santana</div>
-                    <div style="font-size: 10px; color: var(--gray)">Membro desde 12/12/2025</div>
-                  </div>
-                </div>
-                <div style="display: flex; gap: 4px;">
-                  <div style="background: var(--red); color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px;">Voz</div>
-                  <div style="background: var(--gray); color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px;">Bloqueado</div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="card">
-              <div class="card-title">Compartilhamento de Dados</div>
-              <div class="toggle-group">
-                <div class="toggle-label">Receitas e Despesas</div>
-                <div class="switch">
-                  <input type="checkbox" checked>
-                  <span class="slider"></span>
-                </div>
-              </div>
-              <div class="toggle-group">
-                <div class="toggle-label">Metas</div>
-                <div class="switch">
-                  <input type="checkbox" checked>
-                  <span class="slider"></span>
-                </div>
-              </div>
-              <div class="toggle-group">
-                <div class="toggle-label">Contas Bancárias</div>
-                <div class="switch">
-                  <input type="checkbox" checked>
-                  <span class="slider"></span>
-                </div>
-              </div>
-              <div class="toggle-group">
-                <div class="toggle-label">Relatórios</div>
-                <div class="switch">
-                  <input type="checkbox" checked>
-                  <span class="slider"></span>
-                </div>
-              </div>
-            </div>
-            
-            <div class="card">
-              <div class="card-title">Outras Configurações</div>
-              <div class="toggle-group">
-                <div class="toggle-label">Notificações Conjuntas</div>
-                <div class="switch">
-                  <input type="checkbox">
-                  <span class="slider"></span>
-                </div>
-              </div>
-              <div class="toggle-group">
-                <div class="toggle-label">Limites de Orçamento</div>
-                <div class="switch">
-                  <input type="checkbox">
-                  <span class="slider"></span>
-                </div>
-              </div>
-              <div class="toggle-group">
-                <div class="toggle-label">Relatórios Mensais</div>
-                <div class="switch">
-                  <input type="checkbox">
-                  <span class="slider"></span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+  <section id="cadastro" class="view">
+    <div id="cadastroBox" class="box">
+      <h2 id="cadastro-title">Cadastro de Produto</h2>
+      <input id="codigoCadastro" placeholder="Código" />
+      <input id="nomeCadastro" placeholder="Nome" />
+      <select id="categoriaCadastro">
+        <option value="Alimentos">Alimentos</option>
+        <option value="Limpeza">Limpeza</option>
+        <option value="Bebida">Bebida</option>
+        <option value="Farmácia">Farmácia</option>
+        <option value="Higiene">Higiene</option>
+        <option value="Outros">Outros</option>
+      </select>
+      <select id="tipoCadastro">
+        <option>UN</option>
+        <option>KG</option>
+      </select>
+      <input id="valorCadastro" type="number" step="0.01" placeholder="Valor" />
+      <button id="salvarCadastro">Salvar Produto</button>
     </div>
+  </section>
 
-    <!-- Floating Action Button -->
-    <div class="fab" id="fabBtn">➕</div>
+  <section id="historico" class="view">
+    <div class="box" id="historicoConteudo"></div>
+  </section>
+</div>
 
-    <!-- Notifications Panel -->
-    <div class="notification-panel" id="notificationsPanel">
-      <div class="notification-title">Notificações</div>
-      <div class="notification-item">
-        <div class="notification-text">Você tem um novo alerta de limite de gastos!</div>
-        <div class="notification-time">Há 2 minutos</div>
-      </div>
-      <div class="notification-item">
-        <div class="notification-text">Sua meta de emergência está 50% concluída!</div>
-        <div class="notification-time">Há 1 hora</div>
-      </div>
-      <div class="notification-item">
-        <div class="notification-text">Nenhuma notificação nova</div>
-      </div>
-    </div>
+<div id="carrinhoIcone" onclick="abrirCarrinho()">🛍️<span id="badge">0</span></div>
 
-    <!-- Create Goal Modal -->
-    <div class="modal" id="createGoalModal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <div class="modal-title">Nova Meta Financeira</div>
-          <button class="close-btn" id="closeGoalModal">×</button>
-        </div>
-        
-        <div class="form-group">
-          <div class="form-label">Título da Meta</div>
-          <input type="text" class="form-input" placeholder="Ex: Reserva de Emergência">
-        </div>
-        
-        <div class="form-group">
-          <div class="form-label">Descrição</div>
-          <textarea class="form-input" rows="2" placeholder="Descreva sua meta..."></textarea>
-        </div>
-        
-        <div class="form-row">
-          <div class="form-group">
-            <div class="form-label">Tipo de Meta</div>
-            <div class="tabs">
-              <div class="tab active">Pessoal</div>
-              <div class="tab">Compartilhada</div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="form-row">
-          <div class="form-group">
-            <div class="form-label">Valor Alvo</div>
-            <input type="text" class="form-input" placeholder="0,00">
-          </div>
-          <div class="form-group">
-            <div class="form-label">Prazo</div>
-            <select class="form-select">
-              <option>3 meses</option>
-              <option>6 meses</option>
-              <option>1 ano</option>
-              <option>2 anos</option>
-            </select>
-          </div>
-        </div>
-        
-        <div class="form-row">
-          <div class="form-group">
-            <div class="form-label">Categoria</div>
-            <select class="form-select">
-              <option>Outros</option>
-              <option>Emergência</option>
-              <option>Viagem</option>
-              <option>Investimento</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <div class="form-label">Prioridade</div>
-            <select class="form-select">
-              <option>Média</option>
-              <option>Baixa</option>
-              <option>Alta</option>
-            </select>
-          </div>
-        </div>
-        
-        <div class="form-group">
-          <div class="form-label">Cálculo com IA</div>
-          <div style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px; font-size: 12px; margin: 8px 0;">
-            A IA pode calcular valores personalizados baseados no seu perfil financeiro.
-          </div>
-          <button class="btn" style="padding: 8px; font-size: 12px;">Calcular com IA</button>
-        </div>
-        
-        <div class="form-row" style="margin-top: 16px;">
-          <button class="btn btn-secondary" id="cancelGoalBtn">Cancelar</button>
-          <button class="btn" id="saveGoalBtn">Criar Meta</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Scripts -->
-    <script>
-      // Navigation
-      document.getElementById('menuBtn').addEventListener('click', function() {
-        document.getElementById('sidebar').classList.toggle('active');
-      });
-
-      document.getElementById('notificationsBtn').addEventListener('click', function() {
-        document.getElementById('notificationsPanel').classList.toggle('active');
-      });
-
-      document.getElementById('fabBtn').addEventListener('click', function() {
-        showPage('newTransaction');
-      });
-
-      document.getElementById('newTransactionBtn').addEventListener('click', function() {
-        showPage('newTransaction');
-      });
-
-      document.getElementById('calendarBtn').addEventListener('click', function() {
-        showPage('calendar');
-      });
-
-      document.getElementById('reportsBtn').addEventListener('click', function() {
-        showPage('reports');
-      });
-
-      document.getElementById('createGoalBtn').addEventListener('click', function() {
-        document.getElementById('createGoalModal').classList.add('active');
-      });
-
-      document.getElementById('createGoalBtn2').addEventListener('click', function() {
-        document.getElementById('createGoalModal').classList.add('active');
-      });
-
-      // Close modal
-      document.getElementById('closeGoalModal').addEventListener('click', function() {
-        document.getElementById('createGoalModal').classList.remove('active');
-      });
-
-      // Cancel transaction
-      document.getElementById('cancelTransactionBtn').addEventListener('click', function() {
-        showPage('dashboard');
-      });
-
-      // Save transaction
-      document.getElementById('saveTransactionBtn').addEventListener('click', function() {
-        alert('Transação salva com sucesso!');
-        showPage('dashboard');
-      });
-
-      // Transaction type tabs
-      document.getElementById('expenseTab').addEventListener('click', function() {
-        this.classList.add('active');
-        document.getElementById('incomeTab').classList.remove('active');
-      });
-
-      document.getElementById('incomeTab').addEventListener('click', function() {
-        this.classList.add('active');
-        document.getElementById('expenseTab').classList.remove('active');
-      });
-
-      // Settings tabs
-      document.querySelectorAll('.settings-tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-          document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
-          this.classList.add('active');
-          
-          const tabId = this.getAttribute('data-tab');
-          document.querySelectorAll('.settings-content').forEach(content => {
-            content.style.display = 'none';
-          });
-          document.getElementById(`${tabId}Tab`).style.display = 'block';
-        });
-      });
-
-      // Show page function
-      function showPage(pageId) {
-        document.querySelectorAll('.page').forEach(page => {
-          page.style.display = 'none';
-        });
-        document.getElementById(pageId).style.display = 'block';
-        
-        // Update sidebar active item
-        document.querySelectorAll('.menu-item').forEach(item => {
-          item.classList.remove('active');
-          if (item.getAttribute('data-page') === pageId) {
-            item.classList.add('active');
-          }
-        });
-      }
-
-      // Handle menu items
-      document.querySelectorAll('.menu-item').forEach(item => {
-        item.addEventListener('click', function() {
-          const pageId = this.getAttribute('data-page');
-          showPage(pageId);
-          document.getElementById('sidebar').classList.remove('active');
-        });
-      });
-
-      // Handle clicks outside notifications panel
-      document.addEventListener('click', function(e) {
-        if (!e.target.closest('.notification-panel') && !e.target.closest('#notificationsBtn')) {
-          document.getElementById('notificationsPanel').classList.remove('active');
-        }
-      });
-
-      // Handle clicks outside modal
-      document.addEventListener('click', function(e) {
-        if (!e.target.closest('.modal-content') && e.target.closest('.modal')) {
-          document.getElementById('createGoalModal').classList.remove('active');
-        }
-      });
-
-      // Initialize with dashboard
-      document.addEventListener('DOMContentLoaded', function() {
-        showPage('dashboard');
-      });
-    </script>
+<div id="modalCarrinho">
+  <div class="modal-content">
+    <h3 style="margin-bottom:16px; color: var(--primary);">Carrinho</h3>
+    <table id="tabelaCarrinho"></table>
+    <p id="total" style="font-weight:700; color: var(--primary); margin:16px 0;">Total: R$ 0,00</p>
+    <button onclick="finalizarCompra()">Finalizar</button>
+    <button onclick="fecharCarrinho()">Fechar</button>
   </div>
+</div>
+
+<div id="overlayQuantidade"></div>
+<div id="quantidadeModal" class="quantidade-modal" style="display:none;">
+  <h3 id="tituloQuantidade">Informe a quantidade</h3>
+  <input type="number" id="inputQuantidade" min="1" value="1" step="1" />
+  <div>
+    <button id="btnConfirmarQtd">Confirmar</button>
+    <button id="btnCancelarQtd">Cancelar</button>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const Storage = {
+  get: (k, f = []) => JSON.parse(localStorage.getItem(k)) || f,
+  set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
+};
+
+const TEMA_CORES = {
+  padrao: '#4361ee',
+  verde: '#22c55e',
+  roxo: '#8b5cf6',
+  laranja: '#fb923c'
+};
+
+let produtos = Storage.get("produtos");
+let carrinho = Storage.get("carrinho");
+let historico = Storage.get("historicoCompras");
+let orcamento = Storage.get("orcamento") || 0;
+let reader = null, stream = null, buffer = [], scannerAtivo = false;
+const repeticoes = 3;
+let categoriaChart;
+let ultimoCodigoProcessado = null;
+
+// Função segura para beep
+function playBeep() {
+  try {
+    const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+    beep.play().catch(e => console.debug("Beep não reproduzido:", e));
+  } catch (e) {
+    console.debug("Erro ao criar beep:", e);
+  }
+}
+
+// Carregar tema salvo
+const temaSalvo = localStorage.getItem('tema') || 'padrao';
+if (temaSalvo !== 'padrao') {
+  document.body.classList.add(`tema-${temaSalvo}`);
+}
+
+const corHexInicial = TEMA_CORES[temaSalvo] || TEMA_CORES.padrao;
+document.querySelector('meta[name="theme-color"]').setAttribute('content', corHexInicial);
+
+if ($("temaSelector")) {
+  $("temaSelector").value = temaSalvo;
+}
+
+function mudarTema(tema) {
+  document.body.className = document.body.className.replace(/tema-\w+/g, '').trim();
+  if (tema !== 'padrao') {
+    document.body.classList.add(`tema-${tema}`);
+  }
+  localStorage.setItem('tema', tema);
+  const corHex = TEMA_CORES[tema] || TEMA_CORES.padrao;
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', corHex);
+  if (document.getElementById("scanner").classList.contains("active")) {
+    setTimeout(atualizarScannerChart, 100);
+  }
+}
+
+function normalizarCodigo(cod) {
+  return (cod || '').toString().trim().replace(/[\r\n\t\s]+/g, '');
+}
+
+function verificarOrcamento() {
+  const gasto = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
+  const pct = orcamento ? (gasto / orcamento) * 100 : 0;
+  const alerta = $("orcamentoAlerta");
+  if (pct >= 90 && orcamento > 0) {
+    alerta.classList.add('show');
+    setTimeout(() => alerta.classList.remove('show'), 3000);
+  }
+}
+
+function solicitarQuantidade(produtoNome, callback) {
+  $("tituloQuantidade").innerText = `Produto: ${produtoNome}\nInforme a quantidade`;
+  $("inputQuantidade").value = "1";
+  $("btnConfirmarQtd").onclick = () => {
+    const q = Number($("inputQuantidade").value);
+    fecharQuantidade();
+    if (q > 0) callback(q);
+  };
+  $("btnCancelarQtd").onclick = fecharQuantidade;
+  $("overlayQuantidade").style.display = "block";
+  $("quantidadeModal").style.display = "block";
+}
+
+function fecharQuantidade() {
+  $("overlayQuantidade").style.display = "none";
+  $("quantidadeModal").style.display = "none";
+  $("btnConfirmarQtd").onclick = null;
+  $("btnCancelarQtd").onclick = fecharQuantidade;
+}
+
+function atualizarOrcamento() {
+  const gasto = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
+  $("orcamentoGasto").innerText = gasto.toFixed(2);
+  const pct = orcamento ? Math.min(100, (gasto / orcamento) * 100) : 0;
+  const bar = $("orcamentoBarraInner");
+  bar.style.width = pct + "%";
+  bar.setAttribute('data-pct', Math.round(pct) + '%');
+}
+
+function atualizarProdutosTable() {
+  let html = "";
+  produtos.forEach((p, i) => {
+    html += `
+    <tr>
+      <td>${p.codigo}</td>
+      <td>${p.nome}</td>
+      <td>${p.categoria}</td>
+      <td>${p.tipo}</td>
+      <td>R$ ${p.valor.toFixed(2)}</td>
+      <td>
+        <button class="editBtn" onclick="editarProduto(${i})">✏️</button>
+        <button class="deleteBtn" onclick="excluirProduto(${i})">❌</button>
+      </td>
+    </tr>`;
+  });
+  const tbody = $("produtosTable")?.querySelector("tbody");
+  if (tbody) tbody.innerHTML = html;
+  if ($("totalProdutos")) $("totalProdutos").innerText = produtos.length;
+}
+
+function atualizarCarrinho() {
+  let total = 0;
+  let html = `<tr><th>Nome</th><th>Qtd</th><th>Subtotal</th><th>Ação</th></tr>`;
+  carrinho.forEach((p, idx) => {
+    const sub = p.valor * p.qtd;
+    total += sub;
+    html += `
+    <tr>
+      <td>${p.nome}</td>
+      <td>${p.qtd}</td>
+      <td>R$ ${sub.toFixed(2)}</td>
+      <td><button class="deleteBtn" style="padding:4px 8px;font-size:14px;" onclick="removerDoCarrinho(${idx})">🗑️</button></td>
+    </tr>`;
+  });
+  if ($("tabelaCarrinho")) $("tabelaCarrinho").innerHTML = html;
+  if ($("total")) $("total").innerText = "Total: R$ " + total.toFixed(2);
+  if ($("badge")) $("badge").innerText = carrinho.length;
+  atualizarOrcamento();
+  verificarOrcamento();
+  const badge = $("badge");
+  if (badge) {
+    badge.style.animation = "pulse 0.5s";
+    setTimeout(() => badge.style.animation = "", 500);
+  }
+}
+
+function atualizarHistorico() {
+  const area = $("historicoConteudo");
+  if (!area) return;
+  area.innerHTML = "";
+  if (!historico.length) {
+    area.innerHTML = "<p style='text-align:center; color:var(--text-muted);'>Nenhuma compra registrada.</p>";
+    return;
+  }
+  historico.forEach((c, i) => {
+    let itens = "";
+    c.itens.forEach(it => {
+      itens += `<li>${it.nome} — ${it.qtd} x R$ ${it.valor.toFixed(2)} = R$ ${(it.qtd * it.valor).toFixed(2)}</li>`;
+    });
+    area.innerHTML += `
+    <div class="historico-card">
+      <h4>Compra ${i + 1}</h4>
+      <small>${c.data}</small>
+      <p><strong>Total:</strong> R$ ${c.total.toFixed(2)}</p>
+      <details><summary style="color:var(--primary); cursor:pointer;">Ver itens</summary><ul>${itens}</ul></details>
+    </div>`;
+  });
+}
+
+function resetarScannerUI() {
+  fecharQuantidade();
+  if ($("detected")) $("detected").innerText = "—";
+  const barra = $("barraValidacaoInner");
+  if (barra) {
+    barra.style.width = "0%";
+    barra.setAttribute('data-pct', '0%');
+  }
+  buffer = [];
+  scannerAtivo = false;
+  ultimoCodigoProcessado = null;
+  if (reader) reader.reset();
+}
+
+function alternarScanner() {
+  const btn = $("toggleScannerBtn");
+  if (scannerAtivo) {
+    pararScanner();
+    resetarScannerUI();
+    btn.innerText = "Iniciar Scanner";
+  } else {
+    btn.innerText = "Parar Scanner";
+    setTimeout(iniciarScanner, 100);
+  }
+}
+
+async function iniciarScanner() {
+  if (scannerAtivo || !navigator.mediaDevices) return;
+  scannerAtivo = true;
+  buffer = [];
+  if (!stream) {
+    try {
+      const constraints = {
+        video: {
+          facingMode: "environment",
+          advanced: [{ focusMode: "continuous" }]
+        }
+      };
+      stream = await navigator.mediaDevices.getUserMedia(constraints);
+      const video = $("video");
+      if (video) {
+        video.srcObject = stream;
+        await video.play().catch(e => console.warn("Erro ao play:", e));
+      }
+    } catch (err) {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        const video = $("video");
+        if (video) {
+          video.srcObject = stream;
+          await video.play().catch(e => console.warn("Erro fallback:", e));
+        }
+      } catch (e2) {
+        alert("⚠️ Permissão da câmera negada ou não suportada.");
+        scannerAtivo = false;
+        return;
+      }
+    }
+  }
+  reader = new ZXing.BrowserMultiFormatReader();
+  reader.decodeFromVideoElementContinuously($("video"), (res) => {
+    if (!res?.text || !scannerAtivo) return;
+    const codigoBruto = res.text;
+    const codigoNormalizado = normalizarCodigo(codigoBruto);
+    if (!codigoNormalizado) return;
+    buffer.push(codigoNormalizado);
+    if (buffer.length > repeticoes) buffer.shift();
+    const ultimosIguais = buffer.filter(v => v === codigoNormalizado).length;
+    if ($("detected")) $("detected").innerText = codigoBruto;
+    if ($("barraValidacaoInner")) {
+      $("barraValidacaoInner").style.width = (ultimosIguais / repeticoes * 100) + "%";
+      $("barraValidacaoInner").setAttribute('data-pct', Math.round(ultimosIguais / repeticoes * 100) + '%');
+    }
+    if (ultimosIguais >= repeticoes) {
+      scannerAtivo = false;
+      reader.reset();
+      processarCodigo(codigoNormalizado);
+    }
+  });
+}
+
+function processarCodigo(codigoNormalizado) {
+  if (codigoNormalizado === ultimoCodigoProcessado) {
+    buffer = [];
+    return;
+  }
+  if ($("quantidadeModal")?.style.display === "block") return;
+  try {
+    ultimoCodigoProcessado = codigoNormalizado;
+    navigator.vibrate?.(50);
+    playBeep(); // Usa função segura
+    const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
+    if (produto) {
+      solicitarQuantidade(produto.nome, (q) => {
+carrinho.push({ ...produto, qtd: q });
+Storage.set("carrinho", carrinho);
+abrirCarrinho();
+
+setTimeout(() => {
+  resetarScannerUI();
+  iniciarScanner();
+}, 500);
+      });
+    } else {
+      $("codigoCadastro").value = codigoNormalizado;
+      $("nomeCadastro").value = "";
+      $("valorCadastro").value = "";
+      $("cadastro-title").innerText = "Cadastro Rápido";
+      irPara("cadastro");
+      const handlerRapido = () => {
+        const novo = {
+          codigo: $("codigoCadastro").value.trim(),
+          nome: $("nomeCadastro").value.trim(),
+          categoria: $("categoriaCadastro").value,
+          tipo: $("tipoCadastro").value,
+          valor: Number($("valorCadastro").value)
+        };
+        if (!novo.nome || !novo.valor || isNaN(novo.valor)) {
+          alert("Preencha nome e valor corretamente.");
+          return;
+        }
+        produtos.push(novo);
+        Storage.set("produtos", produtos);
+        solicitarQuantidade(novo.nome, (q) => {
+          if (q > 0) {
+            carrinho.push({ ...novo, qtd: q });
+            Storage.set("carrinho", carrinho);
+          }
+          $("codigoCadastro").value = "";
+          $("nomeCadastro").value = "";
+          $("valorCadastro").value = "";
+          $("categoriaCadastro").value = "Alimentos";
+          $("tipoCadastro").value = "UN";
+          $("cadastro-title").innerText = "Cadastro de Produto";
+          $("salvarCadastro").onclick = salvarOriginal;
+          atualizarProdutosTable();
+          atualizarScannerChart();
+          atualizarCarrinho();
+          fecharQuantidade();
+          abrirCarrinho();
+        });
+      };
+      $("salvarCadastro").onclick = handlerRapido;
+      if ($("barraValidacaoInner")) {
+        $("barraValidacaoInner").style.width = "0%";
+        $("barraValidacaoInner").setAttribute('data-pct', '0%');
+      }
+      buffer = [];
+    }
+  } catch (e) {
+    console.error("Erro ao processar código:", e);
+    buffer = [];
+  }
+}
+
+function pararScanner() {
+  scannerAtivo = false;
+  if (reader) {
+    reader.reset();
+    reader = null;
+  }
+  if (stream) {
+    stream.getTracks().forEach(t => t.stop());
+    stream = null;
+  }
+  const video = $("video");
+  if (video && video.srcObject) {
+    video.srcObject.getTracks?.().forEach(t => t.stop());
+    video.srcObject = null;
+  }
+}
+
+function atualizarScannerChart() {
+  const categorias = {};
+  produtos.forEach(p => {
+    categorias[p.categoria] = (categorias[p.categoria] || 0) + 1;
+  });
+  const chartBox = $("scannerChartBox");
+  if (!chartBox || chartBox.offsetWidth === 0 || chartBox.offsetHeight === 0) {
+    setTimeout(atualizarScannerChart, 100);
+    return;
+  }
+  const canvas = $("categoriaChart");
+  if (!canvas) return;
+  canvas.width = chartBox.offsetWidth;
+  canvas.height = chartBox.offsetHeight;
+  if (categoriaChart) {
+    categoriaChart.destroy();
+    categoriaChart = null;
+  }
+  const categoriasOrdenadas = Object.entries(categorias).sort((a, b) => b[1] - a[1]);
+  const labels = categoriasOrdenadas.map(([cat]) => cat);
+  const values = categoriasOrdenadas.map(([, val]) => val);
+  const rootStyles = getComputedStyle(document.documentElement);
+  const textColor = rootStyles.getPropertyValue('--text').trim();
+  const textMutedColor = rootStyles.getPropertyValue('--text-muted').trim();
+  const cores = [
+    '#4361ee', '#3a56d4', '#4895ef', '#f87171', '#6b6b6b', '#9c27b0',
+    '#06b6d4', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444'
+  ];
+  try {
+    const ctx = canvas.getContext("2d");
+categoriaChart = new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: labels,
+    datasets: [{
+      label: 'Número de Produtos',
+      data: values,
+      backgroundColor: labels.map((_, i) => cores[i % cores.length]),
+      borderWidth: 0
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (ctx) => ` ${ctx.parsed.x} produtos`
+        }
+      }
+    },
+    scales: {
+      x: { beginAtZero: true },
+      y: { grid: { display: false } }
+    }
+  }
+});
+  } catch (e) {
+    console.error("Erro ao criar gráfico:", e);
+    setTimeout(atualizarScannerChart, 200);
+  }
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if ($("modalCarrinho")?.classList.contains("active")) {
+      fecharCarrinho();
+    }
+    if ($("quantidadeModal").style.display === "block") {
+      fecharQuantidade();
+    }
+  }
+});
+
+if ($("modalCarrinho")) {
+  $("modalCarrinho").addEventListener('click', (e) => {
+    if (e.target === $("modalCarrinho")) {
+      fecharCarrinho();
+    }
+  });
+}
+
+$("overlayQuantidade").addEventListener('click', fecharQuantidade);
+
+function iniciarApp() {
+  if ($("toggleScannerBtn")) {
+    $("toggleScannerBtn").onclick = alternarScanner;
+  }
+
+  window.irPara = function(tela) {
+    document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+    $(tela).classList.add("active");
+    if (tela === "scanner") {
+      resetarScannerUI();
+    } else {
+      pararScanner();
+      fecharQuantidade();
+    }
+  };
+
+  const sidebar = $("sidebar");
+  const content = $("content");
+  const hamburger = $("hamburger");
+  hamburger.onclick = () => {
+    sidebar.classList.toggle("hide");
+    content.classList.toggle("full");
+  };
+
+  if ($("orcamentoInput")) {
+    $("orcamentoInput").value = orcamento;
+    $("orcamentoInput").addEventListener("input", () => {
+      orcamento = Number($("orcamentoInput").value);
+      localStorage.setItem("orcamento", orcamento);
+      atualizarOrcamento();
+      verificarOrcamento();
+    });
+  }
+
+  window.editarProduto = function(i) {
+    $("cadastro-title").innerText = "Editar Produto";
+    $("codigoCadastro").value = produtos[i].codigo;
+    $("nomeCadastro").value = produtos[i].nome;
+    $("categoriaCadastro").value = produtos[i].categoria;
+    $("tipoCadastro").value = produtos[i].tipo;
+    $("valorCadastro").value = produtos[i].valor;
+    produtos.splice(i, 1);
+    Storage.set("produtos", produtos);
+    irPara("cadastro");
+  };
+
+  window.excluirProduto = function(i) {
+    if (confirm("Excluir produto?")) {
+      produtos.splice(i, 1);
+      Storage.set("produtos", produtos);
+      atualizarProdutosTable();
+      atualizarScannerChart();
+    }
+  };
+
+  const salvarOriginal = () => {
+    const novo = {
+      codigo: $("codigoCadastro").value.trim(),
+      nome: $("nomeCadastro").value.trim(),
+      categoria: $("categoriaCadastro").value,
+      tipo: $("tipoCadastro").value,
+      valor: Number($("valorCadastro").value)
+    };
+    if (!novo.codigo || !novo.nome || !novo.valor || isNaN(novo.valor)) {
+      alert("Preencha todos os campos corretamente");
+      return;
+    }
+    produtos.push(novo);
+    Storage.set("produtos", produtos);
+    atualizarProdutosTable();
+    atualizarScannerChart();
+    $("codigoCadastro").value = "";
+    $("nomeCadastro").value = "";
+    $("valorCadastro").value = "";
+    $("categoriaCadastro").value = "Alimentos";
+    $("tipoCadastro").value = "UN";
+    $("cadastro-title").innerText = "Cadastro de Produto";
+    irPara("produtos");
+  };
+
+  if ($("salvarCadastro")) {
+    $("salvarCadastro").onclick = salvarOriginal;
+  }
+
+  window.removerDoCarrinho = function(idx) {
+    carrinho.splice(idx, 1);
+    Storage.set("carrinho", carrinho);
+    atualizarCarrinho();
+  };
+
+  window.abrirCarrinho = function() {
+pararScanner();
+$("modalCarrinho").style.display = "flex";
+    setTimeout(() => $("modalCarrinho").classList.add("active"), 10);
+    atualizarCarrinho();
+  };
+
+  window.fecharCarrinho = function() {
+    $("modalCarrinho").classList.remove("active");
+    setTimeout(() => {
+      $("modalCarrinho").style.display = "none";
+      pararScanner();
+      resetarScannerUI();
+      irPara("home");
+    }, 300);
+  };
+
+  // ✅ CORREÇÃO CRÍTICA: objeto de histórico agora tem propriedade 'data'
+  window.finalizarCompra = function() {
+    if (!carrinho.length) {
+      alert("Carrinho vazio");
+      return;
+    }
+    const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
+historico.push({
+  data: new Date().toLocaleString("pt-BR"),
+  total,
+  itens: [...carrinho]
+});
+    Storage.set("historicoCompras", historico);
+    carrinho = [];
+    Storage.set("carrinho", carrinho);
+    atualizarCarrinho();
+    atualizarHistorico();
+    fecharCarrinho();
+    alert("Compra finalizada!");
+  }
+
+  atualizarHistorico();
+  atualizarProdutosTable();
+  atualizarCarrinho();
+  setTimeout(() => {
+    atualizarScannerChart();
+  }, 500);
+}
+
+if ($("scanner")) {
+  const observer = new MutationObserver(() => {
+    if ($("scanner").classList.contains("active")) {
+      setTimeout(atualizarScannerChart, 100);
+    }
+  });
+  observer.observe($("scanner"), { attributes: true, attributeFilter: ['class'] });
+}
+
+window.addEventListener('resize', () => {
+  if (document.getElementById("scanner")?.classList.contains("active")) {
+    setTimeout(atualizarScannerChart, 100);
+  }
+});
+
+// ✅ Garante que o app inicie mesmo se houver erros anteriores
+window.addEventListener('DOMContentLoaded', () => {
+  const splash = $("splash");
+  if (splash) {
+    setTimeout(() => {
+      splash.style.opacity = '0';
+      setTimeout(() => {
+        if (splash.parentNode) splash.remove();
+        try {
+          iniciarApp();
+        } catch (e) {
+          console.error("Erro ao iniciar app:", e);
+          // Mesmo com erro, remove splash
+          if (splash.parentNode) splash.remove();
+          // Tenta novamente
+          setTimeout(iniciarApp, 500);
+        }
+      }, 500);
+    }, 2000);
+  } else {
+    iniciarApp();
+  }
+});
+</script>
 </body>
 </html>
