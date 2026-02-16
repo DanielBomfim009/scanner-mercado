@@ -1218,18 +1218,17 @@ function processarCodigo(codigoNormalizado) {
   try {
     ultimoCodigoProcessado = codigoNormalizado;
     navigator.vibrate?.(50);
-    playBeep(); // Usa função segura
+    playBeep(); 
     const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
     if (produto) {
       solicitarQuantidade(produto.nome, (q) => {
-carrinho.push({ ...produto, qtd: q });
-Storage.set("carrinho", carrinho);
-abrirCarrinho();
-
-setTimeout(() => {
-  resetarScannerUI();
-  iniciarScanner();
-}, 500);
+        carrinho.push({ ...produto, qtd: q });
+        Storage.set("carrinho", carrinho);
+        abrirCarrinho();
+        setTimeout(() => {
+          resetarScannerUI();
+          iniciarScanner();
+        }, 500);
       });
     } else {
       $("codigoCadastro").value = codigoNormalizado;
@@ -1237,6 +1236,8 @@ setTimeout(() => {
       $("valorCadastro").value = "";
       $("cadastro-title").innerText = "Cadastro Rápido";
       irPara("cadastro");
+      
+      // CORREÇÃO: Definir o handler de cadastro rápido
       const handlerRapido = () => {
         const novo = {
           codigo: $("codigoCadastro").value.trim(),
@@ -1251,18 +1252,24 @@ setTimeout(() => {
         }
         produtos.push(novo);
         Storage.set("produtos", produtos);
+        
         solicitarQuantidade(novo.nome, (q) => {
           if (q > 0) {
             carrinho.push({ ...novo, qtd: q });
             Storage.set("carrinho", carrinho);
           }
+          // Limpar campos
           $("codigoCadastro").value = "";
           $("nomeCadastro").value = "";
           $("valorCadastro").value = "";
           $("categoriaCadastro").value = "Alimentos";
           $("tipoCadastro").value = "UN";
           $("cadastro-title").innerText = "Cadastro de Produto";
-          $("salvarCadastro").onclick = salvarOriginal;
+          
+          // CORREÇÃO: Restaurar o botão para a função original (global)
+          $("salvarCadastro").onclick = window.salvarOriginal;
+          
+          // ATUALIZAR TELAS
           atualizarProdutosTable();
           atualizarScannerChart();
           atualizarCarrinho();
@@ -1270,6 +1277,7 @@ setTimeout(() => {
           abrirCarrinho();
         });
       };
+      
       $("salvarCadastro").onclick = handlerRapido;
       if ($("barraValidacaoInner")) {
         $("barraValidacaoInner").style.width = "0%";
@@ -1330,35 +1338,35 @@ function atualizarScannerChart() {
   ];
   try {
     const ctx = canvas.getContext("2d");
-categoriaChart = new Chart(ctx, {
-  type: 'bar',
-  data: {
-    labels: labels,
-    datasets: [{
-      label: 'Número de Produtos',
-      data: values,
-      backgroundColor: labels.map((_, i) => cores[i % cores.length]),
-      borderWidth: 0
-    }]
-  },
-  options: {
-    indexAxis: 'y',
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        callbacks: {
-          label: (ctx) => ` ${ctx.parsed.x} produtos`
+    categoriaChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Número de Produtos',
+          data: values,
+          backgroundColor: labels.map((_, i) => cores[i % cores.length]),
+          borderWidth: 0
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` ${ctx.parsed.x} produtos`
+            }
+          }
+        },
+        scales: {
+          x: { beginAtZero: true },
+          y: { grid: { display: false } }
         }
       }
-    },
-    scales: {
-      x: { beginAtZero: true },
-      y: { grid: { display: false } }
-    }
-  }
-});
+    });
   } catch (e) {
     console.error("Erro ao criar gráfico:", e);
     setTimeout(atualizarScannerChart, 200);
@@ -1384,7 +1392,7 @@ if ($("modalCarrinho")) {
   });
 }
 
-$("overlayQuantidade").addEventListener('click', fecharQuantidade);
+ $("overlayQuantidade").addEventListener('click', fecharQuantidade);
 
 function iniciarApp() {
   if ($("toggleScannerBtn")) {
@@ -1441,7 +1449,8 @@ function iniciarApp() {
     }
   };
 
-  const salvarOriginal = () => {
+  // CORREÇÃO: Definir a função globalmente para ser acessada pelo processarCodigo
+  window.salvarOriginal = function() {
     const novo = {
       codigo: $("codigoCadastro").value.trim(),
       nome: $("nomeCadastro").value.trim(),
@@ -1467,7 +1476,7 @@ function iniciarApp() {
   };
 
   if ($("salvarCadastro")) {
-    $("salvarCadastro").onclick = salvarOriginal;
+    $("salvarCadastro").onclick = window.salvarOriginal;
   }
 
   window.removerDoCarrinho = function(idx) {
@@ -1477,8 +1486,8 @@ function iniciarApp() {
   };
 
   window.abrirCarrinho = function() {
-pararScanner();
-$("modalCarrinho").style.display = "flex";
+    pararScanner();
+    $("modalCarrinho").style.display = "flex";
     setTimeout(() => $("modalCarrinho").classList.add("active"), 10);
     atualizarCarrinho();
   };
@@ -1493,18 +1502,17 @@ $("modalCarrinho").style.display = "flex";
     }, 300);
   };
 
-  // ✅ CORREÇÃO CRÍTICA: objeto de histórico agora tem propriedade 'data'
   window.finalizarCompra = function() {
     if (!carrinho.length) {
       alert("Carrinho vazio");
       return;
     }
     const total = carrinho.reduce((a, b) => a + b.valor * b.qtd, 0);
-historico.push({
-  data: new Date().toLocaleString("pt-BR"),
-  total,
-  itens: [...carrinho]
-});
+    historico.push({
+      data: new Date().toLocaleString("pt-BR"),
+      total,
+      itens: [...carrinho]
+    });
     Storage.set("historicoCompras", historico);
     carrinho = [];
     Storage.set("carrinho", carrinho);
@@ -1537,7 +1545,6 @@ window.addEventListener('resize', () => {
   }
 });
 
-// ✅ Garante que o app inicie mesmo se houver erros anteriores
 window.addEventListener('DOMContentLoaded', () => {
   const splash = $("splash");
   if (splash) {
@@ -1549,9 +1556,7 @@ window.addEventListener('DOMContentLoaded', () => {
           iniciarApp();
         } catch (e) {
           console.error("Erro ao iniciar app:", e);
-          // Mesmo com erro, remove splash
           if (splash.parentNode) splash.remove();
-          // Tenta novamente
           setTimeout(iniciarApp, 500);
         }
       }, 500);
