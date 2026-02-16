@@ -75,6 +75,7 @@ body.tema-laranja {
   padding: 0;
   box-sizing: border-box;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -84,6 +85,7 @@ body {
   overflow-x: hidden;
   font-size: 16px;
   color: var(--text);
+  touch-action: manipulation;
 }
 
 #splash {
@@ -150,6 +152,7 @@ body {
   border-radius: 0 12px 12px 0;
   width: 100%;
   transition: var(--transition);
+  touch-action: manipulation;
 }
 
 #sidebar button:hover {
@@ -175,7 +178,6 @@ body {
   box-shadow: var(--shadow);
   transition: var(--transition);
   touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
 }
 
 #hamburger:hover {
@@ -578,6 +580,7 @@ button.deleteBtn:hover {
   z-index: 200;
   box-shadow: 0 8px 20px rgba(58, 86, 212, 0.4);
   transition: var(--transition);
+  touch-action: manipulation;
 }
 
 #carrinhoIcone:hover {
@@ -744,8 +747,7 @@ button.deleteBtn:hover {
 }
 
 @media (max-width: 480px) {
-  #sidebar { width: 180px; transform: translateX(-100%); }
-  #sidebar.hide { transform: translateX(-100%); }
+  #sidebar { width: 180px; transform: translateX(-100%); } /* Garante que começa escondido via CSS também */
   #content { margin-left: 0; padding: 16px 12px; }
   #home .logo-home { width: 240px; height: 240px; }
   #hamburger { width: 48px; height: 48px; }
@@ -959,8 +961,20 @@ button.deleteBtn:hover {
 <script>
 const $ = id => document.getElementById(id);
 const Storage = {
-  get: (k, f = []) => JSON.parse(localStorage.getItem(k)) || f,
-  set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
+  get: (k, f = []) => {
+    try {
+      return JSON.parse(localStorage.getItem(k)) || f;
+    } catch (e) {
+      return f;
+    }
+  },
+  set: (k, v) => {
+    try {
+      localStorage.setItem(k, JSON.stringify(v));
+    } catch (e) {
+      console.warn("LocalStorage bloqueado (modo privado?). Dados não serão salvos.");
+    }
+  }
 };
 
 const TEMA_CORES = {
@@ -1137,8 +1151,7 @@ function resetarScannerUI() {
     barra.setAttribute('data-pct', '0%');
   }
   buffer = [];
-  scannerAtivo = false;
-  ultimoCodigoProcessado = null;
+  ultimoCodigoProcessado = null; // Importante limpar isso
   if (reader) reader.reset();
 }
 
@@ -1158,6 +1171,8 @@ async function iniciarScanner() {
   if (scannerAtivo || !navigator.mediaDevices) return;
   scannerAtivo = true;
   buffer = [];
+  ultimoCodigoProcessado = null;
+  
   if (!stream) {
     try {
       const constraints = {
@@ -1187,6 +1202,7 @@ async function iniciarScanner() {
       }
     }
   }
+  
   reader = new ZXing.BrowserMultiFormatReader();
   reader.decodeFromVideoElementContinuously($("video"), (res) => {
     if (!res?.text || !scannerAtivo) return;
@@ -1210,25 +1226,30 @@ async function iniciarScanner() {
 }
 
 function processarCodigo(codigoNormalizado) {
+  // Verifica se é o mesmo código do anterior para evitar duplicidade imediata
   if (codigoNormalizado === ultimoCodigoProcessado) {
     buffer = [];
     return;
   }
   if ($("quantidadeModal")?.style.display === "block") return;
+  
   try {
     ultimoCodigoProcessado = codigoNormalizado;
     navigator.vibrate?.(50);
     playBeep(); 
+    
     const produto = produtos.find(p => normalizarCodigo(p.codigo) === codigoNormalizado);
+    
     if (produto) {
       solicitarQuantidade(produto.nome, (q) => {
         carrinho.push({ ...produto, qtd: q });
         Storage.set("carrinho", carrinho);
-        abrirCarrinho();
-        setTimeout(() => {
-          resetarScannerUI();
-          iniciarScanner();
-        }, 500);
+        
+        // CORREÇÃO: Limpa o último código processado para permitir escanear novamente depois
+        // Mas mantemos o controle para não escanear repetidamente agora.
+        atualizarCarrinho();
+        resetarScannerUI(); // Limpa o buffer visual e o codigo processado
+        abrirCarrinho(); // Pausa o scanner e mostra o carrinho
       });
     } else {
       $("codigoCadastro").value = codigoNormalizado;
@@ -1237,7 +1258,6 @@ function processarCodigo(codigoNormalizado) {
       $("cadastro-title").innerText = "Cadastro Rápido";
       irPara("cadastro");
       
-      // CORREÇÃO: Definir o handler de cadastro rápido
       const handlerRapido = () => {
         const novo = {
           codigo: $("codigoCadastro").value.trim(),
@@ -1258,18 +1278,14 @@ function processarCodigo(codigoNormalizado) {
             carrinho.push({ ...novo, qtd: q });
             Storage.set("carrinho", carrinho);
           }
-          // Limpar campos
           $("codigoCadastro").value = "";
           $("nomeCadastro").value = "";
           $("valorCadastro").value = "";
           $("categoriaCadastro").value = "Alimentos";
           $("tipoCadastro").value = "UN";
           $("cadastro-title").innerText = "Cadastro de Produto";
-          
-          // CORREÇÃO: Restaurar o botão para a função original (global)
           $("salvarCadastro").onclick = window.salvarOriginal;
           
-          // ATUALIZAR TELAS
           atualizarProdutosTable();
           atualizarScannerChart();
           atualizarCarrinho();
@@ -1413,6 +1429,13 @@ function iniciarApp() {
   const sidebar = $("sidebar");
   const content = $("content");
   const hamburger = $("hamburger");
+  
+  // CORREÇÃO iOS: Verifica se está em tela pequena e esconde o menu ao iniciar
+  if (window.innerWidth <= 480) {
+      sidebar.classList.add("hide");
+      content.classList.add("full");
+  }
+
   hamburger.onclick = () => {
     sidebar.classList.toggle("hide");
     content.classList.toggle("full");
@@ -1449,7 +1472,6 @@ function iniciarApp() {
     }
   };
 
-  // CORREÇÃO: Definir a função globalmente para ser acessada pelo processarCodigo
   window.salvarOriginal = function() {
     const novo = {
       codigo: $("codigoCadastro").value.trim(),
