@@ -421,7 +421,7 @@ input::placeholder { color: var(--text-muted); }
 .list-item-qtd span { min-width: 24px; text-align: center; font-weight: 600; font-size: 14px; }
 
 /* ============================================
-   LISTA ESTIMATIVA
+   LISTA ESTIMATIVA (MELHORADA)
    ============================================ */
 .lista-estimativa-card {
   background: var(--gradient-primary); border-radius: var(--radius-lg);
@@ -450,9 +450,10 @@ input::placeholder { color: var(--text-muted); }
 }
 .lista-empty-icon { width: 48px; height: 48px; margin: 0 auto 12px; opacity: 0.5; }
 
+/* Produtos Sugeridos MELHORADO */
 .produtos-sugeridos {
   background: var(--bg-card); border-radius: var(--radius-lg);
-  border: 1px solid var(--border); overflow: hidden;
+  border: 1px solid var(--border); overflow: hidden; margin-top: 10px;
 }
 .produtos-sugeridos-header {
   padding: 12px 16px; background: var(--bg-secondary);
@@ -460,18 +461,22 @@ input::placeholder { color: var(--text-muted); }
   justify-content: space-between; align-items: center;
 }
 .produtos-sugeridos-title { font-weight: 600; font-size: 13px; color: var(--text-primary); }
-.produtos-sugeridos-list { max-height: 200px; overflow-y: auto; }
+.produtos-sugeridos-list { max-height: 250px; overflow-y: auto; }
 .produtos-sugeridos-item {
-  display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+  display: flex; align-items: center; gap: 10px; padding: 12px 16px;
   border-bottom: 1px solid var(--border-light); cursor: pointer;
   transition: background var(--transition-fast);
 }
 .produtos-sugeridos-item:last-child { border-bottom: none; }
 .produtos-sugeridos-item:active { background: var(--bg-secondary); }
-.produtos-sugeridos-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
 .produtos-sugeridos-item-info { flex: 1; }
-.produtos-sugeridos-item-nome { font-weight: 500; font-size: 13px; color: var(--text-primary); }
-.produtos-sugeridos-item-preco { font-size: 11px; color: var(--text-muted); }
+.produtos-sugeridos-item-nome { font-weight: 600; font-size: 14px; color: var(--text-primary); }
+.produtos-sugeridos-item-preco { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.produtos-sugeridos-item-add {
+  background: var(--gradient-primary); color: white; border: none;
+  padding: 8px 16px; border-radius: var(--radius-sm); font-weight: 600;
+  font-size: 12px; cursor: pointer;
+}
 
 /* ============================================
    MODAIS
@@ -739,7 +744,7 @@ body.dark #splash { background: var(--gradient-dark); }
     </div>
   </section>
 
-  <!-- SCANNER VIEW (MELHORADO) -->
+  <!-- SCANNER VIEW -->
   <section id="view-scanner" class="view">
     <div class="header">
       <div class="header-title">📷 Scanner</div>
@@ -765,14 +770,12 @@ body.dark #splash { background: var(--gradient-dark); }
           </div>
         </div>
       </div>
-      <!-- Status do Scanner -->
       <div class="scanner-status" id="scanner-status">
         <div class="scanner-status-dot" id="scanner-status-dot"></div>
         <span class="scanner-status-text" id="scanner-status-text">Scanner parado</span>
       </div>
     </div>
 
-    <!-- Botões de Controle -->
     <div class="scanner-controls">
       <button id="btn-scan" class="btn btn-primary btn-lg" onclick="toggleScanner()">
         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -783,7 +786,6 @@ body.dark #splash { background: var(--gradient-dark); }
       </button>
     </div>
 
-    <!-- Resultado do Scanner -->
     <div class="scan-result-card">
       <div class="scan-result-label">Último Código Detectado</div>
       <div class="scan-result-value" id="scan-result">--</div>
@@ -792,11 +794,10 @@ body.dark #splash { background: var(--gradient-dark); }
       </div>
     </div>
 
-    <!-- Gráfico -->
     <div style="flex: 1; min-height: 150px;"><canvas id="chart"></canvas></div>
   </section>
 
-  <!-- LISTA VIEW -->
+  <!-- LISTA VIEW (MELHORADA) -->
   <section id="view-lista" class="view">
     <div class="header">
       <div class="header-title">📝 Lista de Compras</div>
@@ -835,26 +836,32 @@ body.dark #splash { background: var(--gradient-dark); }
       </div>
     </div>
 
-    <!-- Adicionar Produto -->
+    <!-- Adicionar Produto MELHORADO -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">Adicionar à Lista</span>
+        <span class="card-title">🔍 Buscar Produtos</span>
       </div>
       
-      <div style="margin-bottom: 10px;">
-        <input type="text" id="search-lista-prod" placeholder="Buscar produto cadastrado..." oninput="filtrarProdutosLista()">
+      <div>
+        <input type="text" id="search-lista-prod" placeholder="Digite para buscar produtos cadastrados..." oninput="filtrarProdutosLista()">
       </div>
       
       <div class="produtos-sugeridos" id="produtos-sugeridos" style="display: none;">
         <div class="produtos-sugeridos-header">
-          <span class="produtos-sugeridos-title">Produtos Cadastrados</span>
+          <span class="produtos-sugeridos-title">Produtos Encontrados</span>
           <span style="font-size: 11px; color: var(--text-muted);">Toque para adicionar</span>
         </div>
         <div class="produtos-sugeridos-list" id="produtos-sugeridos-list"></div>
       </div>
+    </div>
 
-      <div style="display: flex; gap: 10px; margin-top: 10px;">
-        <input type="text" id="input-lista-manual" placeholder="Ou adicione manualmente..." style="flex: 1" onkeypress="if(event.key==='Enter')addListaManual()">
+    <!-- Adicionar Manualmente -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">✏️ Adicionar Manualmente</span>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <input type="text" id="input-lista-manual" placeholder="Nome do item" style="flex: 1" onkeypress="if(event.key==='Enter')addListaManual()">
         <input type="number" id="input-lista-valor" placeholder="R$" style="width: 90px" step="0.01">
         <button class="btn btn-primary" onclick="addListaManual()">Add</button>
       </div>
@@ -1004,7 +1011,7 @@ body.dark #splash { background: var(--gradient-dark); }
 
 <!-- MODAIS -->
 
-<!-- Modal Produto (CORRIGIDO) -->
+<!-- Modal Produto -->
 <div id="modal-prod" class="modal-backdrop">
   <div class="modal" role="dialog">
     <div class="modal-header">
@@ -1144,15 +1151,9 @@ let state = {
   dark: localStorage.getItem('dark') === 'true'
 };
 
-// Estado do Scanner (MELHORADO)
 let scanner = { 
-  active: false, 
-  reader: null, 
-  stream: null, 
-  lastCode: null, 
-  lastCodeTime: 0,
-  buffer: [],
-  isProcessing: false
+  active: false, reader: null, stream: null, 
+  lastCode: null, lastCodeTime: 0, buffer: [], isProcessing: false 
 };
 let qtdCB = null;
 let chart = null;
@@ -1174,22 +1175,14 @@ function installPWA() {
   if (deferredPrompt) {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then((choiceResult) => {
-      if (choiceResult.outcome === 'accepted') {
-        toast('App instalado com sucesso!');
-      }
+      if (choiceResult.outcome === 'accepted') toast('App instalado!', false, 'success');
       deferredPrompt = null;
     });
   }
 }
 
-function dismissInstall() {
-  installBanner.style.display = 'none';
-}
-
-window.addEventListener('appinstalled', () => {
-  installBanner.style.display = 'none';
-  toast('GoL foi instalado!');
-});
+function dismissInstall() { installBanner.style.display = 'none'; }
+window.addEventListener('appinstalled', () => { installBanner.style.display = 'none'; toast('GoL instalado!'); });
 
 // ============================================
 // INIT
@@ -1210,9 +1203,7 @@ function init() {
   updateCartBadge();
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
-      .then(reg => console.log('Service Worker registrado'))
-      .catch(err => console.log('Falha ao registrar Service Worker'));
+    navigator.serviceWorker.register('sw.js').catch(() => {});
   }
 }
 
@@ -1228,19 +1219,14 @@ function irPara(view) {
   const idx = navs.indexOf(view);
   if (idx >= 0) document.querySelectorAll('.nav-item')[idx]?.classList.add('active');
 
-  // CORRIGIDO: Não parar scanner ao navegar, apenas esconder FAB
-  if (view !== 'scanner') {
-    stopScanner();
-  }
-  if (view === 'scanner') {
-    initChart();
-  }
+  if (view !== 'scanner') stopScanner();
+  if (view === 'scanner') initChart();
   
   $('fab-cart').style.display = (view === 'home' || view === 'scanner') && state.carrinho.length ? 'flex' : 'none';
 }
 
 // ============================================
-// HOME & ORÇAMENTO
+// HOME
 // ============================================
 function updateHome() {
   const spent = state.carrinho.reduce((a, i) => a + (i.valor * i.qtd), 0);
@@ -1273,159 +1259,90 @@ function definirOrcamento() {
 }
 
 // ============================================
-// SCANNER (MELHORADO E CORRIGIDO)
+// SCANNER (MELHORADO)
 // ============================================
 function updateScannerStatus(active, text) {
-  const dot = $('scanner-status-dot');
-  const statusText = $('scanner-status-text');
-  
-  if (active) {
-    dot.classList.add('active');
-  } else {
-    dot.classList.remove('active');
-  }
-  statusText.innerText = text;
+  $('scanner-status-dot').classList.toggle('active', active);
+  $('scanner-status-text').innerText = text;
 }
 
 async function toggleScanner() {
-  if (scanner.active) {
-    stopScanner();
-  } else {
-    await startScanner();
-  }
+  scanner.active ? stopScanner() : await startScanner();
 }
 
 async function startScanner() {
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    toast("Câmera não suportada neste dispositivo", true);
-    return;
-  }
+  if (!navigator.mediaDevices) return toast("Câmera não suportada", true);
   
-  // Resetar estado
   scanner.active = true;
   scanner.lastCode = null;
   scanner.lastCodeTime = 0;
   scanner.buffer = [];
   scanner.isProcessing = false;
   
-  // Atualizar UI
-  $('btn-scan').innerHTML = `
-    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-      <rect x="6" y="6" width="12" height="12" rx="1"/>
-    </svg>
-    Parar Scanner
-  `;
-  $('btn-scan').classList.remove('btn-primary');
-  $('btn-scan').classList.add('btn-danger');
+  $('btn-scan').innerHTML = `<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg> Parar Scanner`;
+  $('btn-scan').classList.replace('btn-primary', 'btn-danger');
   $('scan-result').innerText = "Aguardando...";
   $('scan-result').className = 'scan-result-value';
-  $('scan-info').innerText = "Aponte a câmera para um código de barras";
-  updateScannerStatus(true, "Scanner ativo - aponte para o código");
+  $('scan-info').innerText = "Aponte para o código de barras";
+  updateScannerStatus(true, "Iniciando câmera...");
   
   try {
-    // Solicitar acesso à câmera
-    updateScannerStatus(true, "Iniciando câmera...");
-    
-    const constraints = {
-      video: {
-        facingMode: { ideal: 'environment' },
-        width: { ideal: 1280 },
-        height: { ideal: 720 }
-      }
-    };
-    
-    scanner.stream = await navigator.mediaDevices.getUserMedia(constraints);
+    scanner.stream = await navigator.mediaDevices.getUserMedia({ 
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } 
+    });
     const video = $('video');
     video.srcObject = scanner.stream;
     
-    // Aguardar vídeo carregar
     await new Promise((resolve, reject) => {
-      video.onloadedmetadata = () => {
-        video.play()
-          .then(resolve)
-          .catch(reject);
-      };
+      video.onloadedmetadata = () => video.play().then(resolve).catch(reject);
       video.onerror = reject;
     });
     
-    updateScannerStatus(true, "Scanner ativo - aponte para o código");
+    updateScannerStatus(true, "Scanner ativo");
     
-    // Inicializar leitor ZXing
-    if (!scanner.reader) {
-      scanner.reader = new ZXing.BrowserMultiFormatReader();
-    }
+    if (!scanner.reader) scanner.reader = new ZXing.BrowserMultiFormatReader();
     
-    // CORRIGIDO: Usar decodeFromVideoDevice com callback mais confiável
     const deviceID = scanner.stream.getVideoTracks()[0].getSettings().deviceId;
-    
-    scanner.reader.decodeFromVideoDevice(deviceID, video, (result, error) => {
-      if (!scanner.active) return;
-      
-      if (result) {
-        const code = result.getText().trim();
-        handleDetectedCode(code);
-      }
+    scanner.reader.decodeFromVideoDevice(deviceID, video, (result) => {
+      if (!scanner.active || !result) return;
+      handleDetectedCode(result.getText().trim());
     });
     
     toast("Scanner iniciado!", false, 'success');
-    
   } catch (e) {
-    console.error('Erro ao iniciar scanner:', e);
-    
-    let errorMsg = "Erro ao abrir câmera";
-    if (e.name === 'NotAllowedError') {
-      errorMsg = "Permissão de câmera negada. Permita o acesso nas configurações.";
-    } else if (e.name === 'NotFoundError') {
-      errorMsg = "Nenhuma câmera encontrada";
-    } else if (e.name === 'NotReadableError') {
-      errorMsg = "Câmera em uso por outro aplicativo";
-    }
-    
-    toast(errorMsg, true);
+    let msg = "Erro ao abrir câmera";
+    if (e.name === 'NotAllowedError') msg = "Permissão negada";
+    else if (e.name === 'NotFoundError') msg = "Câmera não encontrada";
+    toast(msg, true);
     stopScanner();
   }
 }
 
 function handleDetectedCode(code) {
   const now = Date.now();
-  
-  // Adicionar ao buffer para confirmação
   scanner.buffer.push(code);
   if (scanner.buffer.length > 5) scanner.buffer.shift();
   
-  // Atualizar display
   $('scan-result').innerText = code;
   $('scan-result').className = 'scan-result-value scan-result-warning';
-  $('scan-info').innerText = "Confirmando leitura...";
+  $('scan-info').innerText = "Confirmando...";
   
-  // Verificar se o código está consistente no buffer
   const sameCodes = scanner.buffer.filter(c => c === code).length;
   
-  // Debounce: ignorar se mesmo código foi lido há menos de 2 segundos
-  if (code === scanner.lastCode && (now - scanner.lastCodeTime) < 2000) {
-    return;
-  }
+  if (code === scanner.lastCode && (now - scanner.lastCodeTime) < 2000) return;
   
-  // Confirmar leitura após 3 leituras iguais
   if (sameCodes >= 3 && !scanner.isProcessing) {
     scanner.isProcessing = true;
     scanner.lastCode = code;
     scanner.lastCodeTime = now;
     
-    // Feedback visual e sonoro
     $('scan-result').className = 'scan-result-value scan-result-success';
     $('scan-info').innerText = "✓ Código confirmado!";
-    updateScannerStatus(true, "Código detectado!");
+    updateScannerStatus(true, "Detectado!");
     
-    // Vibrar se disponível
-    if (navigator.vibrate) {
-      navigator.vibrate(100);
-    }
+    if (navigator.vibrate) navigator.vibrate(100);
     
-    // Processar o código
-    setTimeout(() => {
-      processCode(code);
-    }, 300);
+    setTimeout(() => processCode(code), 300);
   }
 }
 
@@ -1433,145 +1350,61 @@ function stopScanner() {
   scanner.active = false;
   scanner.isProcessing = false;
   
-  // Atualizar UI
-  $('btn-scan').innerHTML = `
-    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-      <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
-      <circle cx="12" cy="13" r="4"/>
-    </svg>
-    Iniciar Scanner
-  `;
-  $('btn-scan').classList.remove('btn-danger');
-  $('btn-scan').classList.add('btn-primary');
-  
+  $('btn-scan').innerHTML = `<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> Iniciar Scanner`;
+  $('btn-scan').classList.replace('btn-danger', 'btn-primary');
   updateScannerStatus(false, "Scanner parado");
   
-  // Parar leitor ZXing
-  if (scanner.reader) {
-    try {
-      scanner.reader.reset();
-    } catch (e) {
-      console.log('Erro ao resetar reader:', e);
-    }
-    scanner.reader = null;
-  }
-  
-  // Parar stream de vídeo
-  if (scanner.stream) {
-    scanner.stream.getTracks().forEach(track => {
-      track.stop();
-    });
-    scanner.stream = null;
-  }
-  
-  const video = $('video');
-  video.srcObject = null;
-  video.load();
+  if (scanner.reader) { try { scanner.reader.reset(); } catch(e){} scanner.reader = null; }
+  if (scanner.stream) { scanner.stream.getTracks().forEach(t => t.stop()); scanner.stream = null; }
+  $('video').srcObject = null;
 }
 
 async function toggleFlash() {
   if (scanner.stream && scanner.active) {
     const track = scanner.stream.getVideoTracks()[0];
     try {
-      const capabilities = track.getCapabilities();
-      if (capabilities.torch) {
-        const settings = await track.getSettings();
-        const newTorchState = !settings.torch;
-        await track.applyConstraints({ 
-          advanced: [{ torch: newTorchState }] 
-        });
-        toast(newTorchState ? "💡 Lanterna ligada" : "Lanterna desligada");
-        
-        // Atualizar ícone do botão
-        const btnFlash = $('btn-flash');
-        if (newTorchState) {
-          btnFlash.style.background = 'var(--warning)';
-          btnFlash.style.color = 'white';
-        } else {
-          btnFlash.style.background = '';
-          btnFlash.style.color = '';
-        }
-      } else {
-        toast("Lanterna não disponível neste dispositivo", true);
-      }
-    } catch (e) {
-      console.log('Erro ao alternar lanterna:', e);
-      toast("Erro ao controlar lanterna", true);
-    }
-  } else {
-    toast("Inicie o scanner primeiro", true);
-  }
+      const cap = track.getCapabilities();
+      if (cap.torch) {
+        const set = await track.getSettings();
+        await track.applyConstraints({ advanced: [{ torch: !set.torch }] });
+        toast(set.torch ? "Lanterna desligada" : "💡 Lanterna ligada");
+        $('btn-flash').style.background = set.torch ? '' : 'var(--warning)';
+      } else toast("Lanterna não disponível", true);
+    } catch(e) { toast("Erro na lanterna", true); }
+  } else toast("Inicie o scanner", true);
 }
 
 function digitarCodigo() {
   const code = prompt("Digite o código de barras:");
-  if (code && code.trim()) {
+  if (code?.trim()) {
     $('scan-result').innerText = code.trim();
     $('scan-result').className = 'scan-result-value scan-result-success';
     processCode(code.trim());
   }
 }
 
-// CORRIGIDO: Processamento do código com navegação correta
 function processCode(code) {
-  // Parar scanner temporariamente
   stopScanner();
-  
   const prod = state.produtos.find(p => p.codigo === code);
   
   if (prod) {
-    // Produto encontrado - verificar histórico de preços
-    const last = state.historico.find(h => h.itens.some(i => i.codigo === code));
-    if (last) {
-      const lastItem = last.itens.find(i => i.codigo === code);
-      if (lastItem && lastItem.valor !== prod.valor) {
-        const diff = prod.valor - lastItem.valor;
-        const perc = ((diff / lastItem.valor) * 100).toFixed(0);
-        const msg = diff > 0 
-          ? `⚠️ Preço subiu ${perc}% desde a última compra!` 
-          : `🎉 Preço caiu ${Math.abs(perc)}% desde a última compra!`;
-        $('scan-info').innerText = msg;
-      }
-    }
-    
     $('scan-info').innerText = `✓ ${prod.nome} - ${formatCur(prod.valor)}`;
-    
-    // Abrir modal de quantidade
-    openQtd(prod.nome, formatCur(prod.valor), (qtd) => {
-      addCart(prod, qtd);
-      irPara('home');
-    });
+    openQtd(prod.nome, formatCur(prod.valor), (qtd) => { addCart(prod, qtd); irPara('home'); });
   } else {
-    // Produto NÃO encontrado - CORRIGIDO: abrir modal de cadastro
     $('scan-result').className = 'scan-result-value scan-result-warning';
-    $('scan-info').innerText = "Produto não cadastrado";
-    
-    // CORRIGIDO: Abrir modal de cadastro automaticamente
-    setTimeout(() => {
-      abrirProdModal(code);
-    }, 300);
+    $('scan-info').innerText = "Produto não cadastrado - abrindo cadastro...";
+    setTimeout(() => abrirProdModal(code), 300);
   }
 }
 
 function initChart() {
   if (chart) return;
-  const ctx = $('chart').getContext('2d');
   const cats = {};
   state.produtos.forEach(p => cats[p.categoria] = (cats[p.categoria] || 0) + 1);
-  const labels = Object.keys(cats);
-  const data = Object.values(cats);
-  
-  chart = new Chart(ctx, {
+  chart = new Chart($('chart').getContext('2d'), {
     type: 'doughnut',
-    data: { 
-      labels, 
-      datasets: [{ data, backgroundColor: ['#1e40af', '#10b981', '#f59e0b', '#7c3aed', '#ef4444'], borderWidth: 0 }] 
-    },
-    options: { 
-      responsive: true, 
-      maintainAspectRatio: false,
-      plugins: { legend: { position: 'bottom', labels: { color: getComputedStyle(document.body).getPropertyValue('--text-secondary') } } } 
-    }
+    data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#1e40af','#10b981','#f59e0b','#7c3aed','#ef4444'], borderWidth: 0 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
   });
 }
 
@@ -1580,12 +1413,11 @@ function initChart() {
 // ============================================
 function renderProdutos() {
   const search = $('search-prod').value.toLowerCase();
+  const filtered = state.produtos.filter(p => p.nome.toLowerCase().includes(search) || p.codigo.includes(search));
   const container = $('prod-container');
   
-  const filtered = state.produtos.filter(p => p.nome.toLowerCase().includes(search) || p.codigo.includes(search));
-  
-  if (filtered.length === 0) {
-    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon"><svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></div><div class="empty-state-text">Nenhum produto encontrado</div></div>`;
+  if (!filtered.length) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-state-text">Nenhum produto</div></div>`;
     return;
   }
   
@@ -1597,13 +1429,12 @@ function renderProdutos() {
       </div>
       <div class="list-item-actions">
         <button class="btn btn-sm btn-secondary" onclick="editProd(${i})">✏️</button>
-        <button class="btn btn-sm btn-secondary" onclick="delProd(${i})" style="color: var(--danger)">🗑️</button>
+        <button class="btn btn-sm btn-secondary" onclick="delProd(${i})" style="color:var(--danger)">🗑️</button>
       </div>
     </div>
   `).join('');
 }
 
-// CORRIGIDO: Abrir modal de produto com código pré-preenchido
 function abrirProdModal(code = '') {
   $('prod-id').value = '';
   $('prod-nome').value = '';
@@ -1611,79 +1442,42 @@ function abrirProdModal(code = '') {
   $('prod-valor').value = '';
   $('prod-cat').value = 'Alimentos';
   $('prod-tipo').value = 'UN';
-  
-  if (code) {
-    $('modal-prod-title').innerText = 'Cadastrar Novo Produto';
-    $('scan-info').innerText = `Código: ${code} - Preencha os dados do produto`;
-  } else {
-    $('modal-prod-title').innerText = 'Novo Produto';
-  }
-  
+  $('modal-prod-title').innerText = code ? 'Cadastrar Novo Produto' : 'Novo Produto';
   $('modal-prod').classList.add('show');
-  
-  // Focar no campo nome
   setTimeout(() => $('prod-nome').focus(), 100);
 }
 
-function fecharProdModal() { 
-  $('modal-prod').classList.remove('show'); 
-}
+function fecharProdModal() { $('modal-prod').classList.remove('show'); }
 
 function salvarProd() {
   const id = $('prod-id').value;
   const nome = $('prod-nome').value.trim();
   const codigo = $('prod-cod').value.trim();
   const valor = parseFloat($('prod-valor').value) || 0;
-  const categoria = $('prod-cat').value;
-  const tipo = $('prod-tipo').value;
   
-  if (!nome) {
-    toast("Digite o nome do produto", true);
-    $('prod-nome').focus();
-    return;
-  }
-  if (!codigo) {
-    toast("Digite o código de barras", true);
-    $('prod-cod').focus();
-    return;
-  }
-  if (valor <= 0) {
-    toast("Digite o valor do produto", true);
-    $('prod-valor').focus();
-    return;
-  }
+  if (!nome) return toast("Digite o nome", true), $('prod-nome').focus();
+  if (!codigo) return toast("Digite o código", true), $('prod-cod').focus();
+  if (valor <= 0) return toast("Digite o valor", true), $('prod-valor').focus();
   
-  const prod = { nome, codigo, valor, categoria, tipo };
+  const prod = { nome, codigo, valor, categoria: $('prod-cat').value, tipo: $('prod-tipo').value };
   
   if (id !== '') {
     state.produtos[parseInt(id)] = prod;
   } else {
-    // Verificar se código já existe
     const exist = state.produtos.find(p => p.codigo === codigo);
     if (exist) {
-      if (!confirm("Já existe um produto com este código. Deseja atualizar?")) {
-        return;
-      }
-      const idx = state.produtos.indexOf(exist);
-      state.produtos[idx] = prod;
-    } else {
-      state.produtos.push(prod);
-    }
+      if (!confirm("Código já existe. Atualizar?")) return;
+      state.produtos[state.produtos.indexOf(exist)] = prod;
+    } else state.produtos.push(prod);
   }
   
   Storage.set('produtos', state.produtos);
   renderProdutos();
   fecharProdModal();
-  toast("Produto salvo com sucesso!", false, 'success');
+  toast("Produto salvo!", false, 'success');
   
-  // CORRIGIDO: Após salvar, perguntar se quer adicionar ao carrinho
-  if (!id) {
-    if (confirm("Produto cadastrado! Deseja adicionar ao carrinho agora?")) {
-      openQtd(prod.nome, formatCur(prod.valor), (qtd) => {
-        addCart(prod, qtd);
-        irPara('home');
-      });
-    }
+  if (!id && confirm("Adicionar ao carrinho agora?")) {
+    openQtd(prod.nome, formatCur(prod.valor), (qtd) => { addCart(prod, qtd); irPara('home'); });
   }
 }
 
@@ -1700,11 +1494,11 @@ function editProd(i) {
 }
 
 function delProd(i) {
-  if (confirm("Excluir este produto?")) {
+  if (confirm("Excluir?")) {
     state.produtos.splice(i, 1);
     Storage.set('produtos', state.produtos);
     renderProdutos();
-    toast("Produto excluído");
+    toast("Excluído");
   }
 }
 
@@ -1713,53 +1507,44 @@ function delProd(i) {
 // ============================================
 function addCart(prod, qtd) {
   const exist = state.carrinho.find(i => i.codigo === prod.codigo);
-  if (exist) exist.qtd += qtd;
-  else state.carrinho.push({ ...prod, qtd });
-  
+  exist ? exist.qtd += qtd : state.carrinho.push({ ...prod, qtd });
   Storage.set('carrinho', state.carrinho);
   updateHome();
   updateCartBadge();
-  toast(`${prod.nome} adicionado ao carrinho!`, false, 'success');
+  toast(`${prod.nome} adicionado!`, false, 'success');
 }
 
 function updateCartBadge() {
-  const total = state.carrinho.reduce((a, i) => a + i.qtd, 0);
-  $('badge').innerText = total;
+  $('badge').innerText = state.carrinho.reduce((a, i) => a + i.qtd, 0);
   $('fab-cart').style.display = state.carrinho.length ? 'flex' : 'none';
 }
 
-function abrirCarrinho() {
-  renderCart();
-  $('modal-carrinho').classList.add('show');
-}
-
+function abrirCarrinho() { renderCart(); $('modal-carrinho').classList.add('show'); }
 function fecharCarrinho() { $('modal-carrinho').classList.remove('show'); }
 
 function renderCart() {
   const container = $('cart-items');
   let total = 0;
   
-  if (state.carrinho.length === 0) {
-    container.innerHTML = `<div class="empty-state"><div class="empty-state-text">Carrinho vazio</div></div>`;
+  if (!state.carrinho.length) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-state-text">Vazio</div></div>`;
     $('cart-total').innerText = "R$ 0";
     return;
   }
   
   container.innerHTML = state.carrinho.map((item, idx) => {
     total += item.valor * item.qtd;
-    return `
-      <div class="list-item">
-        <div class="list-item-content">
-          <div class="list-item-title">${item.nome}</div>
-          <div class="list-item-sub">${item.qtd} x ${formatCur(item.valor)} = ${formatCur(item.valor * item.qtd)}</div>
-        </div>
-        <div class="list-item-actions">
-          <button class="btn btn-sm btn-secondary" onclick="updCart(${idx}, -1)">−</button>
-          <button class="btn btn-sm btn-secondary" onclick="updCart(${idx}, 1)">+</button>
-          <button class="btn btn-sm btn-secondary" onclick="remCart(${idx})" style="color: var(--danger)">🗑️</button>
-        </div>
+    return `<div class="list-item">
+      <div class="list-item-content">
+        <div class="list-item-title">${item.nome}</div>
+        <div class="list-item-sub">${item.qtd}x ${formatCur(item.valor)} = ${formatCur(item.valor * item.qtd)}</div>
       </div>
-    `;
+      <div class="list-item-actions">
+        <button class="btn btn-sm btn-secondary" onclick="updCart(${idx},-1)">−</button>
+        <button class="btn btn-sm btn-secondary" onclick="updCart(${idx},1)">+</button>
+        <button class="btn btn-sm btn-secondary" onclick="remCart(${idx})" style="color:var(--danger)">🗑️</button>
+      </div>
+    </div>`;
   }).join('');
   $('cart-total').innerText = formatCur(total);
 }
@@ -1768,92 +1553,69 @@ function updCart(idx, delta) {
   state.carrinho[idx].qtd += delta;
   if (state.carrinho[idx].qtd <= 0) state.carrinho.splice(idx, 1);
   Storage.set('carrinho', state.carrinho);
-  updateHome();
-  updateCartBadge();
-  renderCart();
+  updateHome(); updateCartBadge(); renderCart();
 }
 
 function remCart(idx) {
   state.carrinho.splice(idx, 1);
   Storage.set('carrinho', state.carrinho);
-  updateHome();
-  updateCartBadge();
-  renderCart();
+  updateHome(); updateCartBadge(); renderCart();
 }
 
 function finalizarCompra() {
   if (!state.carrinho.length) return;
-  
-  const total = state.carrinho.reduce((a, i) => a + (i.valor * i.qtd), 0);
-  
-  state.historico.push({
-    data: new Date().toLocaleString('pt-BR'),
-    itens: [...state.carrinho],
-    total
-  });
-  
+  const total = state.carrinho.reduce((a, i) => a + i.valor * i.qtd, 0);
+  state.historico.push({ data: new Date().toLocaleString('pt-BR'), itens: [...state.carrinho], total });
   Storage.set('historico', state.historico);
   state.carrinho = [];
   Storage.set('carrinho', []);
-  
-  updateHome();
-  updateCartBadge();
-  renderHist();
+  updateHome(); updateCartBadge(); renderHist();
   fecharCarrinho();
   toast("Compra finalizada! 🎉", false, 'success');
   irPara('home');
 }
 
 // ============================================
-// LISTA DE COMPRAS
+// LISTA DE COMPRAS (MELHORADA)
 // ============================================
 function renderLista() {
   const container = $('lista-container');
-  const estimativaCard = $('lista-estimativa');
-  
-  const totalEstimado = state.lista.reduce((a, i) => a + ((i.valor || 0) * i.qtd), 0);
+  const totalEstimado = state.lista.reduce((a, i) => a + (i.valor || 0) * i.qtd, 0);
   const totalItens = state.lista.length;
   const itensComValor = state.lista.filter(i => i.valor > 0).length;
   
-  if (state.lista.length > 0) {
-    estimativaCard.style.display = 'block';
+  $('lista-estimativa').style.display = state.lista.length ? 'block' : 'none';
+  
+  if (state.lista.length) {
     $('estimativa-total').innerText = formatCur(totalEstimado);
-    $('estimativa-itens').innerText = `${totalItens} item${totalItens !== 1 ? 's' : ''} na lista (${itensComValor} com preço)`;
+    $('estimativa-itens').innerText = `${totalItens} item${totalItens !== 1 ? 's' : ''} (${itensComValor} com preço)`;
     $('estimativa-min').innerText = formatCur(totalEstimado * 0.9);
     $('estimativa-max').innerText = formatCur(totalEstimado * 1.1);
-  } else {
-    estimativaCard.style.display = 'none';
   }
   
-  if (state.lista.length === 0) {
-    container.innerHTML = `
-      <div class="lista-empty">
-        <div class="lista-empty-icon">
-          <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-          </svg>
-        </div>
-        <div style="font-size: 14px; margin-bottom: 4px;">Lista vazia</div>
-        <div style="font-size: 12px;">Busque produtos cadastrados ou adicione manualmente</div>
-      </div>
-    `;
+  if (!state.lista.length) {
+    container.innerHTML = `<div class="lista-empty">
+      <div class="lista-empty-icon"><svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div>
+      <div style="font-size:14px;margin-bottom:4px">Lista vazia</div>
+      <div style="font-size:12px">Busque produtos ou adicione manualmente</div>
+    </div>`;
     return;
   }
   
   container.innerHTML = state.lista.map((item, i) => `
     <div class="list-item ${item.checked ? 'checked' : ''}">
-      <input type="checkbox" ${item.checked ? 'checked' : ''} onclick="toggleCheck(${i})" style="cursor: pointer;">
-      <div class="list-item-content" onclick="toggleCheck(${i})" style="cursor: pointer;">
+      <input type="checkbox" ${item.checked ? 'checked' : ''} onclick="toggleCheck(${i})" style="cursor:pointer">
+      <div class="list-item-content" onclick="toggleCheck(${i})" style="cursor:pointer">
         <div class="list-item-title">${item.nome}</div>
         <div class="list-item-sub">Qtd: ${item.qtd} ${item.codigo ? `• ${item.codigo}` : ''}</div>
         ${item.valor ? `<div class="list-item-price">${formatCur(item.valor)} cada = ${formatCur(item.valor * item.qtd)}</div>` : ''}
       </div>
       <div class="list-item-qtd">
-        <button onclick="updListaQtd(${i}, -1)">−</button>
+        <button onclick="updListaQtd(${i},-1)">−</button>
         <span>${item.qtd}</span>
-        <button onclick="updListaQtd(${i}, 1)">+</button>
+        <button onclick="updListaQtd(${i},1)">+</button>
       </div>
-      <button class="btn btn-sm btn-secondary" onclick="delLista(${i})" style="color: var(--danger); margin-left: 8px;">🗑️</button>
+      <button class="btn btn-sm btn-secondary" onclick="delLista(${i})" style="color:var(--danger);margin-left:8px">🗑️</button>
     </div>
   `).join('');
 }
@@ -1863,32 +1625,23 @@ function filtrarProdutosLista() {
   const container = $('produtos-sugeridos');
   const listContainer = $('produtos-sugeridos-list');
   
-  if (!search) {
-    container.style.display = 'none';
-    return;
-  }
+  if (!search) { container.style.display = 'none'; return; }
   
-  const produtosNaLista = state.lista.map(i => i.codigo).filter(c => c);
+  const naLista = state.lista.map(i => i.codigo).filter(c => c);
   const filtered = state.produtos.filter(p => 
-    (p.nome.toLowerCase().includes(search) || p.codigo.includes(search)) &&
-    !produtosNaLista.includes(p.codigo)
+    (p.nome.toLowerCase().includes(search) || p.codigo.includes(search)) && !naLista.includes(p.codigo)
   );
   
-  if (filtered.length === 0) {
-    container.style.display = 'none';
-    return;
-  }
+  if (!filtered.length) { container.style.display = 'none'; return; }
   
   container.style.display = 'block';
-  listContainer.innerHTML = filtered.slice(0, 5).map(p => `
+  listContainer.innerHTML = filtered.map(p => `
     <div class="produtos-sugeridos-item" onclick="addProdutoLista('${p.codigo}')">
-      <svg width="16" height="16" fill="none" stroke="var(--primary)" stroke-width="2" viewBox="0 0 24 24">
-        <path d="M12 5v14M5 12h14"/>
-      </svg>
       <div class="produtos-sugeridos-item-info">
         <div class="produtos-sugeridos-item-nome">${p.nome}</div>
         <div class="produtos-sugeridos-item-preco">${formatCur(p.valor)} • ${p.categoria}</div>
       </div>
+      <button class="produtos-sugeridos-item-add">+ Add</button>
     </div>
   `).join('');
 }
@@ -1898,34 +1651,21 @@ function addProdutoLista(codigo) {
   if (!prod) return;
   
   const exist = state.lista.find(i => i.codigo === codigo);
-  if (exist) {
-    exist.qtd += 1;
-  } else {
-    state.lista.push({
-      nome: prod.nome,
-      codigo: prod.codigo,
-      valor: prod.valor,
-      categoria: prod.categoria,
-      qtd: 1,
-      checked: false
-    });
-  }
+  exist ? exist.qtd++ : state.lista.push({ ...prod, checked: false, qtd: 1 });
   
   Storage.set('lista', state.lista);
   $('search-lista-prod').value = '';
   $('produtos-sugeridos').style.display = 'none';
   renderLista();
-  toast(`${prod.nome} adicionado à lista!`);
+  toast(`${prod.nome} adicionado!`);
 }
 
 function addListaManual() {
   const nome = $('input-lista-manual').value.trim();
   const valor = parseFloat($('input-lista-valor').value) || 0;
-  
-  if (!nome) return toast("Digite o nome do item", true);
+  if (!nome) return toast("Digite o nome", true);
   
   state.lista.push({ nome, qtd: 1, valor, codigo: '', checked: false });
-  
   Storage.set('lista', state.lista);
   $('input-lista-manual').value = '';
   $('input-lista-valor').value = '';
@@ -1934,8 +1674,7 @@ function addListaManual() {
 }
 
 function updListaQtd(idx, delta) {
-  state.lista[idx].qtd += delta;
-  if (state.lista[idx].qtd <= 0) state.lista[idx].qtd = 1;
+  state.lista[idx].qtd = Math.max(1, state.lista[idx].qtd + delta);
   Storage.set('lista', state.lista);
   renderLista();
 }
@@ -1950,29 +1689,22 @@ function delLista(i) {
   state.lista.splice(i, 1);
   Storage.set('lista', state.lista);
   renderLista();
-  toast("Item removido");
+  toast("Removido");
 }
 
 function compartilharLista() {
-  let text = "📝 Minha Lista de Compras:\n\n";
-  let total = 0;
-  
-  state.lista.forEach(i => { 
+  let text = "📝 Lista de Compras:\n\n", total = 0;
+  state.lista.forEach(i => {
     if (!i.checked) {
-      const subtotal = (i.valor || 0) * i.qtd;
-      total += subtotal;
-      text += `• ${i.nome} (${i.qtd})${i.valor ? ` - ${formatCur(subtotal)}` : ''}\n`;
+      const sub = (i.valor || 0) * i.qtd;
+      total += sub;
+      text += `• ${i.nome} (${i.qtd})${i.valor ? ` - ${formatCur(sub)}` : ''}\n`;
     }
   });
+  text += `\n💰 Total: ${formatCur(total)}`;
+  text += `\n📊 Margem ±10%: ${formatCur(total * 0.9)} a ${formatCur(total * 1.1)}`;
   
-  text += `\n💰 Total estimado: ${formatCur(total)}`;
-  text += `\n📊 Margem (±10%): ${formatCur(total * 0.9)} a ${formatCur(total * 1.1)}`;
-  
-  if (navigator.share) {
-    navigator.share({ title: 'Lista GoL', text });
-  } else {
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
-  }
+  navigator.share ? navigator.share({ title: 'Lista GoL', text }) : window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
 }
 
 // ============================================
@@ -1980,19 +1712,17 @@ function compartilharLista() {
 // ============================================
 function renderHist() {
   const container = $('hist-container');
-  
-  if (state.historico.length === 0) {
-    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon"><svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><div class="empty-state-text">Sem histórico de compras</div></div>`;
+  if (!state.historico.length) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-state-text">Sem histórico</div></div>`;
     return;
   }
-  
   container.innerHTML = state.historico.slice().reverse().map(h => `
     <div class="card">
-      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-        <strong style="color: var(--primary)">${h.data}</strong>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <strong style="color:var(--primary)">${h.data}</strong>
         <strong>${formatCur(h.total)}</strong>
       </div>
-      <div style="font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 8px;">
+      <div style="font-size:12px;color:var(--text-muted);border-top:1px solid var(--border);padding-top:8px">
         ${h.itens.map(i => `<div>• ${i.nome} (${i.qtd}) - ${formatCur(i.valor * i.qtd)}</div>`).join('')}
       </div>
     </div>
@@ -2014,24 +1744,15 @@ function toggleDark() {
   state.dark = !state.dark;
   document.body.classList.toggle('dark');
   localStorage.setItem('dark', state.dark);
-  toast(state.dark ? "Modo escuro ativado" : "Modo claro ativado");
+  toast(state.dark ? "Modo escuro" : "Modo claro");
 }
 
 function exportarDados() {
-  const data = {
-    produtos: state.produtos,
-    lista: state.lista,
-    historico: state.historico,
-    orcamento: state.orcamento,
-    exportadoEm: new Date().toISOString()
-  };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
+  const data = { produtos: state.produtos, lista: state.lista, historico: state.historico, orcamento: state.orcamento };
   const a = document.createElement('a');
-  a.href = url;
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
   a.download = `backup-gol-${new Date().toISOString().slice(0, 10)}.json`;
   a.click();
-  URL.revokeObjectURL(url);
   toast("Backup realizado!");
 }
 
@@ -2042,39 +1763,25 @@ function importarDados(e) {
   reader.onload = (ev) => {
     try {
       const data = JSON.parse(ev.target.result);
-      if (data.produtos) state.produtos = data.produtos;
-      if (data.lista) state.lista = data.lista;
-      if (data.historico) state.historico = data.historico;
-      if (data.orcamento) state.orcamento = data.orcamento;
-      
+      Object.assign(state, data);
       Storage.set('produtos', state.produtos);
       Storage.set('lista', state.lista);
       Storage.set('historico', state.historico);
       Storage.set('orcamento', state.orcamento);
-      
-      updateHome();
-      renderLista();
-      renderProdutos();
-      renderHist();
-      toast("Dados restaurados com sucesso!", false, 'success');
-    } catch (err) { toast("Erro ao importar arquivo", true); }
+      updateHome(); renderLista(); renderProdutos(); renderHist();
+      toast("Dados restaurados!", false, 'success');
+    } catch { toast("Erro no arquivo", true); }
   };
   reader.readAsText(file);
   e.target.value = '';
 }
 
 function limparTudo() {
-  if (confirm("⚠️ ATENÇÃO: Isso irá apagar TODOS os seus dados!\n\nDeseja continuar?")) {
-    if (confirm("Tem certeza? Esta ação não pode ser desfeita!")) {
-      localStorage.clear();
-      state = { produtos: [], carrinho: [], lista: [], historico: [], orcamento: 0, tema: 'padrao', dark: false };
-      updateHome();
-      renderLista();
-      renderProdutos();
-      renderHist();
-      updateCartBadge();
-      toast("Todos os dados foram apagados");
-    }
+  if (confirm("⚠️ Apagar TODOS os dados?") && confirm("Tem certeza?")) {
+    localStorage.clear();
+    state = { produtos: [], carrinho: [], lista: [], historico: [], orcamento: 0, tema: 'padrao', dark: false };
+    updateHome(); renderLista(); renderProdutos(); renderHist(); updateCartBadge();
+    toast("Dados apagados");
   }
 }
 
@@ -2087,28 +1794,11 @@ function openQtd(nome, preco, cb) {
   $('qtd-val').value = 1;
   $('modal-qtd').classList.add('show');
   qtdCB = cb;
-  setTimeout(() => $('qtd-val').focus(), 100);
 }
 
-function fecharQtd() { 
-  $('modal-qtd').classList.remove('show'); 
-  qtdCB = null;
-}
-
-function updQtdVal(delta) {
-  const input = $('qtd-val');
-  let val = parseInt(input.value) || 1;
-  val += delta;
-  if (val < 1) val = 1;
-  input.value = val;
-}
-
-function confQtd() {
-  const val = parseInt($('qtd-val').value) || 1;
-  const cb = qtdCB;
-  fecharQtd();
-  if (cb) cb(val);
-}
+function fecharQtd() { $('modal-qtd').classList.remove('show'); qtdCB = null; }
+function updQtdVal(d) { const v = parseInt($('qtd-val').value) || 1; $('qtd-val').value = Math.max(1, v + d); }
+function confQtd() { const v = parseInt($('qtd-val').value) || 1; fecharQtd(); qtdCB?.(v); }
 
 // ============================================
 // TOAST
@@ -2116,9 +1806,7 @@ function confQtd() {
 function toast(msg, error = false, type = '') {
   const t = $('toast');
   t.innerText = msg;
-  t.className = '';
-  if (error) t.classList.add('error');
-  if (type) t.classList.add(type);
+  t.className = error ? 'error' : type || '';
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
 }
